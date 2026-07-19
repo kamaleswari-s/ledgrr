@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
-
+import '../home/home_screen.dart';
 class AuthScreen extends StatefulWidget {
   final bool isSignUp;
   const AuthScreen({super.key, this.isSignUp = true});
@@ -39,11 +39,16 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _submit() {
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
-  }
+  setState(() => _isLoading = true);
+  Future.delayed(const Duration(seconds: 1), () {
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
