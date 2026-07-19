@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "715842707184",
+    "project_id": "ledgrr-9e6fc",
+    "storage_bucket": "ledgrr-9e6fc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715842707184:android:deb16ec623a99be6ad6c35",
+        "android_client_info": {
+          "package_name": "com.example.ledgrr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBX0TstGPblVHG4ln3MZV7zqP1_TQYLrnM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

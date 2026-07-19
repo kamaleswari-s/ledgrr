@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../theme/app_theme.dart';
+import '../../services/transaction_service.dart';
+import '../../services/auth_service.dart';
+import '../onboarding/onboarding_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,56 +17,14 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
-  late Animation<double> _slideUp;
   int _currentNavIndex = 0;
-
-  // Mock data — will be replaced with real Firebase data later
-  final String _dailySentence =
-      'You\'re stable — but a ₹9,800 storm is forming on the 3rd. 11 days to prepare.';
-  final String _trueBalance = '₹4,210';
-  final String _ghostAmount = '₹1,219';
-  final String _fogLevel = 'Low';
-  final bool _isStable = true;
-
-  final List<_QuickAction> _quickActions = const [
-    _QuickAction(iconType: 'spendlist', label: 'Spend List'),
-    _QuickAction(iconType: 'ghost', label: 'Ghosts'),
-    _QuickAction(iconType: 'storm', label: 'Bill Storm'),
-    _QuickAction(iconType: 'chat', label: 'Ask Money'),
-    _QuickAction(iconType: 'memory', label: 'Memory'),
-    _QuickAction(iconType: 'rewind', label: 'Rewind'),
-  ];
-
-  final List<_ActivityItem> _recentActivity = const [
-    _ActivityItem(
-      title: 'Ghost cleared',
-      subtitle: 'Arjun paid back ₹600',
-      amount: '+₹600',
-      isPositive: true,
-      time: '2h ago',
-    ),
-    _ActivityItem(
-      title: 'Subscription detected',
-      subtitle: 'Hotstar — unused 34 days',
-      amount: '₹299/mo',
-      isPositive: false,
-      time: '1d ago',
-    ),
-    _ActivityItem(
-      title: 'Spend List completed',
-      subtitle: 'Stayed ₹760 under cap',
-      amount: '-₹7,240',
-      isPositive: true,
-      time: '2d ago',
-    ),
-    _ActivityItem(
-      title: 'Bill Storm detected',
-      subtitle: 'Rent + EMI + Netflix — Mar 3',
-      amount: '₹9,800',
-      isPositive: false,
-      time: '3d ago',
-    ),
-  ];
+  final _transactionService = TransactionService();
+  final _authService = AuthService();
+  double _trueBalance = 0;
+  double _monthlyIncome = 0;
+  double _monthlyExpense = 0;
+  bool _isLoading = true;
+  String _userName = '';
 
   @override
   void initState() {
@@ -74,10 +36,72 @@ class _HomeScreenState extends State<HomeScreen>
     _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
-    _slideUp = Tween<double>(begin: 24.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _loadData();
     _controller.forward();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      final now = DateTime.now();
+
+      final balance = await _transactionService.getTrueBalance();
+      final summary = await _transactionService.getMonthlySummary(
+        now.year, now.month,
+      );
+
+      if (mounted) {
+        setState(() {
+          _trueBalance = balance;
+          _monthlyIncome = summary['income'] ?? 0;
+          _monthlyExpense = summary['expense'] ?? 0;
+          _userName = user?.displayName?.split(' ').first ?? 'there';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String get _greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  String get _dailySentence {
+    if (_isLoading) return 'Loading your financial truth...';
+    if (_trueBalance == 0 && _monthlyExpense == 0) {
+      return 'Welcome to LEDGRR. Add your first transaction to get started.';
+    }
+    if (_trueBalance < 0) {
+      return 'Your balance is in the red. Let\'s work on getting you back to clear.';
+    }
+    if (_monthlyExpense > _monthlyIncome && _monthlyIncome > 0) {
+      return 'You\'re spending more than you\'re earning this month. Time to review.';
+    }
+    return 'You\'re stable. Keep tracking and LEDGRR will show you the full picture.';
+  }
+
+  Future<void> _signOut() async {
+    await _authService.signOut();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  String _formatAmount(double amount) {
+    if (amount >= 100000) {
+      return '₹${(amount / 100000).toStringAsFixed(1)}L';
+    } else if (amount >= 1000) {
+      return '₹${(amount / 1000).toStringAsFixed(1)}K';
+    }
+    return '₹${amount.toStringAsFixed(0)}';
   }
 
   @override
@@ -93,17 +117,8 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       backgroundColor: palette.bg,
       body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeIn.value,
-              child: Transform.translate(
-                offset: Offset(0, _slideUp.value),
-                child: child,
-              ),
-            );
-          },
+        child: FadeTransition(
+          opacity: _fadeIn,
           child: CustomScrollView(
             slivers: [
               // Top bar
@@ -112,7 +127,6 @@ class _HomeScreenState extends State<HomeScreen>
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                   child: Row(
                     children: [
-                      // Logo + name
                       Container(
                         width: 34,
                         height: 34,
@@ -153,13 +167,13 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                       const Spacer(),
-                      // Notification bell
+                      // Sign out button
                       Material(
                         color: palette.bg2,
                         borderRadius: BorderRadius.circular(12),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () {},
+                          onTap: _signOut,
                           child: Container(
                             width: 40,
                             height: 40,
@@ -168,15 +182,14 @@ class _HomeScreenState extends State<HomeScreen>
                               border: Border.all(color: palette.border),
                             ),
                             child: Icon(
-                              Icons.notifications_none_rounded,
+                              Icons.logout_rounded,
                               color: palette.ink,
-                              size: 20,
+                              size: 18,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Profile avatar
                       Container(
                         width: 40,
                         height: 40,
@@ -186,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         child: Center(
                           child: Text(
-                            'R',
+                            _userName.isNotEmpty
+                                ? _userName[0].toUpperCase()
+                                : 'L',
                             style: GoogleFonts.syne(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -208,12 +223,11 @@ class _HomeScreenState extends State<HomeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Good morning, Riri',
+                        '$_greeting, $_userName',
                         style: GoogleFonts.syne(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: palette.inkMuted,
-                          letterSpacing: 0.02,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -247,15 +261,13 @@ class _HomeScreenState extends State<HomeScreen>
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
+                                horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: palette.accent.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(100),
                               ),
                               child: Text(
-                                _isStable ? 'Stable' : 'Attention needed',
+                                _trueBalance >= 0 ? 'Stable' : 'Attention',
                                 style: GoogleFonts.syne(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -277,7 +289,7 @@ class _HomeScreenState extends State<HomeScreen>
                         Text(
                           '"$_dailySentence"',
                           style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 18,
+                            fontSize: 17,
                             fontStyle: FontStyle.italic,
                             color: Colors.white,
                             height: 1.55,
@@ -287,20 +299,20 @@ class _HomeScreenState extends State<HomeScreen>
                         Row(
                           children: [
                             _SentenceChip(
-                              label: 'True Balance',
-                              value: _trueBalance,
+                              label: 'Balance',
+                              value: _formatAmount(_trueBalance),
                               palette: palette,
                             ),
                             const SizedBox(width: 8),
                             _SentenceChip(
-                              label: 'Ghosts',
-                              value: _ghostAmount,
+                              label: 'Income',
+                              value: _formatAmount(_monthlyIncome),
                               palette: palette,
                             ),
                             const SizedBox(width: 8),
                             _SentenceChip(
-                              label: 'Fog',
-                              value: _fogLevel,
+                              label: 'Spent',
+                              value: _formatAmount(_monthlyExpense),
                               palette: palette,
                             ),
                           ],
@@ -320,30 +332,33 @@ class _HomeScreenState extends State<HomeScreen>
                       Expanded(
                         child: _StatCard(
                           label: 'True Balance',
-                          value: _trueBalance,
-                          sublabel: 'after all debts',
+                          value: _formatAmount(_trueBalance),
+                          sublabel: 'all time',
                           iconType: 'balance',
                           palette: palette,
+                          isPositive: _trueBalance >= 0,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _StatCard(
-                          label: 'Ghost Money',
-                          value: _ghostAmount,
-                          sublabel: 'found this week',
-                          iconType: 'ghost',
+                          label: 'This Month',
+                          value: _formatAmount(_monthlyIncome),
+                          sublabel: 'income',
+                          iconType: 'memory',
                           palette: palette,
+                          isPositive: true,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _StatCard(
-                          label: 'Fog Level',
-                          value: _fogLevel,
-                          sublabel: 'you are clear',
-                          iconType: 'fog',
+                          label: 'Spent',
+                          value: _formatAmount(_monthlyExpense),
+                          sublabel: 'this month',
+                          iconType: 'spendlist',
                           palette: palette,
+                          isPositive: false,
                         ),
                       ),
                     ],
@@ -351,44 +366,50 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
 
-              // Quick actions
+              // Add transaction button
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Quick actions',
-                        style: GoogleFonts.syne(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: palette.ink,
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                  child: Material(
+                    color: palette.accent,
+                    borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => _showAddTransaction(context, palette),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add_rounded,
+                                  color: palette.accentFg, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Add Transaction',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  fontSize: 16,
+                                  fontStyle: FontStyle.italic,
+                                  color: palette.accentFg,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: _quickActions.map((action) {
-                          return _QuickActionButton(
-                            action: action,
-                            palette: palette,
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
 
-              // Recent activity
+              // Recent transactions header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
                   child: Row(
                     children: [
                       Text(
-                        'Recent activity',
+                        'Recent transactions',
                         style: GoogleFonts.syne(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -409,116 +430,169 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
 
-              // Activity list
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final item = _recentActivity[i];
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: palette.card,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: palette.border),
+              // Real transactions from Firebase
+              StreamBuilder(
+                stream: _transactionService.getTransactionsStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: palette.accent,
+                            strokeWidth: 2,
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: palette.bg2,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: CustomPaint(
-                                painter: _IconPainter(
-                                  type: item.isPositive ? 'ghost' : 'storm',
-                                  color: item.isPositive
-                                      ? palette.accent
-                                      : const Color(0xFFB5446E),
+                      ),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                        child: Container(
+                          padding: const EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            color: palette.card,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: palette.border),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(Icons.receipt_long_outlined,
+                                  color: palette.inkMuted, size: 40),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No transactions yet',
+                                style: GoogleFonts.syne(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: palette.ink,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.title,
-                                    style: GoogleFonts.syne(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: palette.ink,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    item.subtitle,
-                                    style: GoogleFonts.syne(
-                                      fontSize: 11,
-                                      color: palette.inkMuted,
-                                    ),
-                                  ),
-                                ],
+                              const SizedBox(height: 6),
+                              Text(
+                                'Tap Add Transaction to get started.',
+                                style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  color: palette.inkMuted,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs.take(10).toList();
+
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) {
+                        final data =
+                            docs[i].data() as Map<String, dynamic>;
+                        final isIncome = data['type'] == 'income';
+                        final amount =
+                            (data['amount'] as num).toDouble();
+                        final date =
+                            (data['date'] as dynamic).toDate() as DateTime;
+
+                        return Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: palette.card,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: palette.border),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            child: Row(
                               children: [
+                                Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: isIncome
+                                        ? palette.accent.withOpacity(0.12)
+                                        : const Color(0xFFB5446E)
+                                            .withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    isIncome
+                                        ? Icons.arrow_downward_rounded
+                                        : Icons.arrow_upward_rounded,
+                                    color: isIncome
+                                        ? palette.accent
+                                        : const Color(0xFFB5446E),
+                                    size: 18,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        data['title'] ?? '',
+                                        style: GoogleFonts.syne(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: palette.ink,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${data['category']} · ${date.day}/${date.month}/${date.year}',
+                                        style: GoogleFonts.syne(
+                                          fontSize: 11,
+                                          color: palette.inkMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 Text(
-                                  item.amount,
+                                  '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
                                   style: GoogleFonts.syne(
-                                    fontSize: 13,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w700,
-                                    color: item.isPositive
+                                    color: isIncome
                                         ? palette.accent
                                         : const Color(0xFFB5446E),
                                   ),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  item.time,
-                                  style: GoogleFonts.syne(
-                                    fontSize: 10,
-                                    color: palette.inkMuted,
-                                  ),
-                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: _recentActivity.length,
-                ),
+                          ),
+                        );
+                      },
+                      childCount: docs.length,
+                    ),
+                  );
+                },
               ),
 
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
         ),
       ),
 
-      // Bottom nav
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: palette.card,
-          border: Border(
-            top: BorderSide(color: palette.border),
-          ),
+          border: Border(top: BorderSide(color: palette.border)),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -531,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
                 _NavItem(
                   icon: Icons.receipt_long_rounded,
-                  label: 'Spend List',
+                  label: 'Transactions',
                   isActive: _currentNavIndex == 1,
                   palette: palette,
                   onTap: () => setState(() => _currentNavIndex = 1),
@@ -555,6 +629,395 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
+    );
+  }
+
+  void _showAddTransaction(BuildContext context, LedgrrPalette palette) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AddTransactionSheet(
+        palette: palette,
+        onAdded: _loadData,
+      ),
+    );
+  }
+}
+
+// ─── ADD TRANSACTION SHEET ─────────────────────────────────────────────────
+
+class _AddTransactionSheet extends StatefulWidget {
+  final LedgrrPalette palette;
+  final VoidCallback onAdded;
+
+  const _AddTransactionSheet({
+    required this.palette,
+    required this.onAdded,
+  });
+
+  @override
+  State<_AddTransactionSheet> createState() => _AddTransactionSheetState();
+}
+
+class _AddTransactionSheetState extends State<_AddTransactionSheet> {
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  final _transactionService = TransactionService();
+  String _type = 'expense';
+  String _selectedCategory = 'food';
+  DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false;
+
+  final List<Map<String, dynamic>> _expenseCategories = [
+    {'id': 'food', 'name': 'Food'},
+    {'id': 'transport', 'name': 'Transport'},
+    {'id': 'shopping', 'name': 'Shopping'},
+    {'id': 'health', 'name': 'Health'},
+    {'id': 'utilities', 'name': 'Utilities'},
+    {'id': 'rent', 'name': 'Rent'},
+    {'id': 'education', 'name': 'Education'},
+    {'id': 'entertainment', 'name': 'Fun'},
+    {'id': 'subscriptions', 'name': 'Subscriptions'},
+    {'id': 'medical', 'name': 'Medical'},
+    {'id': 'fuel', 'name': 'Fuel'},
+    {'id': 'groceries', 'name': 'Groceries'},
+    {'id': 'clothing', 'name': 'Clothing'},
+    {'id': 'personalcare', 'name': 'Self Care'},
+    {'id': 'dining', 'name': 'Dining Out'},
+    {'id': 'coffee', 'name': 'Coffee'},
+    {'id': 'social', 'name': 'Social'},
+    {'id': 'electricity', 'name': 'Electricity'},
+    {'id': 'water', 'name': 'Water'},
+    {'id': 'internet', 'name': 'Internet'},
+    {'id': 'mobile', 'name': 'Mobile'},
+    {'id': 'savings', 'name': 'Savings'},
+    {'id': 'other_expense', 'name': 'Other'},
+  ];
+
+  final List<Map<String, dynamic>> _incomeCategories = [
+    {'id': 'salary', 'name': 'Salary'},
+    {'id': 'freelance', 'name': 'Freelance'},
+    {'id': 'allowance', 'name': 'Allowance'},
+    {'id': 'gift', 'name': 'Gift'},
+    {'id': 'investment', 'name': 'Investment'},
+    {'id': 'refund', 'name': 'Refund'},
+    {'id': 'business', 'name': 'Business'},
+    {'id': 'other_income', 'name': 'Other'},
+  ];
+
+  List<Map<String, dynamic>> get _categories =>
+      _type == 'expense' ? _expenseCategories : _incomeCategories;
+
+  Future<void> _save() async {
+    if (_titleController.text.trim().isEmpty) return;
+    if (_amountController.text.trim().isEmpty) return;
+
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _transactionService.addTransaction(
+        title: _titleController.text.trim(),
+        amount: amount,
+        category: _selectedCategory,
+        type: _type,
+        date: _selectedDate,
+        note: _noteController.text.trim(),
+      );
+      widget.onAdded();
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = widget.palette;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.bg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        24, 20, 24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: palette.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'Add transaction',
+              style: GoogleFonts.syne(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: palette.ink,
+                letterSpacing: -0.5,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Type toggle
+            Container(
+              decoration: BoxDecoration(
+                color: palette.bg2,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: palette.border),
+              ),
+              child: Row(
+                children: ['expense', 'income'].map((t) {
+                  final isSelected = _type == t;
+                  return Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() {
+                        _type = t;
+                        _selectedCategory =
+                            t == 'expense' ? 'food' : 'salary';
+                      }),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? palette.accent : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            t == 'expense' ? 'Expense' : 'Income',
+                            style: GoogleFonts.syne(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isSelected ? palette.accentFg : palette.inkMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Title
+            _sheetField(
+              controller: _titleController,
+              hint: 'What was this for?',
+              label: 'Title',
+              palette: palette,
+            ),
+
+            const SizedBox(height: 12),
+
+            // Amount
+            _sheetField(
+              controller: _amountController,
+              hint: '0.00',
+              label: 'Amount (₹)',
+              palette: palette,
+              keyboardType: TextInputType.number,
+            ),
+
+            const SizedBox(height: 12),
+
+            // Category
+            Text('Category',
+              style: GoogleFonts.syne(
+                fontSize: 12, fontWeight: FontWeight.w600,
+                color: palette.inkMuted, letterSpacing: 0.05,
+              )),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 38,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length,
+                itemBuilder: (context, i) {
+                  final cat = _categories[i];
+                  final isSelected = _selectedCategory == cat['id'];
+                  return GestureDetector(
+                    onTap: () =>
+                        setState(() => _selectedCategory = cat['id']),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? palette.accent : palette.bg2,
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(
+                          color: isSelected ? palette.accent : palette.border,
+                        ),
+                      ),
+                      child: Text(
+                        cat['name'],
+                        style: GoogleFonts.syne(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? palette.accentFg : palette.inkMuted,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Date
+            GestureDetector(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                );
+                if (picked != null) {
+                  setState(() => _selectedDate = picked);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: palette.bg2,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined,
+                        color: palette.accent, size: 16),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                      style: GoogleFonts.syne(
+                          fontSize: 14, color: palette.ink),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Note
+            _sheetField(
+              controller: _noteController,
+              hint: 'Add a note (optional)',
+              label: 'Note',
+              palette: palette,
+            ),
+
+            const SizedBox(height: 24),
+
+            // Save button
+            Material(
+              color: palette.accent,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _isLoading ? null : _save,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: _isLoading
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: palette.accentFg,
+                            ),
+                          )
+                        : Text(
+                            'Save transaction',
+                            style: GoogleFonts.dmSerifDisplay(
+                              fontSize: 17,
+                              fontStyle: FontStyle.italic,
+                              color: palette.accentFg,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetField({
+    required TextEditingController controller,
+    required String hint,
+    required String label,
+    required LedgrrPalette palette,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+          style: GoogleFonts.syne(
+            fontSize: 12, fontWeight: FontWeight.w600,
+            color: palette.inkMuted, letterSpacing: 0.05,
+          )),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: palette.bg2,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: palette.border),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.syne(fontSize: 14, color: palette.inkMuted),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -584,23 +1047,14 @@ class _SentenceChip extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: GoogleFonts.syne(
-                fontSize: 9,
-                color: Colors.white54,
-                letterSpacing: 0.04,
-              ),
-            ),
+            Text(label,
+              style: GoogleFonts.syne(fontSize: 9, color: Colors.white54)),
             const SizedBox(height: 2),
-            Text(
-              value,
+            Text(value,
               style: GoogleFonts.syne(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontSize: 13, fontWeight: FontWeight.w700,
                 color: palette.accent,
-              ),
-            ),
+              )),
           ],
         ),
       ),
@@ -616,6 +1070,7 @@ class _StatCard extends StatelessWidget {
   final String sublabel;
   final String iconType;
   final LedgrrPalette palette;
+  final bool isPositive;
 
   const _StatCard({
     required this.label,
@@ -623,6 +1078,7 @@ class _StatCard extends StatelessWidget {
     required this.sublabel,
     required this.iconType,
     required this.palette,
+    required this.isPositive,
   });
 
   @override
@@ -643,7 +1099,7 @@ class _StatCard extends StatelessWidget {
             child: CustomPaint(
               painter: _IconPainter(
                 type: iconType,
-                color: palette.accent,
+                color: isPositive ? palette.accent : const Color(0xFFB5446E),
               ),
             ),
           ),
@@ -653,105 +1109,20 @@ class _StatCard extends StatelessWidget {
             style: GoogleFonts.syne(
               fontSize: 15,
               fontWeight: FontWeight.w800,
-              color: palette.ink,
+              color: isPositive ? palette.ink : const Color(0xFFB5446E),
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
+          Text(label,
             style: GoogleFonts.syne(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: palette.ink,
-            ),
-          ),
-          Text(
-            sublabel,
-            style: GoogleFonts.syne(
-              fontSize: 9,
-              color: palette.inkMuted,
-            ),
-          ),
+              fontSize: 10, fontWeight: FontWeight.w600, color: palette.ink)),
+          Text(sublabel,
+            style: GoogleFonts.syne(fontSize: 9, color: palette.inkMuted)),
         ],
       ),
     );
   }
-}
-
-// ─── QUICK ACTION ──────────────────────────────────────────────────────────
-
-class _QuickAction {
-  final String iconType;
-  final String label;
-  const _QuickAction({required this.iconType, required this.label});
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final _QuickAction action;
-  final LedgrrPalette palette;
-
-  const _QuickActionButton({
-    required this.action,
-    required this.palette,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Material(
-          color: palette.bg2,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {},
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: palette.border),
-              ),
-              child: CustomPaint(
-                painter: _IconPainter(
-                  type: action.iconType,
-                  color: palette.accent,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          action.label,
-          style: GoogleFonts.syne(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: palette.inkMuted,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ─── ACTIVITY ITEM ─────────────────────────────────────────────────────────
-
-class _ActivityItem {
-  final String title;
-  final String subtitle;
-  final String amount;
-  final bool isPositive;
-  final String time;
-
-  const _ActivityItem({
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.isPositive,
-    required this.time,
-  });
 }
 
 // ─── NAV ITEM ──────────────────────────────────────────────────────────────
@@ -787,20 +1158,16 @@ class _NavItem extends StatelessWidget {
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(100),
             ),
-            child: Icon(
-              icon,
+            child: Icon(icon,
               size: 22,
-              color: isActive ? palette.accent : palette.inkMuted,
-            ),
+              color: isActive ? palette.accent : palette.inkMuted),
           ),
-          Text(
-            label,
+          Text(label,
             style: GoogleFonts.syne(
               fontSize: 10,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
               color: isActive ? palette.accent : palette.inkMuted,
-            ),
-          ),
+            )),
         ],
       ),
     );
@@ -832,186 +1199,54 @@ class _IconPainter extends CustomPainter {
     final cy = size.height / 2;
 
     switch (type) {
-      case 'ghost':
-        final path = Path();
-        path.moveTo(cx - 10, cy + 10);
-        path.lineTo(cx - 10, cy - 2);
-        path.quadraticBezierTo(cx - 10, cy - 12, cx, cy - 12);
-        path.quadraticBezierTo(cx + 10, cy - 12, cx + 10, cy - 2);
-        path.lineTo(cx + 10, cy + 10);
-        path.lineTo(cx + 5, cy + 6);
-        path.lineTo(cx, cy + 10);
-        path.lineTo(cx - 5, cy + 6);
-        path.close();
-        canvas.drawPath(path, p);
-        canvas.drawCircle(Offset(cx - 3, cy - 2), 1.8, pf);
-        canvas.drawCircle(Offset(cx + 3, cy - 2), 1.8, pf);
-        break;
-
-      case 'chat':
-        final rRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx, cy - 2), width: 20, height: 16),
-          const Radius.circular(7),
-        );
-        canvas.drawRRect(rRect, p);
-        final tail = Path();
-        tail.moveTo(cx - 3, cy + 6);
-        tail.lineTo(cx - 7, cy + 11);
-        tail.lineTo(cx + 1, cy + 6);
-        canvas.drawPath(tail, p);
-        canvas.drawCircle(Offset(cx - 5, cy - 2), 1.5, pf);
-        canvas.drawCircle(Offset(cx, cy - 2), 1.5, pf);
-        canvas.drawCircle(Offset(cx + 5, cy - 2), 1.5, pf);
-        break;
-
-      case 'fog':
-        final fogP1 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round;
-        final fogP2 = Paint()
-          ..color = color.withOpacity(0.5)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round;
-        final fogP3 = Paint()
-          ..color = color.withOpacity(0.25)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..strokeCap = StrokeCap.round;
-        canvas.drawLine(
-            Offset(cx - 11, cy - 5), Offset(cx + 11, cy - 5), fogP1);
-        canvas.drawLine(Offset(cx - 8, cy), Offset(cx + 8, cy), fogP2);
-        canvas.drawLine(
-            Offset(cx - 6, cy + 5), Offset(cx + 6, cy + 5), fogP3);
-        canvas.drawCircle(Offset(cx + 14, cy - 5), 3, pf);
-        break;
-
-      case 'storm':
-        final cloud = Path();
-        cloud.moveTo(cx - 10, cy - 2);
-        cloud.quadraticBezierTo(cx - 10, cy - 10, cx - 3, cy - 10);
-        cloud.quadraticBezierTo(cx - 1, cy - 14, cx + 4, cy - 13);
-        cloud.quadraticBezierTo(cx + 11, cy - 11, cx + 10, cy - 4);
-        cloud.quadraticBezierTo(cx + 13, cy - 2, cx + 10, cy + 1);
-        cloud.lineTo(cx - 10, cy + 1);
-        cloud.close();
-        canvas.drawPath(cloud, p);
-        canvas.drawLine(
-            Offset(cx - 5, cy + 4), Offset(cx - 7, cy + 10), p);
-        canvas.drawLine(Offset(cx, cy + 4), Offset(cx - 1, cy + 10), p);
-        canvas.drawLine(
-            Offset(cx + 5, cy + 4), Offset(cx + 4, cy + 10), p);
-        break;
-
       case 'balance':
         canvas.drawLine(Offset(cx, cy - 11), Offset(cx, cy + 11), p);
-        canvas.drawLine(
-            Offset(cx - 10, cy - 1), Offset(cx + 10, cy - 1), p);
-        canvas.drawLine(
-            Offset(cx - 10, cy - 1), Offset(cx - 10, cy + 5), p);
-        final lp = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx - 10, cy + 8), width: 11, height: 4),
-          const Radius.circular(1.5),
-        );
-        canvas.drawRRect(lp, pf);
-        canvas.drawLine(
-            Offset(cx + 10, cy - 1), Offset(cx + 10, cy - 7), p);
-        final rp = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx + 10, cy - 10), width: 11, height: 4),
-          const Radius.circular(1.5),
-        );
-        canvas.drawRRect(rp, pf);
-        break;
-
-      case 'firstaid':
-        final vRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 6, height: 20),
-          const Radius.circular(3),
-        );
-        final hRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 20, height: 6),
-          const Radius.circular(3),
-        );
-        canvas.drawRRect(vRect, pf);
-        canvas.drawRRect(hRect, pf);
+        canvas.drawLine(Offset(cx - 10, cy - 1), Offset(cx + 10, cy - 1), p);
+        canvas.drawLine(Offset(cx - 10, cy - 1), Offset(cx - 10, cy + 5), p);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(cx - 10, cy + 8), width: 11, height: 4),
+            const Radius.circular(1.5),
+          ), pf);
+        canvas.drawLine(Offset(cx + 10, cy - 1), Offset(cx + 10, cy - 7), p);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(cx + 10, cy - 10), width: 11, height: 4),
+            const Radius.circular(1.5),
+          ), pf);
         break;
 
       case 'memory':
         canvas.drawLine(Offset(cx, cy - 10), Offset(cx, cy + 10), p);
-        final lPage = RRect.fromRectAndRadius(
-          Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10),
-          const Radius.circular(2),
-        );
-        canvas.drawRRect(lPage, p);
-        final rPage = RRect.fromRectAndRadius(
-          Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10),
-          const Radius.circular(2),
-        );
-        canvas.drawRRect(rPage, p);
-        final lp2 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2
-          ..strokeCap = StrokeCap.round;
-        canvas.drawLine(
-            Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10), const Radius.circular(2)), p);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10), const Radius.circular(2)), p);
+        final lp2 = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2..strokeCap = StrokeCap.round;
+        canvas.drawLine(Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
         canvas.drawLine(Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
-        canvas.drawLine(
-            Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
-        canvas.drawLine(
-            Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
+        canvas.drawLine(Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
+        canvas.drawLine(Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
         canvas.drawLine(Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
         break;
 
-      case 'rewind':
-        final arc = Path();
-        arc.moveTo(cx + 7, cy - 9);
-        arc.quadraticBezierTo(cx - 12, cy - 9, cx - 12, cy + 1);
-        arc.quadraticBezierTo(cx - 12, cy + 10, cx + 3, cy + 10);
-        canvas.drawPath(arc, p);
-        final ah = Path();
-        ah.moveTo(cx + 7, cy - 13);
-        ah.lineTo(cx + 7, cy - 5);
-        ah.lineTo(cx + 12, cy - 9);
-        ah.close();
-        canvas.drawPath(ah, pf);
-        break;
-
       case 'spendlist':
-        final listRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 22, height: 24),
-          const Radius.circular(4),
-        );
-        canvas.drawRRect(listRect, p);
-        final lp2 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2
-          ..strokeCap = StrokeCap.round;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(cx, cy), width: 22, height: 24),
+            const Radius.circular(4),
+          ), p);
+        final lp2 = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2..strokeCap = StrokeCap.round;
         final c1 = Path();
-        c1.moveTo(cx - 7, cy - 5);
-        c1.lineTo(cx - 5, cy - 3);
-        c1.lineTo(cx - 1, cy - 8);
+        c1.moveTo(cx - 7, cy - 5); c1.lineTo(cx - 5, cy - 3); c1.lineTo(cx - 1, cy - 8);
         canvas.drawPath(c1, lp2);
         canvas.drawLine(Offset(cx + 1, cy - 5), Offset(cx + 7, cy - 5), lp2);
         final c2 = Path();
-        c2.moveTo(cx - 7, cy + 1);
-        c2.lineTo(cx - 5, cy + 3);
-        c2.lineTo(cx - 1, cy - 2);
+        c2.moveTo(cx - 7, cy + 1); c2.lineTo(cx - 5, cy + 3); c2.lineTo(cx - 1, cy - 2);
         canvas.drawPath(c2, lp2);
         canvas.drawLine(Offset(cx + 1, cy + 1), Offset(cx + 7, cy + 1), lp2);
-        canvas.drawCircle(
-            Offset(cx - 6, cy + 7),
-            2,
-            Paint()
-              ..color = color
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1.2);
+        canvas.drawCircle(Offset(cx - 6, cy + 7), 2,
+          Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2);
         canvas.drawLine(Offset(cx + 1, cy + 7), Offset(cx + 7, cy + 7), lp2);
         break;
     }
