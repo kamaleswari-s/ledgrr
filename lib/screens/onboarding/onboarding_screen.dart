@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
+import '../auth/auth_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -104,7 +105,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 24,
@@ -160,8 +160,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ],
               ),
             ),
-
-            // Pages
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -175,49 +173,52 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ],
               ),
             ),
-
-            // Bottom nav
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Row(
                 children: [
                   if (_currentPage > 0)
-                    GestureDetector(
-                      onTap: _prevPage,
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: palette.bg2,
-                          borderRadius: BorderRadius.circular(100),
-                          border: Border.all(color: palette.border),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          color: palette.ink,
-                          size: 20,
+                    Material(
+                      color: palette.bg2,
+                      borderRadius: BorderRadius.circular(100),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(100),
+                        onTap: _prevPage,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(color: palette.border),
+                          ),
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            color: palette.ink,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),
                   const Spacer(),
                   if (_currentPage < totalPages - 1)
-                    GestureDetector(
-                      onTap: _nextPage,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: palette.accent,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          _currentPage == 0 ? 'See features' : 'Next',
-                          style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            color: palette.accentFg,
+                    Material(
+                      color: palette.accent,
+                      borderRadius: BorderRadius.circular(100),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(100),
+                        onTap: _nextPage,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          child: Text(
+                            _currentPage == 0 ? 'See features' : 'Next',
+                            style: GoogleFonts.dmSerifDisplay(
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                              color: palette.accentFg,
+                            ),
                           ),
                         ),
                       ),
@@ -262,7 +263,8 @@ class _WelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: palette.bg2,
               borderRadius: BorderRadius.circular(100),
@@ -396,7 +398,7 @@ class _FeatureData {
   });
 }
 
-// ─── FEATURE ICONS ─────────────────────────────────────────────────────────
+// ─── FEATURE ICON ──────────────────────────────────────────────────────────
 
 class _FeatureIcon extends StatelessWidget {
   final String type;
@@ -449,7 +451,6 @@ class _IconPainter extends CustomPainter {
 
     switch (type) {
       case 'ghost':
-        // Abstract ghost — a rounded shape with two dots
         final path = Path();
         path.moveTo(cx - 14, cy + 14);
         path.lineTo(cx - 14, cy - 4);
@@ -466,38 +467,48 @@ class _IconPainter extends CustomPainter {
         break;
 
       case 'chat':
-        // Minimal chat bubble with a question mark feel
         final rRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy - 2), width: 28, height: 22),
+          Rect.fromCenter(
+              center: Offset(cx, cy - 2), width: 28, height: 22),
           const Radius.circular(10),
         );
         canvas.drawRRect(rRect, p);
-        // Tail
         final tail = Path();
         tail.moveTo(cx - 4, cy + 9);
         tail.lineTo(cx - 10, cy + 16);
         tail.lineTo(cx + 2, cy + 9);
         canvas.drawPath(tail, p);
-        // Three dots inside
         canvas.drawCircle(Offset(cx - 7, cy - 2), 2, pf);
         canvas.drawCircle(Offset(cx, cy - 2), 2, pf);
         canvas.drawCircle(Offset(cx + 7, cy - 2), 2, pf);
         break;
 
       case 'fog':
-        // Three horizontal lines fading — fog concept
-        final fogP1 = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 3..strokeCap = StrokeCap.round;
-        final fogP2 = Paint()..color = color.withOpacity(0.55)..style = PaintingStyle.stroke..strokeWidth = 3..strokeCap = StrokeCap.round;
-        final fogP3 = Paint()..color = color.withOpacity(0.25)..style = PaintingStyle.stroke..strokeWidth = 3..strokeCap = StrokeCap.round;
-        canvas.drawLine(Offset(cx - 16, cy - 8), Offset(cx + 16, cy - 8), fogP1);
-        canvas.drawLine(Offset(cx - 12, cy), Offset(cx + 12, cy), fogP2);
-        canvas.drawLine(Offset(cx - 8, cy + 8), Offset(cx + 8, cy + 8), fogP3);
-        // clarity dot
+        final fogP1 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
+        final fogP2 = Paint()
+          ..color = color.withOpacity(0.55)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
+        final fogP3 = Paint()
+          ..color = color.withOpacity(0.25)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 16, cy - 8), Offset(cx + 16, cy - 8), fogP1);
+        canvas.drawLine(
+            Offset(cx - 12, cy), Offset(cx + 12, cy), fogP2);
+        canvas.drawLine(
+            Offset(cx - 8, cy + 8), Offset(cx + 8, cy + 8), fogP3);
         canvas.drawCircle(Offset(cx + 20, cy - 8), 4, pf);
         break;
 
       case 'storm':
-        // Abstract cloud with a downward line cluster
         final cloud = Path();
         cloud.moveTo(cx - 14, cy - 2);
         cloud.quadraticBezierTo(cx - 14, cy - 14, cx - 4, cy - 14);
@@ -507,20 +518,20 @@ class _IconPainter extends CustomPainter {
         cloud.lineTo(cx - 14, cy + 2);
         cloud.close();
         canvas.drawPath(cloud, p);
-        // Rain lines
-        canvas.drawLine(Offset(cx - 8, cy + 6), Offset(cx - 10, cy + 14), p);
-        canvas.drawLine(Offset(cx, cy + 6), Offset(cx - 2, cy + 14), p);
-        canvas.drawLine(Offset(cx + 8, cy + 6), Offset(cx + 6, cy + 14), p);
+        canvas.drawLine(
+            Offset(cx - 8, cy + 6), Offset(cx - 10, cy + 14), p);
+        canvas.drawLine(
+            Offset(cx, cy + 6), Offset(cx - 2, cy + 14), p);
+        canvas.drawLine(
+            Offset(cx + 8, cy + 6), Offset(cx + 6, cy + 14), p);
         break;
 
       case 'rewind':
-        // Two curved arrows going back — rewind symbol but minimal
         final arc1 = Path();
         arc1.moveTo(cx + 10, cy - 12);
         arc1.quadraticBezierTo(cx - 16, cy - 12, cx - 16, cy + 2);
         arc1.quadraticBezierTo(cx - 16, cy + 14, cx + 4, cy + 14);
         canvas.drawPath(arc1, p);
-        // Arrow head
         final ah = Path();
         ah.moveTo(cx + 10, cy - 18);
         ah.lineTo(cx + 10, cy - 6);
@@ -530,33 +541,36 @@ class _IconPainter extends CustomPainter {
         break;
 
       case 'balance':
-        // A scale — two sides balancing, one higher than the other
         canvas.drawLine(Offset(cx, cy - 16), Offset(cx, cy + 16), p);
-        canvas.drawLine(Offset(cx - 14, cy - 2), Offset(cx + 14, cy - 2), p);
-        // Left side — slightly low
-        canvas.drawLine(Offset(cx - 14, cy - 2), Offset(cx - 14, cy + 8), p);
+        canvas.drawLine(
+            Offset(cx - 14, cy - 2), Offset(cx + 14, cy - 2), p);
+        canvas.drawLine(
+            Offset(cx - 14, cy - 2), Offset(cx - 14, cy + 8), p);
         final leftPlate = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx - 14, cy + 11), width: 16, height: 5),
+          Rect.fromCenter(
+              center: Offset(cx - 14, cy + 11), width: 16, height: 5),
           const Radius.circular(2),
         );
         canvas.drawRRect(leftPlate, pf);
-        // Right side — slightly high
-        canvas.drawLine(Offset(cx + 14, cy - 2), Offset(cx + 14, cy - 10), p);
+        canvas.drawLine(
+            Offset(cx + 14, cy - 2), Offset(cx + 14, cy - 10), p);
         final rightPlate = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx + 14, cy - 13), width: 16, height: 5),
+          Rect.fromCenter(
+              center: Offset(cx + 14, cy - 13), width: 16, height: 5),
           const Radius.circular(2),
         );
         canvas.drawRRect(rightPlate, pf);
         break;
 
       case 'firstaid':
-        // A plus / cross — first aid but clean and geometric
         final vRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 8, height: 28),
+          Rect.fromCenter(
+              center: Offset(cx, cy), width: 8, height: 28),
           const Radius.circular(4),
         );
         final hRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 28, height: 8),
+          Rect.fromCenter(
+              center: Offset(cx, cy), width: 28, height: 8),
           const Radius.circular(4),
         );
         canvas.drawRRect(vRect, pf);
@@ -564,7 +578,6 @@ class _IconPainter extends CustomPainter {
         break;
 
       case 'memory':
-        // An open book / journal — two pages
         canvas.drawLine(Offset(cx, cy - 14), Offset(cx, cy + 14), p);
         final leftPage = RRect.fromRectAndRadius(
           Rect.fromLTRB(cx - 18, cy - 14, cx, cy + 14),
@@ -576,41 +589,55 @@ class _IconPainter extends CustomPainter {
           const Radius.circular(3),
         );
         canvas.drawRRect(rightPage, p);
-        // Lines on pages
-        canvas.drawLine(Offset(cx - 14, cy - 6), Offset(cx - 4, cy - 6), p..strokeWidth = 1.5);
-        canvas.drawLine(Offset(cx - 14, cy), Offset(cx - 4, cy), p);
-        canvas.drawLine(Offset(cx - 14, cy + 6), Offset(cx - 4, cy + 6), p);
-        canvas.drawLine(Offset(cx + 4, cy - 6), Offset(cx + 14, cy - 6), p);
-        canvas.drawLine(Offset(cx + 4, cy), Offset(cx + 14, cy), p);
-        p.strokeWidth = 2.5;
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 14, cy - 6), Offset(cx - 4, cy - 6), lp2);
+        canvas.drawLine(Offset(cx - 14, cy), Offset(cx - 4, cy), lp2);
+        canvas.drawLine(
+            Offset(cx - 14, cy + 6), Offset(cx - 4, cy + 6), lp2);
+        canvas.drawLine(
+            Offset(cx + 4, cy - 6), Offset(cx + 14, cy - 6), lp2);
+        canvas.drawLine(Offset(cx + 4, cy), Offset(cx + 14, cy), lp2);
         break;
 
       case 'spendlist':
-        // A checklist — three rows with check marks
         final listRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(cx, cy), width: 30, height: 32),
+          Rect.fromCenter(
+              center: Offset(cx, cy), width: 30, height: 32),
           const Radius.circular(6),
         );
         canvas.drawRRect(listRect, p);
-        // Row 1 — checked
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
         final check1 = Path();
         check1.moveTo(cx - 10, cy - 8);
         check1.lineTo(cx - 7, cy - 5);
         check1.lineTo(cx - 2, cy - 11);
-        canvas.drawPath(check1, p..strokeWidth = 2);
-        canvas.drawLine(Offset(cx, cy - 8), Offset(cx + 10, cy - 8), p..strokeWidth = 1.5);
-        // Row 2 — checked
+        canvas.drawPath(check1, lp2);
+        canvas.drawLine(
+            Offset(cx, cy - 8), Offset(cx + 10, cy - 8), lp2);
         final check2 = Path();
         check2.moveTo(cx - 10, cy);
         check2.lineTo(cx - 7, cy + 3);
         check2.lineTo(cx - 2, cy - 3);
-        canvas.drawPath(check2, p..strokeWidth = 2);
-        canvas.drawLine(Offset(cx, cy), Offset(cx + 10, cy), p..strokeWidth = 1.5);
-        // Row 3 — unchecked circle
-        canvas.drawCircle(Offset(cx - 8, cy + 8), 3, p..strokeWidth = 1.5..style = PaintingStyle.stroke);
-        canvas.drawLine(Offset(cx, cy + 8), Offset(cx + 10, cy + 8), p);
-        p.strokeWidth = 2.5;
-        p.style = PaintingStyle.stroke;
+        canvas.drawPath(check2, lp2);
+        canvas.drawLine(Offset(cx, cy), Offset(cx + 10, cy), lp2);
+        canvas.drawCircle(
+            Offset(cx - 8, cy + 8),
+            3,
+            Paint()
+              ..color = color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5);
+        canvas.drawLine(
+            Offset(cx, cy + 8), Offset(cx + 10, cy + 8), lp2);
         break;
     }
   }
@@ -711,45 +738,62 @@ class _GetStartedPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              decoration: BoxDecoration(
-                color: palette.accent,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Text(
-                  'Create your account',
-                  style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 18,
-                    fontStyle: FontStyle.italic,
-                    color: palette.accentFg,
+          Material(
+            color: palette.accent,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AuthScreen(isSignUp: true),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Center(
+                  child: Text(
+                    'Create your account',
+                    style: GoogleFonts.dmSerifDisplay(
+                      fontSize: 18,
+                      fontStyle: FontStyle.italic,
+                      color: palette.accentFg,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
           const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              decoration: BoxDecoration(
-                color: palette.bg2,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: palette.border),
-              ),
-              child: Center(
-                child: Text(
-                  'I already have an account',
-                  style: GoogleFonts.syne(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: palette.ink,
+          Material(
+            color: palette.bg2,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AuthScreen(isSignUp: false),
+                  ),
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Center(
+                  child: Text(
+                    'I already have an account',
+                    style: GoogleFonts.syne(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: palette.ink,
+                    ),
                   ),
                 ),
               ),
