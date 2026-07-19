@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'theme/app_theme.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 
 void main() {
   runApp(const LedgrrApp());
@@ -15,7 +16,7 @@ class LedgrrApp extends StatelessWidget {
       title: 'LEDGRR',
       debugShowCheckedModeBanner: false,
       theme: LedgrrTheme.build(LedgrrColors.mint),
-      home: const SplashScreen(),
+      home: const OnboardingScreen(),
     );
   }
 }
