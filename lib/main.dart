@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const LedgrrApp());
@@ -13,151 +14,7 @@ class LedgrrApp extends StatelessWidget {
     return MaterialApp(
       title: 'LEDGRR',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1A8C7A),
-          brightness: Brightness.light,
-        ).copyWith(
-          surface: const Color(0xFFEAF5F3),
-          primary: const Color(0xFF1A8C7A),
-          onPrimary: Colors.white,
-          secondary: const Color(0xFFD2EDE9),
-          onSecondary: const Color(0xFF071C18),
-          tertiary: const Color(0xFFA8D8D2),
-        ),
-        scaffoldBackgroundColor: const Color(0xFFEAF5F3),
-        textTheme: TextTheme(
-          displayLarge: GoogleFonts.dmSerifDisplay(
-            fontSize: 48,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFF071C18),
-          ),
-          displayMedium: GoogleFonts.dmSerifDisplay(
-            fontSize: 32,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFF071C18),
-          ),
-          displaySmall: GoogleFonts.dmSerifDisplay(
-            fontSize: 24,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFF071C18),
-          ),
-          headlineLarge: GoogleFonts.syne(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF071C18),
-          ),
-          headlineMedium: GoogleFonts.syne(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF071C18),
-          ),
-          titleLarge: GoogleFonts.syne(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF071C18),
-          ),
-          titleMedium: GoogleFonts.syne(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF071C18),
-          ),
-          bodyLarge: GoogleFonts.syne(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF071C18),
-          ),
-          bodyMedium: GoogleFonts.syne(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF3A6860),
-          ),
-          bodySmall: GoogleFonts.syne(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF3A6860),
-          ),
-          labelLarge: GoogleFonts.syne(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF071C18),
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF3ECFB8),
-          brightness: Brightness.dark,
-        ).copyWith(
-          surface: const Color(0xFF071C18),
-          primary: const Color(0xFF3ECFB8),
-          onPrimary: const Color(0xFF071C18),
-          secondary: const Color(0xFF0E2E28),
-          onSecondary: const Color(0xFFE8FAF8),
-          tertiary: const Color(0xFF1A4840),
-        ),
-        scaffoldBackgroundColor: const Color(0xFF071C18),
-        textTheme: TextTheme(
-          displayLarge: GoogleFonts.dmSerifDisplay(
-            fontSize: 48,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFFE8FAF8),
-          ),
-          displayMedium: GoogleFonts.dmSerifDisplay(
-            fontSize: 32,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFFE8FAF8),
-          ),
-          displaySmall: GoogleFonts.dmSerifDisplay(
-            fontSize: 24,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFFE8FAF8),
-          ),
-          headlineLarge: GoogleFonts.syne(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFE8FAF8),
-          ),
-          headlineMedium: GoogleFonts.syne(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFE8FAF8),
-          ),
-          titleLarge: GoogleFonts.syne(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFE8FAF8),
-          ),
-          titleMedium: GoogleFonts.syne(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFFE8FAF8),
-          ),
-          bodyLarge: GoogleFonts.syne(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFFE8FAF8),
-          ),
-          bodyMedium: GoogleFonts.syne(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF70B8AE),
-          ),
-          bodySmall: GoogleFonts.syne(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF70B8AE),
-          ),
-          labelLarge: GoogleFonts.syne(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFFE8FAF8),
-          ),
-        ),
-      ),
-      themeMode: ThemeMode.light,
+      theme: LedgrrTheme.build(LedgrrColors.mint),
       home: const SplashScreen(),
     );
   }
@@ -206,8 +63,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final palette = LedgrrColors.mint;
     return Scaffold(
-      backgroundColor: const Color(0xFF071C18),
+      backgroundColor: palette.bg,
       body: Center(
         child: AnimatedBuilder(
           animation: _controller,
@@ -219,82 +77,76 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // RR Logo Mark
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 88,
+                      height: 88,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0E2E28),
-                        borderRadius: BorderRadius.circular(20),
+                        color: palette.bg2,
+                        borderRadius: BorderRadius.circular(22),
                         border: Border.all(
-                          color: const Color(0xFF1A4840),
+                          color: palette.border,
                           width: 1.5,
                         ),
                       ),
                       child: CustomPaint(
                         painter: RRLogoPainter(
-                          leftColor: const Color(0xFFD2EDE9),
-                          rightColor: const Color(0xFF3ECFB8),
+                          leftColor: palette.inkMuted,
+                          rightColor: palette.accent,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    // LEDGRR wordmark
+                    const SizedBox(height: 28),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
                             text: 'LEDG',
                             style: GoogleFonts.syne(
-                              fontSize: 42,
+                              fontSize: 44,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFFE8FAF8),
-                              letterSpacing: -1.5,
+                              color: palette.ink,
+                              letterSpacing: -2,
                             ),
                           ),
                           TextSpan(
                             text: 'RR',
                             style: GoogleFonts.syne(
-                              fontSize: 42,
+                              fontSize: 44,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF3ECFB8),
-                              letterSpacing: -1.5,
+                              color: palette.accent,
+                              letterSpacing: -2,
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Tagline
                     Text(
                       'Old word. New brain.',
                       style: GoogleFonts.dmSerifDisplay(
-                        fontSize: 16,
+                        fontSize: 17,
                         fontStyle: FontStyle.italic,
-                        color: const Color(0xFF70B8AE),
+                        color: palette.inkMuted,
                       ),
                     ),
-                    const SizedBox(height: 60),
-                    // Enter button
+                    const SizedBox(height: 64),
                     GestureDetector(
-                      onTap: () {
-                        // Navigate to home — next step
-                      },
+                      onTap: () {},
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 40,
-                          vertical: 14,
+                          horizontal: 44,
+                          vertical: 16,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A8C7A),
+                          color: palette.accent,
                           borderRadius: BorderRadius.circular(100),
                         ),
                         child: Text(
                           'Enter LEDGRR',
                           style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 16,
+                            fontSize: 17,
                             fontStyle: FontStyle.italic,
-                            color: Colors.white,
+                            color: palette.accentFg,
                           ),
                         ),
                       ),
@@ -321,21 +173,20 @@ class RRLogoPainter extends CustomPainter {
     final leftPaint = Paint()
       ..color = leftColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
+      ..strokeWidth = 3.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final rightPaint = Paint()
       ..color = rightColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
+      ..strokeWidth = 3.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final double cx = size.width / 2;
     final double cy = size.height / 2;
 
-    // Left R
     final leftPath = Path();
     leftPath.moveTo(cx - 22, cy + 22);
     leftPath.lineTo(cx - 22, cy - 10);
@@ -345,7 +196,6 @@ class RRLogoPainter extends CustomPainter {
     leftPath.lineTo(cx - 4, cy + 22);
     canvas.drawPath(leftPath, leftPaint);
 
-    // Right R (mirrored)
     final rightPath = Path();
     rightPath.moveTo(cx + 22, cy + 22);
     rightPath.lineTo(cx + 22, cy - 10);
