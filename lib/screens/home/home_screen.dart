@@ -13,6 +13,7 @@ import '../statistics/statistics_screen.dart';
 import '../profile/profile_screen.dart';
 import '../ghost/ghost_screen.dart';
 import '../memory/memory_screen.dart';
+import '../learn/learn_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -154,15 +155,19 @@ class _HomeScreenState extends State<HomeScreen>
                                 TextSpan(
                                   text: 'LEDG',
                                   style: GoogleFonts.syne(
-                                    fontSize: 18, fontWeight: FontWeight.w800,
-                                    color: palette.ink, letterSpacing: -0.5,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.ink,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                                 TextSpan(
                                   text: 'RR',
                                   style: GoogleFonts.syne(
-                                    fontSize: 18, fontWeight: FontWeight.w800,
-                                    color: palette.accent, letterSpacing: -0.5,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.accent,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                               ],
@@ -199,7 +204,8 @@ class _HomeScreenState extends State<HomeScreen>
                                     ? _userName[0].toUpperCase()
                                     : 'L',
                                 style: GoogleFonts.syne(
-                                  fontSize: 16, fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
                                   color: palette.accentFg,
                                 ),
                               ),
@@ -220,7 +226,8 @@ class _HomeScreenState extends State<HomeScreen>
                           Text(
                             '$_greeting, $_userName',
                             style: GoogleFonts.syne(
-                              fontSize: 13, fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                               color: palette.inkMuted,
                             ),
                           ),
@@ -228,7 +235,8 @@ class _HomeScreenState extends State<HomeScreen>
                           Text(
                             'Here is your truth for today.',
                             style: GoogleFonts.dmSerifDisplay(
-                              fontSize: 20, fontStyle: FontStyle.italic,
+                              fontSize: 20,
+                              fontStyle: FontStyle.italic,
                               color: palette.ink,
                             ),
                           ),
@@ -265,7 +273,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   child: Text(
                                     _trueBalance >= 0 ? 'Stable' : 'Attention',
                                     style: GoogleFonts.syne(
-                                      fontSize: 11, fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
                                       color: palette.accent,
                                     ),
                                   ),
@@ -283,7 +292,8 @@ class _HomeScreenState extends State<HomeScreen>
                             Text(
                               '"$_dailySentence"',
                               style: GoogleFonts.dmSerifDisplay(
-                                fontSize: 17, fontStyle: FontStyle.italic,
+                                fontSize: 17,
+                                fontStyle: FontStyle.italic,
                                 color: palette.isDark
                                     ? palette.ink
                                     : Colors.white,
@@ -293,15 +303,18 @@ class _HomeScreenState extends State<HomeScreen>
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                _SentenceChip(label: 'Balance',
+                                _SentenceChip(
+                                    label: 'Balance',
                                     value: _formatAmount(_trueBalance),
                                     palette: palette),
                                 const SizedBox(width: 8),
-                                _SentenceChip(label: 'Income',
+                                _SentenceChip(
+                                    label: 'Income',
                                     value: _formatAmount(_monthlyIncome),
                                     palette: palette),
                                 const SizedBox(width: 8),
-                                _SentenceChip(label: 'Spent',
+                                _SentenceChip(
+                                    label: 'Spent',
                                     value: _formatAmount(_monthlyExpense),
                                     palette: palette),
                               ],
@@ -364,9 +377,11 @@ class _HomeScreenState extends State<HomeScreen>
                         borderRadius: BorderRadius.circular(16),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
-                          onTap: () => _showAddTransaction(context, palette),
+                          onTap: () =>
+                              _showAddTransaction(context, palette),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 16),
                             child: Center(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -413,7 +428,8 @@ class _HomeScreenState extends State<HomeScreen>
                                 Container(
                                   width: 40, height: 40,
                                   decoration: BoxDecoration(
-                                    color: palette.accent.withOpacity(0.12),
+                                    color:
+                                        palette.accent.withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: CustomPaint(
@@ -432,7 +448,8 @@ class _HomeScreenState extends State<HomeScreen>
                                               fontSize: 14,
                                               fontWeight: FontWeight.w700,
                                               color: palette.ink)),
-                                      Text('Scan for forgotten subscriptions',
+                                      Text(
+                                          'Scan for forgotten subscriptions',
                                           style: GoogleFonts.syne(
                                               fontSize: 11,
                                               color: palette.inkMuted)),
@@ -473,7 +490,8 @@ class _HomeScreenState extends State<HomeScreen>
                                 Container(
                                   width: 40, height: 40,
                                   decoration: BoxDecoration(
-                                    color: palette.accent.withOpacity(0.12),
+                                    color:
+                                        palette.accent.withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Icon(Icons.auto_stories_rounded,
@@ -508,6 +526,66 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Learn Finance button
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      child: Material(
+                        color: palette.bg2,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const LearnScreen()),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: palette.border),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40, height: 40,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        palette.accent.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(Icons.school_rounded,
+                                      color: palette.accent, size: 20),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Learn Finance',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: palette.ink)),
+                                      Text(
+                                          '21 lessons. Plain English. Built for students.',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 11,
+                                              color: palette.inkMuted)),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward_ios_rounded,
+                                    size: 14, color: palette.inkMuted),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Recent transactions header
                   SliverToBoxAdapter(
                     child: Padding(
@@ -516,7 +594,8 @@ class _HomeScreenState extends State<HomeScreen>
                         children: [
                           Text('Recent transactions',
                               style: GoogleFonts.syne(
-                                  fontSize: 14, fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                   color: palette.ink)),
                           const Spacer(),
                           GestureDetector(
@@ -524,7 +603,8 @@ class _HomeScreenState extends State<HomeScreen>
                                 setState(() => _currentNavIndex = 3),
                             child: Text('See all',
                                 style: GoogleFonts.syne(
-                                    fontSize: 12, fontWeight: FontWeight.w500,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
                                     color: palette.accent)),
                           ),
                         ],
@@ -553,14 +633,15 @@ class _HomeScreenState extends State<HomeScreen>
                           snapshot.data!.docs.isEmpty) {
                         return SliverToBoxAdapter(
                           child: Padding(
-                            padding:
-                                const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                            padding: const EdgeInsets.fromLTRB(
+                                24, 20, 24, 0),
                             child: Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
                                 color: palette.card,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: palette.border),
+                                border:
+                                    Border.all(color: palette.border),
                               ),
                               child: Column(
                                 children: [
@@ -607,9 +688,10 @@ class _HomeScreenState extends State<HomeScreen>
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: palette.card,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border:
-                                      Border.all(color: palette.border),
+                                  borderRadius:
+                                      BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: palette.border),
                                 ),
                                 child: Row(
                                   children: [
@@ -677,7 +759,8 @@ class _HomeScreenState extends State<HomeScreen>
                     },
                   ),
 
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                  const SliverToBoxAdapter(
+                      child: SizedBox(height: 100)),
                 ],
               ),
             ),
@@ -771,10 +854,12 @@ class _AddTransactionSheet extends StatefulWidget {
   final LedgrrPalette palette;
   final VoidCallback onAdded;
 
-  const _AddTransactionSheet({required this.palette, required this.onAdded});
+  const _AddTransactionSheet(
+      {required this.palette, required this.onAdded});
 
   @override
-  State<_AddTransactionSheet> createState() => _AddTransactionSheetState();
+  State<_AddTransactionSheet> createState() =>
+      _AddTransactionSheetState();
 }
 
 class _AddTransactionSheetState extends State<_AddTransactionSheet> {
@@ -867,8 +952,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
         borderRadius:
             const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.fromLTRB(
-          24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+      padding: EdgeInsets.fromLTRB(24, 20, 24,
+          MediaQuery.of(context).viewInsets.bottom + 24),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -886,8 +971,10 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
             const SizedBox(height: 20),
             Text('Add transaction',
                 style: GoogleFonts.syne(
-                    fontSize: 20, fontWeight: FontWeight.w800,
-                    color: palette.ink, letterSpacing: -0.5)),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: palette.ink,
+                    letterSpacing: -0.5)),
             const SizedBox(height: 20),
             Container(
               decoration: BoxDecoration(
@@ -933,18 +1020,25 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            _sheetField(controller: _titleController,
-                hint: 'What was this for?', label: 'Title',
+            _sheetField(
+                controller: _titleController,
+                hint: 'What was this for?',
+                label: 'Title',
                 palette: palette),
             const SizedBox(height: 12),
-            _sheetField(controller: _amountController,
-                hint: '0.00', label: 'Amount (₹)', palette: palette,
+            _sheetField(
+                controller: _amountController,
+                hint: '0.00',
+                label: 'Amount (₹)',
+                palette: palette,
                 keyboardType: TextInputType.number),
             const SizedBox(height: 12),
             Text('Category',
                 style: GoogleFonts.syne(
-                    fontSize: 12, fontWeight: FontWeight.w600,
-                    color: palette.inkMuted, letterSpacing: 0.05)),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: palette.inkMuted,
+                    letterSpacing: 0.05)),
             const SizedBox(height: 8),
             SizedBox(
               height: 38,
@@ -1020,8 +1114,10 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            _sheetField(controller: _noteController,
-                hint: 'Add a note (optional)', label: 'Note',
+            _sheetField(
+                controller: _noteController,
+                hint: 'Add a note (optional)',
+                label: 'Note',
                 palette: palette),
             const SizedBox(height: 24),
             Material(
@@ -1067,8 +1163,10 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
       children: [
         Text(label,
             style: GoogleFonts.syne(
-                fontSize: 12, fontWeight: FontWeight.w600,
-                color: palette.inkMuted, letterSpacing: 0.05)),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: palette.inkMuted,
+                letterSpacing: 0.05)),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
@@ -1079,7 +1177,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
+            style:
+                GoogleFonts.syne(fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.syne(
@@ -1112,7 +1211,8 @@ class _SentenceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: palette.isDark
               ? palette.border.withOpacity(0.3)
@@ -1131,7 +1231,8 @@ class _SentenceChip extends StatelessWidget {
             const SizedBox(height: 2),
             Text(value,
                 style: GoogleFonts.syne(
-                    fontSize: 13, fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                     color: palette.accent)),
           ],
         ),
@@ -1185,7 +1286,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(value,
               style: GoogleFonts.syne(
-                  fontSize: 15, fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                   color: isPositive
                       ? palette.ink
                       : const Color(0xFFB5446E),
@@ -1193,7 +1295,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(label,
               style: GoogleFonts.syne(
-                  fontSize: 10, fontWeight: FontWeight.w600,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                   color: palette.ink)),
           Text(sublabel,
               style: GoogleFonts.syne(
@@ -1240,7 +1343,8 @@ class _NavItem extends StatelessWidget {
             ),
             child: Icon(icon,
                 size: 22,
-                color: isActive ? palette.accent : palette.inkMuted),
+                color:
+                    isActive ? palette.accent : palette.inkMuted),
           ),
           Text(label,
               style: GoogleFonts.syne(
@@ -1248,7 +1352,9 @@ class _NavItem extends StatelessWidget {
                   fontWeight: isActive
                       ? FontWeight.w600
                       : FontWeight.w400,
-                  color: isActive ? palette.accent : palette.inkMuted)),
+                  color: isActive
+                      ? palette.accent
+                      : palette.inkMuted)),
         ],
       ),
     );
@@ -1281,25 +1387,28 @@ class _IconPainter extends CustomPainter {
 
     switch (type) {
       case 'balance':
-        canvas.drawLine(Offset(cx, cy - 11), Offset(cx, cy + 11), p);
         canvas.drawLine(
-            Offset(cx - 10, cy - 1), Offset(cx + 10, cy - 1), p);
-        canvas.drawLine(
-            Offset(cx - 10, cy - 1), Offset(cx - 10, cy + 5), p);
+            Offset(cx, cy - 11), Offset(cx, cy + 11), p);
+        canvas.drawLine(Offset(cx - 10, cy - 1),
+            Offset(cx + 10, cy - 1), p);
+        canvas.drawLine(Offset(cx - 10, cy - 1),
+            Offset(cx - 10, cy + 5), p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
                     center: Offset(cx - 10, cy + 8),
-                    width: 11, height: 4),
+                    width: 11,
+                    height: 4),
                 const Radius.circular(1.5)),
             pf);
-        canvas.drawLine(
-            Offset(cx + 10, cy - 1), Offset(cx + 10, cy - 7), p);
+        canvas.drawLine(Offset(cx + 10, cy - 1),
+            Offset(cx + 10, cy - 7), p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
                     center: Offset(cx + 10, cy - 10),
-                    width: 11, height: 4),
+                    width: 11,
+                    height: 4),
                 const Radius.circular(1.5)),
             pf);
         break;
@@ -1322,14 +1431,14 @@ class _IconPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2
           ..strokeCap = StrokeCap.round;
-        canvas.drawLine(
-            Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
+        canvas.drawLine(Offset(cx - 10, cy - 4),
+            Offset(cx - 3, cy - 4), lp2);
         canvas.drawLine(
             Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
-        canvas.drawLine(
-            Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
-        canvas.drawLine(
-            Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
+        canvas.drawLine(Offset(cx - 10, cy + 4),
+            Offset(cx - 3, cy + 4), lp2);
+        canvas.drawLine(Offset(cx + 3, cy - 4),
+            Offset(cx + 10, cy - 4), lp2);
         canvas.drawLine(
             Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
         break;
@@ -1338,7 +1447,9 @@ class _IconPainter extends CustomPainter {
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
-                    center: Offset(cx, cy), width: 22, height: 24),
+                    center: Offset(cx, cy),
+                    width: 22,
+                    height: 24),
                 const Radius.circular(4)),
             p);
         final lp2 = Paint()
@@ -1351,23 +1462,24 @@ class _IconPainter extends CustomPainter {
         c1.lineTo(cx - 5, cy - 3);
         c1.lineTo(cx - 1, cy - 8);
         canvas.drawPath(c1, lp2);
-        canvas.drawLine(
-            Offset(cx + 1, cy - 5), Offset(cx + 7, cy - 5), lp2);
+        canvas.drawLine(Offset(cx + 1, cy - 5),
+            Offset(cx + 7, cy - 5), lp2);
         final c2 = Path();
         c2.moveTo(cx - 7, cy + 1);
         c2.lineTo(cx - 5, cy + 3);
         c2.lineTo(cx - 1, cy - 2);
         canvas.drawPath(c2, lp2);
-        canvas.drawLine(
-            Offset(cx + 1, cy + 1), Offset(cx + 7, cy + 1), lp2);
+        canvas.drawLine(Offset(cx + 1, cy + 1),
+            Offset(cx + 7, cy + 1), lp2);
         canvas.drawCircle(
-            Offset(cx - 6, cy + 7), 2,
+            Offset(cx - 6, cy + 7),
+            2,
             Paint()
               ..color = color
               ..style = PaintingStyle.stroke
               ..strokeWidth = 1.2);
-        canvas.drawLine(
-            Offset(cx + 1, cy + 7), Offset(cx + 7, cy + 7), lp2);
+        canvas.drawLine(Offset(cx + 1, cy + 7),
+            Offset(cx + 7, cy + 7), lp2);
         break;
     }
   }
