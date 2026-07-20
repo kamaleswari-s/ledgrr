@@ -28,7 +28,6 @@ class _GhostScreenState extends State<GhostScreen> {
 
   Future<void> _scanForGhosts() async {
     setState(() => _isLoading = true);
-
     try {
       final snapshot = await _db
           .collection('users')
@@ -40,23 +39,18 @@ class _GhostScreenState extends State<GhostScreen> {
 
       final docs = snapshot.docs;
       final ghosts = <_GhostItem>[];
-
-      // Group transactions by title similarity
       final Map<String, List<Map<String, dynamic>>> grouped = {};
 
       for (final doc in docs) {
         final data = doc.data();
         final title = (data['title'] as String).toLowerCase().trim();
         final category = data['category'] as String;
-
-        // Look for subscription-like categories
         final isSubscriptionCategory = [
           'subscriptions', 'internet', 'mobile', 'utilities',
-          'electricity', 'water', 'streaming'
+          'electricity', 'water',
         ].contains(category);
 
         String key = title;
-        // Try to find similar existing keys
         bool found = false;
         for (final existingKey in grouped.keys) {
           if (_isSimilar(title, existingKey)) {
@@ -65,29 +59,22 @@ class _GhostScreenState extends State<GhostScreen> {
             break;
           }
         }
-
-        if (!grouped.containsKey(key)) {
-          grouped[key] = [];
-        }
+        if (!found) grouped[key] = [];
         grouped[key]!.add({
-          ...data,
-          'id': doc.id,
-          'isSubscription': isSubscriptionCategory,
+          ...data, 'id': doc.id, 'isSubscription': isSubscriptionCategory,
         });
       }
 
-      // Find ghost patterns
       for (final entry in grouped.entries) {
         final transactions = entry.value;
 
         if (transactions.length >= 2) {
-          // Check if recurring — same title appearing multiple times
           final amounts = transactions
               .map((t) => (t['amount'] as num).toDouble())
               .toList();
           final avgAmount = amounts.reduce((a, b) => a + b) / amounts.length;
-          final isConsistent = amounts
-              .every((a) => (a - avgAmount).abs() < avgAmount * 0.2);
+          final isConsistent =
+              amounts.every((a) => (a - avgAmount).abs() < avgAmount * 0.2);
 
           if (isConsistent) {
             final lastDate =
@@ -96,18 +83,18 @@ class _GhostScreenState extends State<GhostScreen> {
                 DateTime.now().difference(lastDate).inDays;
 
             String ghostType = 'Recurring expense';
-            String reason = 'This charge appears ${transactions.length} times in your history.';
+            String reason =
+                'This charge appears ${transactions.length} times in your history.';
 
             if (transactions.first['isSubscription'] == true) {
               ghostType = 'Subscription detected';
               reason =
                   'Appears to be a recurring subscription. Check if you still use this.';
             }
-
             if (daysSinceLast > 25 && daysSinceLast < 45) {
               ghostType = 'Monthly recurring';
               reason =
-                  'This charge appears monthly. Last charged ${daysSinceLast} days ago.';
+                  'This charge appears monthly. Last charged $daysSinceLast days ago.';
             }
 
             ghosts.add(_GhostItem(
@@ -122,15 +109,14 @@ class _GhostScreenState extends State<GhostScreen> {
           }
         }
 
-        // Single large unknown expense
         if (transactions.length == 1) {
           final data = transactions.first;
           final amount = (data['amount'] as num).toDouble();
           final category = data['category'] as String;
           final date = (data['date'] as Timestamp).toDate();
-          final daysSince = DateTime.now().difference(date).inDays;
 
-          if (category == 'subscriptions' || category == 'internet' ||
+          if (category == 'subscriptions' ||
+              category == 'internet' ||
               category == 'mobile') {
             ghosts.add(_GhostItem(
               title: _capitalize(entry.key),
@@ -139,16 +125,14 @@ class _GhostScreenState extends State<GhostScreen> {
               lastSeen: date,
               ghostType: 'Possible subscription',
               reason:
-                  'Logged under ${_capitalize(category)}. Verify if this is a recurring charge.',
+                  'Logged under ${_capitalize(category)}. Verify if this is recurring.',
               category: category,
             ));
           }
         }
       }
 
-      // Sort by amount descending
       ghosts.sort((a, b) => b.amount.compareTo(a.amount));
-
       final total = ghosts.fold(0.0, (sum, g) => sum + g.amount);
 
       if (mounted) {
@@ -166,7 +150,6 @@ class _GhostScreenState extends State<GhostScreen> {
   bool _isSimilar(String a, String b) {
     if (a == b) return true;
     if (a.contains(b) || b.contains(a)) return true;
-    // Check first 4 chars match
     if (a.length >= 4 && b.length >= 4) {
       return a.substring(0, 4) == b.substring(0, 4);
     }
@@ -201,7 +184,6 @@ class _GhostScreenState extends State<GhostScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
@@ -211,16 +193,12 @@ class _GhostScreenState extends State<GhostScreen> {
                     children: [
                       Text('Ghost Money',
                           style: GoogleFonts.syne(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: palette.ink,
-                              letterSpacing: -0.5)),
+                              fontSize: 22, fontWeight: FontWeight.w800,
+                              color: palette.ink, letterSpacing: -0.5)),
                       Text('Detector',
                           style: GoogleFonts.syne(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: palette.accent,
-                              letterSpacing: -0.5)),
+                              fontSize: 22, fontWeight: FontWeight.w800,
+                              color: palette.accent, letterSpacing: -0.5)),
                     ],
                   ),
                   const Spacer(),
@@ -263,15 +241,13 @@ class _GhostScreenState extends State<GhostScreen> {
               child: Text(
                 'Recurring charges and forgotten subscriptions found in your transactions.',
                 style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
+                    fontSize: 14, fontStyle: FontStyle.italic,
                     color: palette.inkMuted),
               ),
             ),
 
             const SizedBox(height: 16),
 
-            // Total ghost amount banner
             if (!_isLoading && _ghosts.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
@@ -290,23 +266,19 @@ class _GhostScreenState extends State<GhostScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Total ghost money found',
-                              style: GoogleFonts.syne(
-                                  fontSize: 12,
-                                  color: palette.isDark
-                                      ? palette.inkMuted
-                                      : Colors.white60),
-                            ),
+                            Text('Total ghost money found',
+                                style: GoogleFonts.syne(
+                                    fontSize: 12,
+                                    color: palette.isDark
+                                        ? palette.inkMuted
+                                        : Colors.white60)),
                             const SizedBox(height: 4),
-                            Text(
-                              _formatAmount(_totalGhostAmount),
-                              style: GoogleFonts.syne(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  color: palette.accent,
-                                  letterSpacing: -1),
-                            ),
+                            Text(_formatAmount(_totalGhostAmount),
+                                style: GoogleFonts.syne(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.accent,
+                                    letterSpacing: -1)),
                             Text(
                               'across ${_ghosts.length} ${_ghosts.length == 1 ? 'pattern' : 'patterns'}',
                               style: GoogleFonts.syne(
@@ -324,9 +296,8 @@ class _GhostScreenState extends State<GhostScreen> {
                           color: palette.accent.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Center(
-                          child: Text('👻',
-                              style: const TextStyle(fontSize: 24)),
+                        child: CustomPaint(
+                          painter: _GhostIconPainter(color: palette.accent),
                         ),
                       ),
                     ],
@@ -334,7 +305,6 @@ class _GhostScreenState extends State<GhostScreen> {
                 ),
               ),
 
-            // Content
             Expanded(
               child: _isLoading
                   ? Center(
@@ -355,11 +325,13 @@ class _GhostScreenState extends State<GhostScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('👻',
-                                  style: TextStyle(
-                                      fontSize: 48,
-                                      color: palette.inkMuted
-                                          .withOpacity(0.3))),
+                              SizedBox(
+                                width: 56, height: 56,
+                                child: CustomPaint(
+                                  painter: _GhostIconPainter(
+                                      color: palette.inkMuted.withOpacity(0.3)),
+                                ),
+                              ),
                               const SizedBox(height: 16),
                               Text('No ghosts found',
                                   style: GoogleFonts.syne(
@@ -377,8 +349,7 @@ class _GhostScreenState extends State<GhostScreen> {
                           ),
                         )
                       : ListView.builder(
-                          padding:
-                              const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                           itemCount: _ghosts.length,
                           itemBuilder: (context, i) {
                             final ghost = _ghosts[i];
@@ -389,12 +360,10 @@ class _GhostScreenState extends State<GhostScreen> {
                                 decoration: BoxDecoration(
                                   color: palette.card,
                                   borderRadius: BorderRadius.circular(16),
-                                  border:
-                                      Border.all(color: palette.border),
+                                  border: Border.all(color: palette.border),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       children: [
@@ -410,8 +379,7 @@ class _GhostScreenState extends State<GhostScreen> {
                                           child: Text(ghost.ghostType,
                                               style: GoogleFonts.syne(
                                                   fontSize: 10,
-                                                  fontWeight:
-                                                      FontWeight.w600,
+                                                  fontWeight: FontWeight.w600,
                                                   color: palette.accent)),
                                         ),
                                         const Spacer(),
@@ -441,8 +409,7 @@ class _GhostScreenState extends State<GhostScreen> {
                                     Row(
                                       children: [
                                         Icon(Icons.access_time_rounded,
-                                            size: 12,
-                                            color: palette.inkMuted),
+                                            size: 12, color: palette.inkMuted),
                                         const SizedBox(width: 4),
                                         Text(
                                             'Last seen: ${_timeAgo(ghost.lastSeen)}',
@@ -451,11 +418,9 @@ class _GhostScreenState extends State<GhostScreen> {
                                                 color: palette.inkMuted)),
                                         const SizedBox(width: 12),
                                         Icon(Icons.repeat_rounded,
-                                            size: 12,
-                                            color: palette.inkMuted),
+                                            size: 12, color: palette.inkMuted),
                                         const SizedBox(width: 4),
-                                        Text(
-                                            '${ghost.occurrences}x found',
+                                        Text('${ghost.occurrences}x found',
                                             style: GoogleFonts.syne(
                                                 fontSize: 11,
                                                 color: palette.inkMuted)),
@@ -493,4 +458,43 @@ class _GhostItem {
     required this.reason,
     required this.category,
   });
+}
+
+class _GhostIconPainter extends CustomPainter {
+  final Color color;
+  const _GhostIconPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final path = Path();
+    path.moveTo(cx - 14, cy + 14);
+    path.lineTo(cx - 14, cy - 4);
+    path.quadraticBezierTo(cx - 14, cy - 18, cx, cy - 18);
+    path.quadraticBezierTo(cx + 14, cy - 18, cx + 14, cy - 4);
+    path.lineTo(cx + 14, cy + 14);
+    path.lineTo(cx + 7, cy + 8);
+    path.lineTo(cx, cy + 14);
+    path.lineTo(cx - 7, cy + 8);
+    path.close();
+    canvas.drawPath(path, p);
+    canvas.drawCircle(Offset(cx - 5, cy - 4), 2.5, pf);
+    canvas.drawCircle(Offset(cx + 5, cy - 4), 2.5, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
