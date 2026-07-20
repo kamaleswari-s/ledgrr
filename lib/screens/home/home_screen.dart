@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/theme_provider.dart';
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen>
   double _monthlyExpense = 0;
   bool _isLoading = true;
   String _userName = '';
+  List<Map<String, dynamic>> _upcomingEvents = [];
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
     _loadData();
+    _loadUpcomingEvents();
     _controller.forward();
   }
 
@@ -68,6 +71,32 @@ class _HomeScreenState extends State<HomeScreen>
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadUpcomingEvents() async {
+    try {
+      final now = DateTime.now();
+      final in30 = now.add(const Duration(days: 30));
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .collection('events')
+          .where('date',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+          .where('date',
+              isLessThanOrEqualTo: Timestamp.fromDate(in30))
+          .orderBy('date')
+          .get();
+      if (mounted) {
+        setState(() {
+          _upcomingEvents = snapshot.docs
+              .map((d) => {...d.data(), 'id': d.id})
+              .toList();
+        });
+      }
+    } catch (e) {
+      // silently fail
     }
   }
 
@@ -103,8 +132,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   String _formatAmount(double amount) {
-    if (amount >= 100000) return '₹${(amount / 100000).toStringAsFixed(1)}L';
-    if (amount >= 1000) return '₹${(amount / 1000).toStringAsFixed(1)}K';
+    if (amount >= 100000)
+      return '₹${(amount / 100000).toStringAsFixed(1)}L';
+    if (amount >= 1000)
+      return '₹${(amount / 1000).toStringAsFixed(1)}K';
     return '₹${amount.toStringAsFixed(0)}';
   }
 
@@ -132,11 +163,13 @@ class _HomeScreenState extends State<HomeScreen>
                   // Top bar
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
                       child: Row(
                         children: [
                           Container(
-                            width: 34, height: 34,
+                            width: 34,
+                            height: 34,
                             decoration: BoxDecoration(
                               color: palette.ink,
                               borderRadius: BorderRadius.circular(9),
@@ -178,13 +211,17 @@ class _HomeScreenState extends State<HomeScreen>
                             color: palette.bg2,
                             borderRadius: BorderRadius.circular(12),
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius:
+                                  BorderRadius.circular(12),
                               onTap: _signOut,
                               child: Container(
-                                width: 40, height: 40,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: palette.border),
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: palette.border),
                                 ),
                                 child: Icon(Icons.logout_rounded,
                                     color: palette.ink, size: 18),
@@ -193,7 +230,8 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           const SizedBox(width: 10),
                           Container(
-                            width: 40, height: 40,
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
                               color: palette.accent,
                               borderRadius: BorderRadius.circular(12),
@@ -219,7 +257,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Greeting
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 24, 24, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -248,10 +287,13 @@ class _HomeScreenState extends State<HomeScreen>
                   // Daily sentence card
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 16, 24, 0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: palette.isDark ? palette.bg2 : palette.ink,
+                          color: palette.isDark
+                              ? palette.bg2
+                              : palette.ink,
                           borderRadius: BorderRadius.circular(20),
                           border: palette.isDark
                               ? Border.all(color: palette.border)
@@ -264,14 +306,20 @@ class _HomeScreenState extends State<HomeScreen>
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
+                                  padding:
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: palette.accent.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(100),
+                                    color: palette.accent
+                                        .withOpacity(0.2),
+                                    borderRadius:
+                                        BorderRadius.circular(100),
                                   ),
                                   child: Text(
-                                    _trueBalance >= 0 ? 'Stable' : 'Attention',
+                                    _trueBalance >= 0
+                                        ? 'Stable'
+                                        : 'Attention',
                                     style: GoogleFonts.syne(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -305,17 +353,20 @@ class _HomeScreenState extends State<HomeScreen>
                               children: [
                                 _SentenceChip(
                                     label: 'Balance',
-                                    value: _formatAmount(_trueBalance),
+                                    value:
+                                        _formatAmount(_trueBalance),
                                     palette: palette),
                                 const SizedBox(width: 8),
                                 _SentenceChip(
                                     label: 'Income',
-                                    value: _formatAmount(_monthlyIncome),
+                                    value: _formatAmount(
+                                        _monthlyIncome),
                                     palette: palette),
                                 const SizedBox(width: 8),
                                 _SentenceChip(
                                     label: 'Spent',
-                                    value: _formatAmount(_monthlyExpense),
+                                    value: _formatAmount(
+                                        _monthlyExpense),
                                     palette: palette),
                               ],
                             ),
@@ -325,10 +376,109 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Upcoming event nudge
+                  if (_upcomingEvents.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                        child: GestureDetector(
+                          onTap: () =>
+                              setState(() => _currentNavIndex = 1),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color:
+                                  palette.accent.withOpacity(0.1),
+                              borderRadius:
+                                  BorderRadius.circular(16),
+                              border: Border.all(
+                                  color: palette.accent
+                                      .withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                    Icons.calendar_month_rounded,
+                                    color: palette.accent,
+                                    size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        () {
+                                          final e =
+                                              _upcomingEvents.first;
+                                          final date =
+                                              (e['date'] as Timestamp)
+                                                  .toDate();
+                                          final days = date
+                                              .difference(
+                                                  DateTime.now())
+                                              .inDays;
+                                          final name = e['name'] ??
+                                              'Upcoming event';
+                                          if (days == 0)
+                                            return '$name is today.';
+                                          if (days == 1)
+                                            return '$name is tomorrow.';
+                                          return '$name is in $days days.';
+                                        }(),
+                                        style: GoogleFonts.syne(
+                                            fontSize: 13,
+                                            fontWeight:
+                                                FontWeight.w700,
+                                            color: palette.ink),
+                                      ),
+                                      () {
+                                        final e =
+                                            _upcomingEvents.first;
+                                        final budget =
+                                            (e['budget'] as num?)
+                                                    ?.toDouble() ??
+                                                0;
+                                        final saved =
+                                            (e['savedAmount'] as num?)
+                                                    ?.toDouble() ??
+                                                0;
+                                        if (budget > 0) {
+                                          return Text(
+                                            'Saved ₹${saved.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} goal.',
+                                            style: GoogleFonts.syne(
+                                                fontSize: 11,
+                                                color:
+                                                    palette.inkMuted),
+                                          );
+                                        }
+                                        return Text(
+                                            'Tap to view in Calendar.',
+                                            style: GoogleFonts.syne(
+                                                fontSize: 11,
+                                                color:
+                                                    palette.inkMuted));
+                                      }(),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 12,
+                                    color: palette.accent),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Stat cards
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 12, 24, 0),
                       child: Row(
                         children: [
                           Expanded(
@@ -371,7 +521,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Add Transaction button
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
                       child: Material(
                         color: palette.accent,
                         borderRadius: BorderRadius.circular(16),
@@ -380,17 +531,19 @@ class _HomeScreenState extends State<HomeScreen>
                           onTap: () =>
                               _showAddTransaction(context, palette),
                           child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16),
                             child: Center(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.add_rounded,
-                                      color: palette.accentFg, size: 20),
+                                      color: palette.accentFg,
+                                      size: 20),
                                   const SizedBox(width: 8),
                                   Text('Add Transaction',
-                                      style: GoogleFonts.dmSerifDisplay(
+                                      style:
+                                          GoogleFonts.dmSerifDisplay(
                                         fontSize: 16,
                                         fontStyle: FontStyle.italic,
                                         color: palette.accentFg,
@@ -407,7 +560,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Ghost Money button
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
                       child: Material(
                         color: palette.bg2,
                         borderRadius: BorderRadius.circular(16),
@@ -415,22 +569,27 @@ class _HomeScreenState extends State<HomeScreen>
                           borderRadius: BorderRadius.circular(16),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (_) => const GhostScreen()),
+                                builder: (_) =>
+                                    const GhostScreen()),
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: palette.border),
+                              borderRadius:
+                                  BorderRadius.circular(16),
+                              border:
+                                  Border.all(color: palette.border),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40, height: 40,
+                                  width: 40,
+                                  height: 40,
                                   decoration: BoxDecoration(
-                                    color:
-                                        palette.accent.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: palette.accent
+                                        .withOpacity(0.12),
+                                    borderRadius:
+                                        BorderRadius.circular(10),
                                   ),
                                   child: CustomPaint(
                                     painter: _GhostHomePainter(
@@ -446,18 +605,22 @@ class _HomeScreenState extends State<HomeScreen>
                                       Text('Ghost Money Detector',
                                           style: GoogleFonts.syne(
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight:
+                                                  FontWeight.w700,
                                               color: palette.ink)),
                                       Text(
                                           'Scan for forgotten subscriptions',
                                           style: GoogleFonts.syne(
                                               fontSize: 11,
-                                              color: palette.inkMuted)),
+                                              color:
+                                                  palette.inkMuted)),
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded,
-                                    size: 14, color: palette.inkMuted),
+                                Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14,
+                                    color: palette.inkMuted),
                               ],
                             ),
                           ),
@@ -469,7 +632,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Money Memory button
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
                       child: Material(
                         color: palette.bg2,
                         borderRadius: BorderRadius.circular(16),
@@ -477,25 +641,32 @@ class _HomeScreenState extends State<HomeScreen>
                           borderRadius: BorderRadius.circular(16),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (_) => const MemoryScreen()),
+                                builder: (_) =>
+                                    const MemoryScreen()),
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: palette.border),
+                              borderRadius:
+                                  BorderRadius.circular(16),
+                              border:
+                                  Border.all(color: palette.border),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40, height: 40,
+                                  width: 40,
+                                  height: 40,
                                   decoration: BoxDecoration(
-                                    color:
-                                        palette.accent.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: palette.accent
+                                        .withOpacity(0.12),
+                                    borderRadius:
+                                        BorderRadius.circular(10),
                                   ),
-                                  child: Icon(Icons.auto_stories_rounded,
-                                      color: palette.accent, size: 20),
+                                  child: Icon(
+                                      Icons.auto_stories_rounded,
+                                      color: palette.accent,
+                                      size: 20),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
@@ -506,18 +677,22 @@ class _HomeScreenState extends State<HomeScreen>
                                       Text('Money Memory',
                                           style: GoogleFonts.syne(
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight:
+                                                  FontWeight.w700,
                                               color: palette.ink)),
                                       Text(
                                           'Your auto-written financial journal',
                                           style: GoogleFonts.syne(
                                               fontSize: 11,
-                                              color: palette.inkMuted)),
+                                              color:
+                                                  palette.inkMuted)),
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded,
-                                    size: 14, color: palette.inkMuted),
+                                Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14,
+                                    color: palette.inkMuted),
                               ],
                             ),
                           ),
@@ -529,7 +704,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Learn Finance button
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
                       child: Material(
                         color: palette.bg2,
                         borderRadius: BorderRadius.circular(16),
@@ -537,25 +713,31 @@ class _HomeScreenState extends State<HomeScreen>
                           borderRadius: BorderRadius.circular(16),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(
-                                builder: (_) => const LearnScreen()),
+                                builder: (_) =>
+                                    const LearnScreen()),
                           ),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: palette.border),
+                              borderRadius:
+                                  BorderRadius.circular(16),
+                              border:
+                                  Border.all(color: palette.border),
                             ),
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40, height: 40,
+                                  width: 40,
+                                  height: 40,
                                   decoration: BoxDecoration(
-                                    color:
-                                        palette.accent.withOpacity(0.12),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: palette.accent
+                                        .withOpacity(0.12),
+                                    borderRadius:
+                                        BorderRadius.circular(10),
                                   ),
                                   child: Icon(Icons.school_rounded,
-                                      color: palette.accent, size: 20),
+                                      color: palette.accent,
+                                      size: 20),
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
@@ -566,18 +748,22 @@ class _HomeScreenState extends State<HomeScreen>
                                       Text('Learn Finance',
                                           style: GoogleFonts.syne(
                                               fontSize: 14,
-                                              fontWeight: FontWeight.w700,
+                                              fontWeight:
+                                                  FontWeight.w700,
                                               color: palette.ink)),
                                       Text(
                                           '21 lessons. Plain English. Built for students.',
                                           style: GoogleFonts.syne(
                                               fontSize: 11,
-                                              color: palette.inkMuted)),
+                                              color:
+                                                  palette.inkMuted)),
                                     ],
                                   ),
                                 ),
-                                Icon(Icons.arrow_forward_ios_rounded,
-                                    size: 14, color: palette.inkMuted),
+                                Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 14,
+                                    color: palette.inkMuted),
                               ],
                             ),
                           ),
@@ -589,7 +775,8 @@ class _HomeScreenState extends State<HomeScreen>
                   // Recent transactions header
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 28, 24, 0),
                       child: Row(
                         children: [
                           Text('Recent transactions',
@@ -599,8 +786,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: palette.ink)),
                           const Spacer(),
                           GestureDetector(
-                            onTap: () =>
-                                setState(() => _currentNavIndex = 3),
+                            onTap: () => setState(
+                                () => _currentNavIndex = 3),
                             child: Text('See all',
                                 style: GoogleFonts.syne(
                                     fontSize: 12,
@@ -614,7 +801,8 @@ class _HomeScreenState extends State<HomeScreen>
 
                   // Transactions
                   StreamBuilder(
-                    stream: _transactionService.getTransactionsStream(),
+                    stream:
+                        _transactionService.getTransactionsStream(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState ==
                           ConnectionState.waiting) {
@@ -623,7 +811,8 @@ class _HomeScreenState extends State<HomeScreen>
                             padding: const EdgeInsets.all(40),
                             child: Center(
                               child: CircularProgressIndicator(
-                                  color: palette.accent, strokeWidth: 2),
+                                  color: palette.accent,
+                                  strokeWidth: 2),
                             ),
                           ),
                         );
@@ -639,27 +828,34 @@ class _HomeScreenState extends State<HomeScreen>
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
                                 color: palette.card,
-                                borderRadius: BorderRadius.circular(16),
-                                border:
-                                    Border.all(color: palette.border),
+                                borderRadius:
+                                    BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: palette.border),
                               ),
                               child: Column(
                                 children: [
-                                  Icon(Icons.receipt_long_outlined,
-                                      color: palette.inkMuted, size: 40),
+                                  Icon(
+                                      Icons
+                                          .receipt_long_outlined,
+                                      color: palette.inkMuted,
+                                      size: 40),
                                   const SizedBox(height: 12),
                                   Text('No transactions yet',
                                       style: GoogleFonts.syne(
                                           fontSize: 15,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight:
+                                              FontWeight.w600,
                                           color: palette.ink)),
                                   const SizedBox(height: 6),
                                   Text(
                                       'Tap Add Transaction to get started.',
                                       style: GoogleFonts.syne(
                                           fontSize: 13,
-                                          color: palette.inkMuted),
-                                      textAlign: TextAlign.center),
+                                          color:
+                                              palette.inkMuted),
+                                      textAlign:
+                                          TextAlign.center),
                                 ],
                               ),
                             ),
@@ -675,17 +871,21 @@ class _HomeScreenState extends State<HomeScreen>
                           (context, i) {
                             final data = docs[i].data()
                                 as Map<String, dynamic>;
-                            final isIncome = data['type'] == 'income';
+                            final isIncome =
+                                data['type'] == 'income';
                             final amount =
                                 (data['amount'] as num).toDouble();
-                            final date = (data['date'] as dynamic)
-                                .toDate() as DateTime;
+                            final date =
+                                (data['date'] as dynamic).toDate()
+                                    as DateTime;
 
                             return Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  24, 10, 24, 0),
+                              padding:
+                                  const EdgeInsets.fromLTRB(
+                                      24, 10, 24, 0),
                               child: Container(
-                                padding: const EdgeInsets.all(14),
+                                padding:
+                                    const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: palette.card,
                                   borderRadius:
@@ -696,23 +896,29 @@ class _HomeScreenState extends State<HomeScreen>
                                 child: Row(
                                   children: [
                                     Container(
-                                      width: 42, height: 42,
+                                      width: 42,
+                                      height: 42,
                                       decoration: BoxDecoration(
                                         color: isIncome
                                             ? palette.accent
                                                 .withOpacity(0.12)
-                                            : const Color(0xFFB5446E)
+                                            : const Color(
+                                                    0xFFB5446E)
                                                 .withOpacity(0.1),
                                         borderRadius:
-                                            BorderRadius.circular(12),
+                                            BorderRadius.circular(
+                                                12),
                                       ),
                                       child: Icon(
                                         isIncome
-                                            ? Icons.arrow_downward_rounded
-                                            : Icons.arrow_upward_rounded,
+                                            ? Icons
+                                                .arrow_downward_rounded
+                                            : Icons
+                                                .arrow_upward_rounded,
                                         color: isIncome
                                             ? palette.accent
-                                            : const Color(0xFFB5446E),
+                                            : const Color(
+                                                0xFFB5446E),
                                         size: 18,
                                       ),
                                     ),
@@ -720,20 +926,28 @@ class _HomeScreenState extends State<HomeScreen>
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment
+                                                .start,
                                         children: [
-                                          Text(data['title'] ?? '',
-                                              style: GoogleFonts.syne(
-                                                  fontSize: 13,
-                                                  fontWeight:
-                                                      FontWeight.w600,
-                                                  color: palette.ink)),
-                                          const SizedBox(height: 2),
+                                          Text(
+                                              data['title'] ?? '',
+                                              style:
+                                                  GoogleFonts.syne(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight
+                                                              .w600,
+                                                      color: palette
+                                                          .ink)),
+                                          const SizedBox(
+                                              height: 2),
                                           Text(
                                             '${data['category']} · ${date.day}/${date.month}/${date.year}',
-                                            style: GoogleFonts.syne(
-                                                fontSize: 11,
-                                                color: palette.inkMuted),
+                                            style:
+                                                GoogleFonts.syne(
+                                                    fontSize: 11,
+                                                    color: palette
+                                                        .inkMuted),
                                           ),
                                         ],
                                       ),
@@ -745,7 +959,8 @@ class _HomeScreenState extends State<HomeScreen>
                                         fontWeight: FontWeight.w700,
                                         color: isIncome
                                             ? palette.accent
-                                            : const Color(0xFFB5446E),
+                                            : const Color(
+                                                0xFFB5446E),
                                       ),
                                     ),
                                   ],
@@ -783,49 +998,56 @@ class _HomeScreenState extends State<HomeScreen>
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: palette.card,
-          border: Border(top: BorderSide(color: palette.border)),
+          border:
+              Border(top: BorderSide(color: palette.border)),
         ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
               children: [
                 _NavItem(
                   icon: Icons.home_rounded,
                   label: 'Home',
                   isActive: _currentNavIndex == 0,
                   palette: palette,
-                  onTap: () => setState(() => _currentNavIndex = 0),
+                  onTap: () =>
+                      setState(() => _currentNavIndex = 0),
                 ),
                 _NavItem(
                   icon: Icons.calendar_month_rounded,
                   label: 'Calendar',
                   isActive: _currentNavIndex == 1,
                   palette: palette,
-                  onTap: () => setState(() => _currentNavIndex = 1),
+                  onTap: () =>
+                      setState(() => _currentNavIndex = 1),
                 ),
                 _NavItem(
                   icon: Icons.checklist_rounded,
                   label: 'Spend List',
                   isActive: _currentNavIndex == 2,
                   palette: palette,
-                  onTap: () => setState(() => _currentNavIndex = 2),
+                  onTap: () =>
+                      setState(() => _currentNavIndex = 2),
                 ),
                 _NavItem(
                   icon: Icons.bar_chart_rounded,
                   label: 'Statistics',
                   isActive: _currentNavIndex == 3,
                   palette: palette,
-                  onTap: () => setState(() => _currentNavIndex = 3),
+                  onTap: () =>
+                      setState(() => _currentNavIndex = 3),
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,
                   label: 'Profile',
                   isActive: _currentNavIndex == 4,
                   palette: palette,
-                  onTap: () => setState(() => _currentNavIndex = 4),
+                  onTap: () =>
+                      setState(() => _currentNavIndex = 4),
                 ),
               ],
             ),
@@ -835,7 +1057,8 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _showAddTransaction(BuildContext context, LedgrrPalette palette) {
+  void _showAddTransaction(
+      BuildContext context, LedgrrPalette palette) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -862,7 +1085,8 @@ class _AddTransactionSheet extends StatefulWidget {
       _AddTransactionSheetState();
 }
 
-class _AddTransactionSheetState extends State<_AddTransactionSheet> {
+class _AddTransactionSheetState
+    extends State<_AddTransactionSheet> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -910,12 +1134,15 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
   ];
 
   List<Map<String, dynamic>> get _categories =>
-      _type == 'expense' ? _expenseCategories : _incomeCategories;
+      _type == 'expense'
+          ? _expenseCategories
+          : _incomeCategories;
 
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) return;
     if (_amountController.text.trim().isEmpty) return;
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount =
+        double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) return;
     setState(() => _isLoading = true);
     try {
@@ -961,7 +1188,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
           children: [
             Center(
               child: Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: palette.border,
                   borderRadius: BorderRadius.circular(2),
@@ -993,18 +1221,22 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                             t == 'expense' ? 'food' : 'salary';
                       }),
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        duration:
+                            const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? palette.accent
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius:
+                              BorderRadius.circular(10),
                         ),
                         child: Center(
                           child: Text(
-                            t == 'expense' ? 'Expense' : 'Income',
+                            t == 'expense'
+                                ? 'Expense'
+                                : 'Income',
                             style: GoogleFonts.syne(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -1047,20 +1279,24 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 itemCount: _categories.length,
                 itemBuilder: (context, i) {
                   final cat = _categories[i];
-                  final isSelected = _selectedCategory == cat['id'];
+                  final isSelected =
+                      _selectedCategory == cat['id'];
                   return GestureDetector(
-                    onTap: () => setState(
-                        () => _selectedCategory = cat['id']),
+                    onTap: () => setState(() =>
+                        _selectedCategory = cat['id']),
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.only(right: 8),
+                      duration:
+                          const Duration(milliseconds: 200),
+                      margin:
+                          const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? palette.accent
                             : palette.bg2,
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius:
+                            BorderRadius.circular(100),
                         border: Border.all(
                             color: isSelected
                                 ? palette.accent
@@ -1128,11 +1364,13 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 onTap: _isLoading ? null : _save,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16),
                   child: Center(
                     child: _isLoading
                         ? SizedBox(
-                            width: 20, height: 20,
+                            width: 20,
+                            height: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: palette.accentFg))
@@ -1177,8 +1415,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style:
-                GoogleFonts.syne(fontSize: 15, color: palette.ink),
+            style: GoogleFonts.syne(
+                fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: GoogleFonts.syne(
@@ -1211,8 +1449,8 @@ class _SentenceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: palette.isDark
               ? palette.border.withOpacity(0.3)
@@ -1273,7 +1511,8 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 28, height: 28,
+            width: 28,
+            height: 28,
             child: CustomPaint(
               painter: _IconPainter(
                 type: iconType,
@@ -1343,8 +1582,9 @@ class _NavItem extends StatelessWidget {
             ),
             child: Icon(icon,
                 size: 22,
-                color:
-                    isActive ? palette.accent : palette.inkMuted),
+                color: isActive
+                    ? palette.accent
+                    : palette.inkMuted),
           ),
           Text(label,
               style: GoogleFonts.syne(
@@ -1418,12 +1658,14 @@ class _IconPainter extends CustomPainter {
             Offset(cx, cy - 10), Offset(cx, cy + 10), p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
-                Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10),
+                Rect.fromLTRB(
+                    cx - 13, cy - 10, cx, cy + 10),
                 const Radius.circular(2)),
             p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
-                Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10),
+                Rect.fromLTRB(
+                    cx, cy - 10, cx + 13, cy + 10),
                 const Radius.circular(2)),
             p);
         final lp2 = Paint()
@@ -1494,7 +1736,8 @@ class _RRPainter extends CustomPainter {
   final Color leftColor;
   final Color rightColor;
 
-  const _RRPainter({required this.leftColor, required this.rightColor});
+  const _RRPainter(
+      {required this.leftColor, required this.rightColor});
 
   @override
   void paint(Canvas canvas, Size size) {
