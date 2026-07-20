@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 class SpendListScreen extends StatefulWidget {
@@ -264,7 +266,7 @@ class _SpendListScreenState extends State<SpendListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const palette = LedgrrColors.mint;
+    final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,

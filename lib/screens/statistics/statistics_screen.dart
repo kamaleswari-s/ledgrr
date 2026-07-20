@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
+import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -107,7 +109,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
 
   @override
   Widget build(BuildContext context) {
-    const palette = LedgrrColors.mint;
+    final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,
