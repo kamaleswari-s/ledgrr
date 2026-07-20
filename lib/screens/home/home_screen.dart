@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import '../onboarding/onboarding_screen.dart';
+import '../statistics/statistics_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,12 +45,10 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       final user = FirebaseAuth.instance.currentUser;
       final now = DateTime.now();
-
       final balance = await _transactionService.getTrueBalance();
       final summary = await _transactionService.getMonthlySummary(
         now.year, now.month,
       );
-
       if (mounted) {
         setState(() {
           _trueBalance = balance;
@@ -96,11 +95,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   String _formatAmount(double amount) {
-    if (amount >= 100000) {
-      return '₹${(amount / 100000).toStringAsFixed(1)}L';
-    } else if (amount >= 1000) {
-      return '₹${(amount / 1000).toStringAsFixed(1)}K';
-    }
+    if (amount >= 100000) return '₹${(amount / 100000).toStringAsFixed(1)}L';
+    if (amount >= 1000) return '₹${(amount / 1000).toStringAsFixed(1)}K';
     return '₹${amount.toStringAsFixed(0)}';
   }
 
@@ -116,483 +112,557 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Scaffold(
       backgroundColor: palette.bg,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeIn,
-          child: CustomScrollView(
-            slivers: [
-              // Top bar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 34,
-                        height: 34,
-                        decoration: BoxDecoration(
-                          color: palette.ink,
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: CustomPaint(
-                          painter: _RRPainter(
-                            leftColor: palette.bg2,
-                            rightColor: palette.accent,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'LEDG',
-                              style: GoogleFonts.syne(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: palette.ink,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            TextSpan(
-                              text: 'RR',
-                              style: GoogleFonts.syne(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: palette.accent,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      // Sign out button
-                      Material(
-                        color: palette.bg2,
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: _signOut,
-                          child: Container(
-                            width: 40,
-                            height: 40,
+      body: IndexedStack(
+        index: _currentNavIndex,
+        children: [
+          // Tab 0 — Home
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeIn,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: palette.border),
-                            ),
-                            child: Icon(
-                              Icons.logout_rounded,
                               color: palette.ink,
-                              size: 18,
+                              borderRadius: BorderRadius.circular(9),
                             ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: palette.accent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            _userName.isNotEmpty
-                                ? _userName[0].toUpperCase()
-                                : 'L',
-                            style: GoogleFonts.syne(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: palette.accentFg,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Greeting
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$_greeting, $_userName',
-                        style: GoogleFonts.syne(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: palette.inkMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Here is your truth for today.',
-                        style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 20,
-                          fontStyle: FontStyle.italic,
-                          color: palette.ink,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Daily Sentence Card
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: palette.ink,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: palette.accent.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child: Text(
-                                _trueBalance >= 0 ? 'Stable' : 'Attention',
-                                style: GoogleFonts.syne(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: palette.accent,
-                                ),
+                            child: CustomPaint(
+                              painter: _RRPainter(
+                                leftColor: palette.bg2,
+                                rightColor: palette.accent,
                               ),
                             ),
-                            const Spacer(),
-                            Text(
-                              'Daily sentence',
-                              style: GoogleFonts.syne(
-                                fontSize: 10,
-                                color: Colors.white38,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          '"$_dailySentence"',
-                          style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 17,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.white,
-                            height: 1.55,
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            _SentenceChip(
-                              label: 'Balance',
-                              value: _formatAmount(_trueBalance),
-                              palette: palette,
-                            ),
-                            const SizedBox(width: 8),
-                            _SentenceChip(
-                              label: 'Income',
-                              value: _formatAmount(_monthlyIncome),
-                              palette: palette,
-                            ),
-                            const SizedBox(width: 8),
-                            _SentenceChip(
-                              label: 'Spent',
-                              value: _formatAmount(_monthlyExpense),
-                              palette: palette,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Three stat cards
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          label: 'True Balance',
-                          value: _formatAmount(_trueBalance),
-                          sublabel: 'all time',
-                          iconType: 'balance',
-                          palette: palette,
-                          isPositive: _trueBalance >= 0,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          label: 'This Month',
-                          value: _formatAmount(_monthlyIncome),
-                          sublabel: 'income',
-                          iconType: 'memory',
-                          palette: palette,
-                          isPositive: true,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          label: 'Spent',
-                          value: _formatAmount(_monthlyExpense),
-                          sublabel: 'this month',
-                          iconType: 'spendlist',
-                          palette: palette,
-                          isPositive: false,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Add transaction button
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                  child: Material(
-                    color: palette.accent,
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => _showAddTransaction(context, palette),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Center(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.add_rounded,
-                                  color: palette.accentFg, size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Add Transaction',
-                                style: GoogleFonts.dmSerifDisplay(
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.italic,
-                                  color: palette.accentFg,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Recent transactions header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Recent transactions',
-                        style: GoogleFonts.syne(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: palette.ink,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'See all',
-                        style: GoogleFonts.syne(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: palette.accent,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Real transactions from Firebase
-              StreamBuilder(
-                stream: _transactionService.getTransactionsStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: palette.accent,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                        child: Container(
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            color: palette.card,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: palette.border),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(Icons.receipt_long_outlined,
-                                  color: palette.inkMuted, size: 40),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No transactions yet',
-                                style: GoogleFonts.syne(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: palette.ink,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Tap Add Transaction to get started.',
-                                style: GoogleFonts.syne(
-                                  fontSize: 13,
-                                  color: palette.inkMuted,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  final docs = snapshot.data!.docs.take(10).toList();
-
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) {
-                        final data =
-                            docs[i].data() as Map<String, dynamic>;
-                        final isIncome = data['type'] == 'income';
-                        final amount =
-                            (data['amount'] as num).toDouble();
-                        final date =
-                            (data['date'] as dynamic).toDate() as DateTime;
-
-                        return Padding(
-                          padding:
-                              const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: palette.card,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: palette.border),
-                            ),
-                            child: Row(
+                          const SizedBox(width: 10),
+                          RichText(
+                            text: TextSpan(
                               children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: isIncome
-                                        ? palette.accent.withOpacity(0.12)
-                                        : const Color(0xFFB5446E)
-                                            .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    isIncome
-                                        ? Icons.arrow_downward_rounded
-                                        : Icons.arrow_upward_rounded,
-                                    color: isIncome
-                                        ? palette.accent
-                                        : const Color(0xFFB5446E),
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        data['title'] ?? '',
-                                        style: GoogleFonts.syne(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: palette.ink,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${data['category']} · ${date.day}/${date.month}/${date.year}',
-                                        style: GoogleFonts.syne(
-                                          fontSize: 11,
-                                          color: palette.inkMuted,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
+                                TextSpan(
+                                  text: 'LEDG',
                                   style: GoogleFonts.syne(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: isIncome
-                                        ? palette.accent
-                                        : const Color(0xFFB5446E),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.ink,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'RR',
+                                  style: GoogleFonts.syne(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.accent,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        );
-                      },
-                      childCount: docs.length,
+                          const Spacer(),
+                          Material(
+                            color: palette.bg2,
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: _signOut,
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: palette.border),
+                                ),
+                                child: Icon(Icons.logout_rounded,
+                                    color: palette.ink, size: 18),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: palette.accent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _userName.isNotEmpty
+                                    ? _userName[0].toUpperCase()
+                                    : 'L',
+                                style: GoogleFonts.syne(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: palette.accentFg,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                },
-              ),
+                  ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$_greeting, $_userName',
+                            style: GoogleFonts.syne(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: palette.inkMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Here is your truth for today.',
+                            style: GoogleFonts.dmSerifDisplay(
+                              fontSize: 20,
+                              fontStyle: FontStyle.italic,
+                              color: palette.ink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: palette.ink,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: palette.accent.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Text(
+                                    _trueBalance >= 0 ? 'Stable' : 'Attention',
+                                    style: GoogleFonts.syne(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: palette.accent,
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  'Daily sentence',
+                                  style: GoogleFonts.syne(
+                                    fontSize: 10,
+                                    color: Colors.white38,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              '"$_dailySentence"',
+                              style: GoogleFonts.dmSerifDisplay(
+                                fontSize: 17,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.white,
+                                height: 1.55,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                _SentenceChip(
+                                  label: 'Balance',
+                                  value: _formatAmount(_trueBalance),
+                                  palette: palette,
+                                ),
+                                const SizedBox(width: 8),
+                                _SentenceChip(
+                                  label: 'Income',
+                                  value: _formatAmount(_monthlyIncome),
+                                  palette: palette,
+                                ),
+                                const SizedBox(width: 8),
+                                _SentenceChip(
+                                  label: 'Spent',
+                                  value: _formatAmount(_monthlyExpense),
+                                  palette: palette,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              label: 'True Balance',
+                              value: _formatAmount(_trueBalance),
+                              sublabel: 'all time',
+                              iconType: 'balance',
+                              palette: palette,
+                              isPositive: _trueBalance >= 0,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _StatCard(
+                              label: 'This Month',
+                              value: _formatAmount(_monthlyIncome),
+                              sublabel: 'income',
+                              iconType: 'memory',
+                              palette: palette,
+                              isPositive: true,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _StatCard(
+                              label: 'Spent',
+                              value: _formatAmount(_monthlyExpense),
+                              sublabel: 'this month',
+                              iconType: 'spendlist',
+                              palette: palette,
+                              isPositive: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      child: Material(
+                        color: palette.accent,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => _showAddTransaction(context, palette),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.add_rounded,
+                                      color: palette.accentFg, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Add Transaction',
+                                    style: GoogleFonts.dmSerifDisplay(
+                                      fontSize: 16,
+                                      fontStyle: FontStyle.italic,
+                                      color: palette.accentFg,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Recent transactions',
+                            style: GoogleFonts.syne(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: palette.ink,
+                            ),
+                          ),
+                          const Spacer(),
+                          GestureDetector(
+                            onTap: () =>
+                                setState(() => _currentNavIndex = 1),
+                            child: Text(
+                              'See all',
+                              style: GoogleFonts.syne(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: palette.accent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  StreamBuilder(
+                    stream: _transactionService.getTransactionsStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: palette.accent,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      if (!snapshot.hasData ||
+                          snapshot.data!.docs.isEmpty) {
+                        return SliverToBoxAdapter(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                            child: Container(
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: palette.card,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: palette.border),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.receipt_long_outlined,
+                                      color: palette.inkMuted, size: 40),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No transactions yet',
+                                    style: GoogleFonts.syne(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: palette.ink,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Tap Add Transaction to get started.',
+                                    style: GoogleFonts.syne(
+                                      fontSize: 13,
+                                      color: palette.inkMuted,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final docs =
+                          snapshot.data!.docs.take(10).toList();
+
+                      return SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) {
+                            final data = docs[i].data()
+                                as Map<String, dynamic>;
+                            final isIncome = data['type'] == 'income';
+                            final amount =
+                                (data['amount'] as num).toDouble();
+                            final date = (data['date'] as dynamic)
+                                .toDate() as DateTime;
+
+                            return Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  24, 10, 24, 0),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: palette.card,
+                                  borderRadius:
+                                      BorderRadius.circular(16),
+                                  border:
+                                      Border.all(color: palette.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: isIncome
+                                            ? palette.accent
+                                                .withOpacity(0.12)
+                                            : const Color(0xFFB5446E)
+                                                .withOpacity(0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        isIncome
+                                            ? Icons.arrow_downward_rounded
+                                            : Icons.arrow_upward_rounded,
+                                        color: isIncome
+                                            ? palette.accent
+                                            : const Color(0xFFB5446E),
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            data['title'] ?? '',
+                                            style: GoogleFonts.syne(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: palette.ink,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${data['category']} · ${date.day}/${date.month}/${date.year}',
+                                            style: GoogleFonts.syne(
+                                              fontSize: 11,
+                                              color: palette.inkMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
+                                      style: GoogleFonts.syne(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: isIncome
+                                            ? palette.accent
+                                            : const Color(0xFFB5446E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: docs.length,
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SliverToBoxAdapter(
+                      child: SizedBox(height: 100)),
+                ],
+              ),
+            ),
           ),
-        ),
+
+          // Tab 1 — Statistics
+          const StatisticsScreen(),
+
+          // Tab 2 — Memory (placeholder)
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.auto_stories_rounded,
+                      color: LedgrrColors.mint.inkMuted, size: 48),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Money Memory',
+                    style: GoogleFonts.syne(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: LedgrrColors.mint.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Coming next.',
+                    style: GoogleFonts.dmSerifDisplay(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: LedgrrColors.mint.inkMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Tab 3 — Profile (placeholder)
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_outline_rounded,
+                      color: LedgrrColors.mint.inkMuted, size: 48),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Profile',
+                    style: GoogleFonts.syne(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: LedgrrColors.mint.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Coming next.',
+                    style: GoogleFonts.dmSerifDisplay(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      color: LedgrrColors.mint.inkMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: palette.card,
-          border: Border(top: BorderSide(color: palette.border)),
+          color: LedgrrColors.mint.card,
+          border: Border(top: BorderSide(color: LedgrrColors.mint.border)),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -600,28 +670,28 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: Icons.home_rounded,
                   label: 'Home',
                   isActive: _currentNavIndex == 0,
-                  palette: palette,
+                  palette: LedgrrColors.mint,
                   onTap: () => setState(() => _currentNavIndex = 0),
                 ),
                 _NavItem(
-                  icon: Icons.receipt_long_rounded,
-                  label: 'Transactions',
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Statistics',
                   isActive: _currentNavIndex == 1,
-                  palette: palette,
+                  palette: LedgrrColors.mint,
                   onTap: () => setState(() => _currentNavIndex = 1),
                 ),
                 _NavItem(
                   icon: Icons.auto_stories_rounded,
                   label: 'Memory',
                   isActive: _currentNavIndex == 2,
-                  palette: palette,
+                  palette: LedgrrColors.mint,
                   onTap: () => setState(() => _currentNavIndex = 2),
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,
                   label: 'Profile',
                   isActive: _currentNavIndex == 3,
-                  palette: palette,
+                  palette: LedgrrColors.mint,
                   onTap: () => setState(() => _currentNavIndex = 3),
                 ),
               ],
@@ -713,12 +783,9 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) return;
     if (_amountController.text.trim().isEmpty) return;
-
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) return;
-
     setState(() => _isLoading = true);
-
     try {
       await _transactionService.addTransaction(
         title: _titleController.text.trim(),
@@ -750,7 +817,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
     return Container(
       decoration: BoxDecoration(
         color: palette.bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         24, 20, 24,
@@ -761,7 +829,6 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 40,
@@ -773,7 +840,6 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
               ),
             ),
             const SizedBox(height: 20),
-
             Text(
               'Add transaction',
               style: GoogleFonts.syne(
@@ -783,10 +849,7 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 letterSpacing: -0.5,
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Type toggle
             Container(
               decoration: BoxDecoration(
                 color: palette.bg2,
@@ -805,9 +868,12 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                       }),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? palette.accent : Colors.transparent,
+                          color: isSelected
+                              ? palette.accent
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Center(
@@ -816,7 +882,9 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                             style: GoogleFonts.syne(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isSelected ? palette.accentFg : palette.inkMuted,
+                              color: isSelected
+                                  ? palette.accentFg
+                                  : palette.inkMuted,
                             ),
                           ),
                         ),
@@ -826,20 +894,14 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 }).toList(),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Title
             _sheetField(
               controller: _titleController,
               hint: 'What was this for?',
               label: 'Title',
               palette: palette,
             ),
-
             const SizedBox(height: 12),
-
-            // Amount
             _sheetField(
               controller: _amountController,
               hint: '0.00',
@@ -847,15 +909,14 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
               palette: palette,
               keyboardType: TextInputType.number,
             ),
-
             const SizedBox(height: 12),
-
-            // Category
             Text('Category',
-              style: GoogleFonts.syne(
-                fontSize: 12, fontWeight: FontWeight.w600,
-                color: palette.inkMuted, letterSpacing: 0.05,
-              )),
+                style: GoogleFonts.syne(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: palette.inkMuted,
+                  letterSpacing: 0.05,
+                )),
             const SizedBox(height: 8),
             SizedBox(
               height: 38,
@@ -866,18 +927,22 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                   final cat = _categories[i];
                   final isSelected = _selectedCategory == cat['id'];
                   return GestureDetector(
-                    onTap: () =>
-                        setState(() => _selectedCategory = cat['id']),
+                    onTap: () => setState(
+                        () => _selectedCategory = cat['id']),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? palette.accent : palette.bg2,
+                        color: isSelected
+                            ? palette.accent
+                            : palette.bg2,
                         borderRadius: BorderRadius.circular(100),
                         border: Border.all(
-                          color: isSelected ? palette.accent : palette.border,
+                          color: isSelected
+                              ? palette.accent
+                              : palette.border,
                         ),
                       ),
                       child: Text(
@@ -885,7 +950,9 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                         style: GoogleFonts.syne(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: isSelected ? palette.accentFg : palette.inkMuted,
+                          color: isSelected
+                              ? palette.accentFg
+                              : palette.inkMuted,
                         ),
                       ),
                     ),
@@ -893,10 +960,7 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 },
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // Date
             GestureDetector(
               onTap: () async {
                 final picked = await showDatePicker(
@@ -931,20 +995,14 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                 ),
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // Note
             _sheetField(
               controller: _noteController,
               hint: 'Add a note (optional)',
               label: 'Note',
               palette: palette,
             ),
-
             const SizedBox(height: 24),
-
-            // Save button
             Material(
               color: palette.accent,
               borderRadius: BorderRadius.circular(16),
@@ -993,10 +1051,12 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-          style: GoogleFonts.syne(
-            fontSize: 12, fontWeight: FontWeight.w600,
-            color: palette.inkMuted, letterSpacing: 0.05,
-          )),
+            style: GoogleFonts.syne(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: palette.inkMuted,
+              letterSpacing: 0.05,
+            )),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
@@ -1010,7 +1070,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
             style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: GoogleFonts.syne(fontSize: 14, color: palette.inkMuted),
+              hintStyle: GoogleFonts.syne(
+                  fontSize: 14, color: palette.inkMuted),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16, vertical: 14),
@@ -1039,7 +1100,8 @@ class _SentenceChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white10,
           borderRadius: BorderRadius.circular(10),
@@ -1048,13 +1110,15 @@ class _SentenceChip extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-              style: GoogleFonts.syne(fontSize: 9, color: Colors.white54)),
+                style: GoogleFonts.syne(
+                    fontSize: 9, color: Colors.white54)),
             const SizedBox(height: 2),
             Text(value,
-              style: GoogleFonts.syne(
-                fontSize: 13, fontWeight: FontWeight.w700,
-                color: palette.accent,
-              )),
+                style: GoogleFonts.syne(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: palette.accent,
+                )),
           ],
         ),
       ),
@@ -1099,7 +1163,9 @@ class _StatCard extends StatelessWidget {
             child: CustomPaint(
               painter: _IconPainter(
                 type: iconType,
-                color: isPositive ? palette.accent : const Color(0xFFB5446E),
+                color: isPositive
+                    ? palette.accent
+                    : const Color(0xFFB5446E),
               ),
             ),
           ),
@@ -1109,16 +1175,21 @@ class _StatCard extends StatelessWidget {
             style: GoogleFonts.syne(
               fontSize: 15,
               fontWeight: FontWeight.w800,
-              color: isPositive ? palette.ink : const Color(0xFFB5446E),
+              color: isPositive
+                  ? palette.ink
+                  : const Color(0xFFB5446E),
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 2),
           Text(label,
-            style: GoogleFonts.syne(
-              fontSize: 10, fontWeight: FontWeight.w600, color: palette.ink)),
+              style: GoogleFonts.syne(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: palette.ink)),
           Text(sublabel,
-            style: GoogleFonts.syne(fontSize: 9, color: palette.inkMuted)),
+              style: GoogleFonts.syne(
+                  fontSize: 9, color: palette.inkMuted)),
         ],
       ),
     );
@@ -1151,7 +1222,8 @@ class _NavItem extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isActive
                   ? palette.accent.withOpacity(0.12)
@@ -1159,15 +1231,19 @@ class _NavItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(100),
             ),
             child: Icon(icon,
-              size: 22,
-              color: isActive ? palette.accent : palette.inkMuted),
+                size: 22,
+                color:
+                    isActive ? palette.accent : palette.inkMuted),
           ),
           Text(label,
-            style: GoogleFonts.syne(
-              fontSize: 10,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              color: isActive ? palette.accent : palette.inkMuted,
-            )),
+              style: GoogleFonts.syne(
+                fontSize: 10,
+                fontWeight: isActive
+                    ? FontWeight.w600
+                    : FontWeight.w400,
+                color:
+                    isActive ? palette.accent : palette.inkMuted,
+              )),
         ],
       ),
     );
@@ -1200,54 +1276,100 @@ class _IconPainter extends CustomPainter {
 
     switch (type) {
       case 'balance':
-        canvas.drawLine(Offset(cx, cy - 11), Offset(cx, cy + 11), p);
-        canvas.drawLine(Offset(cx - 10, cy - 1), Offset(cx + 10, cy - 1), p);
-        canvas.drawLine(Offset(cx - 10, cy - 1), Offset(cx - 10, cy + 5), p);
+        canvas.drawLine(
+            Offset(cx, cy - 11), Offset(cx, cy + 11), p);
+        canvas.drawLine(Offset(cx - 10, cy - 1),
+            Offset(cx + 10, cy - 1), p);
+        canvas.drawLine(Offset(cx - 10, cy - 1),
+            Offset(cx - 10, cy + 5), p);
         canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx - 10, cy + 8), width: 11, height: 4),
-            const Radius.circular(1.5),
-          ), pf);
-        canvas.drawLine(Offset(cx + 10, cy - 1), Offset(cx + 10, cy - 7), p);
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                  center: Offset(cx - 10, cy + 8),
+                  width: 11,
+                  height: 4),
+              const Radius.circular(1.5),
+            ),
+            pf);
+        canvas.drawLine(Offset(cx + 10, cy - 1),
+            Offset(cx + 10, cy - 7), p);
         canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx + 10, cy - 10), width: 11, height: 4),
-            const Radius.circular(1.5),
-          ), pf);
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                  center: Offset(cx + 10, cy - 10),
+                  width: 11,
+                  height: 4),
+              const Radius.circular(1.5),
+            ),
+            pf);
         break;
 
       case 'memory':
-        canvas.drawLine(Offset(cx, cy - 10), Offset(cx, cy + 10), p);
+        canvas.drawLine(
+            Offset(cx, cy - 10), Offset(cx, cy + 10), p);
         canvas.drawRRect(
-          RRect.fromRectAndRadius(Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10), const Radius.circular(2)), p);
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10),
+                const Radius.circular(2)),
+            p);
         canvas.drawRRect(
-          RRect.fromRectAndRadius(Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10), const Radius.circular(2)), p);
-        final lp2 = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2..strokeCap = StrokeCap.round;
-        canvas.drawLine(Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
-        canvas.drawLine(Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
-        canvas.drawLine(Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
-        canvas.drawLine(Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
-        canvas.drawLine(Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10),
+                const Radius.circular(2)),
+            p);
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
+        canvas.drawLine(
+            Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
+        canvas.drawLine(
+            Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
+        canvas.drawLine(
+            Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
+        canvas.drawLine(
+            Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
         break;
 
       case 'spendlist':
         canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset(cx, cy), width: 22, height: 24),
-            const Radius.circular(4),
-          ), p);
-        final lp2 = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2..strokeCap = StrokeCap.round;
+            RRect.fromRectAndRadius(
+              Rect.fromCenter(
+                  center: Offset(cx, cy), width: 22, height: 24),
+              const Radius.circular(4),
+            ),
+            p);
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round;
         final c1 = Path();
-        c1.moveTo(cx - 7, cy - 5); c1.lineTo(cx - 5, cy - 3); c1.lineTo(cx - 1, cy - 8);
+        c1.moveTo(cx - 7, cy - 5);
+        c1.lineTo(cx - 5, cy - 3);
+        c1.lineTo(cx - 1, cy - 8);
         canvas.drawPath(c1, lp2);
-        canvas.drawLine(Offset(cx + 1, cy - 5), Offset(cx + 7, cy - 5), lp2);
+        canvas.drawLine(
+            Offset(cx + 1, cy - 5), Offset(cx + 7, cy - 5), lp2);
         final c2 = Path();
-        c2.moveTo(cx - 7, cy + 1); c2.lineTo(cx - 5, cy + 3); c2.lineTo(cx - 1, cy - 2);
+        c2.moveTo(cx - 7, cy + 1);
+        c2.lineTo(cx - 5, cy + 3);
+        c2.lineTo(cx - 1, cy - 2);
         canvas.drawPath(c2, lp2);
-        canvas.drawLine(Offset(cx + 1, cy + 1), Offset(cx + 7, cy + 1), lp2);
-        canvas.drawCircle(Offset(cx - 6, cy + 7), 2,
-          Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 1.2);
-        canvas.drawLine(Offset(cx + 1, cy + 7), Offset(cx + 7, cy + 7), lp2);
+        canvas.drawLine(
+            Offset(cx + 1, cy + 1), Offset(cx + 7, cy + 1), lp2);
+        canvas.drawCircle(
+            Offset(cx - 6, cy + 7),
+            2,
+            Paint()
+              ..color = color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.2);
+        canvas.drawLine(
+            Offset(cx + 1, cy + 7), Offset(cx + 7, cy + 7), lp2);
         break;
     }
   }

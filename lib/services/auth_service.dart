@@ -20,9 +20,7 @@ class AuthService {
         email: email,
         password: password,
       );
-
       await credential.user?.updateDisplayName(name);
-
       await _db.collection('users').doc(credential.user!.uid).set({
         'name': name,
         'email': email,
@@ -30,8 +28,8 @@ class AuthService {
         'createdAt': FieldValue.serverTimestamp(),
         'currency': '₹',
         'monthlyBudget': 0,
+        'setupComplete': false,
       });
-
       return credential;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthError(e);
@@ -66,6 +64,18 @@ class AuthService {
       return doc.data();
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<bool> isSetupComplete() async {
+    try {
+      final doc = await _db
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
+      return doc.data()?['setupComplete'] == true;
+    } catch (e) {
+      return false;
     }
   }
 

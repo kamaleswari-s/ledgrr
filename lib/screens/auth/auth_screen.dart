@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../setup/setup_screen.dart';
+import '../home/home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   final bool isSignUp;
@@ -86,6 +87,13 @@ class _AuthScreenState extends State<AuthScreen> {
           phone: _phoneController.text.trim(),
           password: _passwordController.text,
         );
+        // New user always goes to setup
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const SetupScreen()),
+            (route) => false,
+          );
+        }
       } else {
         if (_emailController.text.trim().isEmpty) throw 'Please enter your email.';
         if (_passwordController.text.isEmpty) throw 'Please enter your password.';
@@ -93,13 +101,17 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-      }
-
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const SetupScreen()),
-          (route) => false,
-        );
+        // Returning user — check if setup is done
+        final setupDone = await _authService.isSetupComplete();
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) =>
+                  setupDone ? const HomeScreen() : const SetupScreen(),
+            ),
+            (route) => false,
+          );
+        }
       }
     } catch (e) {
       setState(() => _errorMessage = e.toString());
