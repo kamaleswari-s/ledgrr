@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
+import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../statistics/statistics_screen.dart';
 import '../spendlist/spendlist_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -109,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final palette = LedgrrColors.mint;
+    final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,
@@ -130,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen>
                           Container(
                             width: 34, height: 34,
                             decoration: BoxDecoration(
-                              color: palette.ink,
+                              color: palette.isDark ? palette.card : palette.ink,
                               borderRadius: BorderRadius.circular(9),
                             ),
                             child: CustomPaint(
@@ -234,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen>
                       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: palette.ink,
+                          color: palette.isDark ? palette.bg2 : palette.ink,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.all(20),
@@ -430,7 +433,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   const SizedBox(height: 6),
                                   Text('Tap Add Transaction to get started.',
                                       style: GoogleFonts.syne(
-                                          fontSize: 13, color: palette.inkMuted),
+                                          fontSize: 13,
+                                          color: palette.inkMuted),
                                       textAlign: TextAlign.center),
                                 ],
                               ),
@@ -444,14 +448,17 @@ class _HomeScreenState extends State<HomeScreen>
                       return SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, i) {
-                            final data = docs[i].data() as Map<String, dynamic>;
+                            final data =
+                                docs[i].data() as Map<String, dynamic>;
                             final isIncome = data['type'] == 'income';
-                            final amount = (data['amount'] as num).toDouble();
-                            final date =
-                                (data['date'] as dynamic).toDate() as DateTime;
+                            final amount =
+                                (data['amount'] as num).toDouble();
+                            final date = (data['date'] as dynamic)
+                                .toDate() as DateTime;
 
                             return Padding(
-                              padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                              padding:
+                                  const EdgeInsets.fromLTRB(24, 10, 24, 0),
                               child: Container(
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
@@ -468,7 +475,8 @@ class _HomeScreenState extends State<HomeScreen>
                                             ? palette.accent.withOpacity(0.12)
                                             : const Color(0xFFB5446E)
                                                 .withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12),
                                       ),
                                       child: Icon(
                                         isIncome
@@ -504,7 +512,8 @@ class _HomeScreenState extends State<HomeScreen>
                                     Text(
                                       '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
                                       style: GoogleFonts.syne(
-                                        fontSize: 14, fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
                                         color: isIncome
                                             ? palette.accent
                                             : const Color(0xFFB5446E),
@@ -533,40 +542,20 @@ class _HomeScreenState extends State<HomeScreen>
           // Tab 2 — Spend List
           const SpendListScreen(),
 
-          // Tab 3 — Profile placeholder
-          SafeArea(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.person_outline_rounded,
-                      color: LedgrrColors.mint.inkMuted, size: 48),
-                  const SizedBox(height: 12),
-                  Text('Profile',
-                      style: GoogleFonts.syne(
-                          fontSize: 18, fontWeight: FontWeight.w700,
-                          color: LedgrrColors.mint.ink)),
-                  const SizedBox(height: 6),
-                  Text('Coming next.',
-                      style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 14, fontStyle: FontStyle.italic,
-                          color: LedgrrColors.mint.inkMuted)),
-                ],
-              ),
-            ),
-          ),
+          // Tab 3 — Profile
+          const ProfileScreen(),
         ],
       ),
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: LedgrrColors.mint.card,
-          border:
-              Border(top: BorderSide(color: LedgrrColors.mint.border)),
+          color: palette.card,
+          border: Border(top: BorderSide(color: palette.border)),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -574,28 +563,28 @@ class _HomeScreenState extends State<HomeScreen>
                   icon: Icons.home_rounded,
                   label: 'Home',
                   isActive: _currentNavIndex == 0,
-                  palette: LedgrrColors.mint,
+                  palette: palette,
                   onTap: () => setState(() => _currentNavIndex = 0),
                 ),
                 _NavItem(
                   icon: Icons.bar_chart_rounded,
                   label: 'Statistics',
                   isActive: _currentNavIndex == 1,
-                  palette: LedgrrColors.mint,
+                  palette: palette,
                   onTap: () => setState(() => _currentNavIndex = 1),
                 ),
                 _NavItem(
                   icon: Icons.checklist_rounded,
                   label: 'Spend List',
                   isActive: _currentNavIndex == 2,
-                  palette: LedgrrColors.mint,
+                  palette: palette,
                   onTap: () => setState(() => _currentNavIndex = 2),
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,
                   label: 'Profile',
                   isActive: _currentNavIndex == 3,
-                  palette: LedgrrColors.mint,
+                  palette: palette,
                   onTap: () => setState(() => _currentNavIndex = 3),
                 ),
               ],
@@ -925,8 +914,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
             style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle:
-                  GoogleFonts.syne(fontSize: 14, color: palette.inkMuted),
+              hintStyle: GoogleFonts.syne(
+                  fontSize: 14, color: palette.inkMuted),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16, vertical: 14),
@@ -1186,8 +1175,7 @@ class _IconPainter extends CustomPainter {
         canvas.drawLine(
             Offset(cx + 1, cy + 1), Offset(cx + 7, cy + 1), lp2);
         canvas.drawCircle(
-            Offset(cx - 6, cy + 7),
-            2,
+            Offset(cx - 6, cy + 7), 2,
             Paint()
               ..color = color
               ..style = PaintingStyle.stroke

@@ -137,16 +137,16 @@ class LedgrrColors {
   );
 
   static const List<LedgrrPalette> lightThemes = [
-    mint, rose, slate, violet, peach
+    mint, rose, slate, violet, peach,
   ];
 
   static const List<LedgrrPalette> darkThemes = [
-    aurora, obsidian, cosmos, ember, steel
+    aurora, obsidian, cosmos, ember, steel,
   ];
 
   static const List<LedgrrPalette> allThemes = [
     mint, rose, slate, violet, peach,
-    aurora, obsidian, cosmos, ember, steel
+    aurora, obsidian, cosmos, ember, steel,
   ];
 }
 
@@ -243,107 +243,69 @@ class LedgrrTheme {
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: p.accent, width: 2),
         ),
-        labelStyle: GoogleFonts.syne(
-          fontSize: 14,
-          color: p.inkMuted,
-        ),
-        hintStyle: GoogleFonts.syne(
-          fontSize: 14,
-          color: p.inkMuted,
-        ),
+        labelStyle: GoogleFonts.syne(fontSize: 14, color: p.inkMuted),
+        hintStyle: GoogleFonts.syne(fontSize: 14, color: p.inkMuted),
       ),
     );
   }
 
   static TextTheme _buildTextTheme(LedgrrPalette p) {
     return TextTheme(
-      // DM Serif Display — for headlines, sentences, italic moments
       displayLarge: GoogleFonts.dmSerifDisplay(
-        fontSize: 48,
-        fontStyle: FontStyle.italic,
-        color: p.ink,
-        height: 1.2,
+        fontSize: 48, fontStyle: FontStyle.italic,
+        color: p.ink, height: 1.2,
       ),
       displayMedium: GoogleFonts.dmSerifDisplay(
-        fontSize: 36,
-        fontStyle: FontStyle.italic,
-        color: p.ink,
-        height: 1.2,
+        fontSize: 36, fontStyle: FontStyle.italic,
+        color: p.ink, height: 1.2,
       ),
       displaySmall: GoogleFonts.dmSerifDisplay(
-        fontSize: 28,
-        fontStyle: FontStyle.italic,
-        color: p.ink,
-        height: 1.3,
+        fontSize: 28, fontStyle: FontStyle.italic,
+        color: p.ink, height: 1.3,
       ),
       headlineLarge: GoogleFonts.syne(
-        fontSize: 24,
-        fontWeight: FontWeight.w800,
-        color: p.ink,
-        letterSpacing: -0.5,
+        fontSize: 24, fontWeight: FontWeight.w800,
+        color: p.ink, letterSpacing: -0.5,
       ),
       headlineMedium: GoogleFonts.syne(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: p.ink,
-        letterSpacing: -0.3,
+        fontSize: 20, fontWeight: FontWeight.w700,
+        color: p.ink, letterSpacing: -0.3,
       ),
       headlineSmall: GoogleFonts.syne(
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        color: p.ink,
+        fontSize: 17, fontWeight: FontWeight.w700, color: p.ink,
       ),
       titleLarge: GoogleFonts.syne(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: p.ink,
+        fontSize: 16, fontWeight: FontWeight.w700, color: p.ink,
       ),
       titleMedium: GoogleFonts.syne(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: p.ink,
+        fontSize: 14, fontWeight: FontWeight.w600, color: p.ink,
       ),
       titleSmall: GoogleFonts.syne(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: p.ink,
+        fontSize: 13, fontWeight: FontWeight.w600, color: p.ink,
       ),
-      // Syne — for all body text, labels, descriptions
       bodyLarge: GoogleFonts.syne(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        color: p.ink,
-        height: 1.6,
+        fontSize: 16, fontWeight: FontWeight.w400,
+        color: p.ink, height: 1.6,
       ),
       bodyMedium: GoogleFonts.syne(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: p.ink,
-        height: 1.6,
+        fontSize: 14, fontWeight: FontWeight.w400,
+        color: p.ink, height: 1.6,
       ),
       bodySmall: GoogleFonts.syne(
-        fontSize: 13,
-        fontWeight: FontWeight.w400,
-        color: p.inkMuted,
-        height: 1.5,
+        fontSize: 13, fontWeight: FontWeight.w400,
+        color: p.inkMuted, height: 1.5,
       ),
       labelLarge: GoogleFonts.syne(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: p.ink,
-        letterSpacing: 0.02,
+        fontSize: 13, fontWeight: FontWeight.w600,
+        color: p.ink, letterSpacing: 0.02,
       ),
       labelMedium: GoogleFonts.syne(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-        color: p.inkMuted,
-        letterSpacing: 0.05,
+        fontSize: 11, fontWeight: FontWeight.w500,
+        color: p.inkMuted, letterSpacing: 0.05,
       ),
       labelSmall: GoogleFonts.syne(
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        color: p.inkMuted,
-        letterSpacing: 0.08,
+        fontSize: 10, fontWeight: FontWeight.w500,
+        color: p.inkMuted, letterSpacing: 0.08,
       ),
     );
   }

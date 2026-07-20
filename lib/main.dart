@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
+import 'providers/theme_provider.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 
 void main() async {
@@ -9,7 +11,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const LedgrrApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const LedgrrApp(),
+    ),
+  );
 }
 
 class LedgrrApp extends StatelessWidget {
@@ -17,10 +24,13 @@ class LedgrrApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final palette = themeProvider.palette;
+
     return MaterialApp(
       title: 'LEDGRR',
       debugShowCheckedModeBanner: false,
-      theme: LedgrrTheme.build(LedgrrColors.mint),
+      theme: LedgrrTheme.build(palette),
       home: const OnboardingScreen(),
     );
   }
