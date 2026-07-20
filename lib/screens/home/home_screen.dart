@@ -10,6 +10,7 @@ import '../onboarding/onboarding_screen.dart';
 import '../statistics/statistics_screen.dart';
 import '../spendlist/spendlist_screen.dart';
 import '../profile/profile_screen.dart';
+import '../ghost/ghost_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -125,6 +126,7 @@ class _HomeScreenState extends State<HomeScreen>
               opacity: _fadeIn,
               child: CustomScrollView(
                 slivers: [
+                  // Top bar
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -133,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen>
                           Container(
                             width: 34, height: 34,
                             decoration: BoxDecoration(
-                              color: palette.isDark ? palette.card : palette.ink,
+                              color: palette.ink,
                               borderRadius: BorderRadius.circular(9),
                             ),
                             child: CustomPaint(
@@ -206,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Greeting
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
@@ -232,6 +235,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Daily sentence card
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -239,6 +243,9 @@ class _HomeScreenState extends State<HomeScreen>
                         decoration: BoxDecoration(
                           color: palette.isDark ? palette.bg2 : palette.ink,
                           borderRadius: BorderRadius.circular(20),
+                          border: palette.isDark
+                              ? Border.all(color: palette.border)
+                              : null,
                         ),
                         padding: const EdgeInsets.all(20),
                         child: Column(
@@ -264,7 +271,10 @@ class _HomeScreenState extends State<HomeScreen>
                                 const Spacer(),
                                 Text('Daily sentence',
                                     style: GoogleFonts.syne(
-                                        fontSize: 10, color: Colors.white38)),
+                                        fontSize: 10,
+                                        color: palette.isDark
+                                            ? palette.inkMuted
+                                            : Colors.white38)),
                               ],
                             ),
                             const SizedBox(height: 14),
@@ -272,7 +282,10 @@ class _HomeScreenState extends State<HomeScreen>
                               '"$_dailySentence"',
                               style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 17, fontStyle: FontStyle.italic,
-                                color: Colors.white, height: 1.55,
+                                color: palette.isDark
+                                    ? palette.ink
+                                    : Colors.white,
+                                height: 1.55,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -297,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Stat cards
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
@@ -339,6 +353,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Add Transaction button
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -372,6 +387,69 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Ghost Money button
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      child: Material(
+                        color: palette.bg2,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const GhostScreen(),
+                            ),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: palette.border),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40, height: 40,
+                                  decoration: BoxDecoration(
+                                    color: palette.accent.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Center(
+                                    child: Text('👻',
+                                        style: TextStyle(fontSize: 18)),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Ghost Money Detector',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: palette.ink)),
+                                      Text(
+                                          'Scan for forgotten subscriptions',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 11,
+                                              color: palette.inkMuted)),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward_ios_rounded,
+                                    size: 14, color: palette.inkMuted),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Recent transactions header
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(24, 28, 24, 0),
@@ -383,7 +461,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: palette.ink)),
                           const Spacer(),
                           GestureDetector(
-                            onTap: () => setState(() => _currentNavIndex = 1),
+                            onTap: () =>
+                                setState(() => _currentNavIndex = 1),
                             child: Text('See all',
                                 style: GoogleFonts.syne(
                                     fontSize: 12, fontWeight: FontWeight.w500,
@@ -394,10 +473,12 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Transactions stream
                   StreamBuilder(
                     stream: _transactionService.getTransactionsStream(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.all(40),
@@ -409,10 +490,12 @@ class _HomeScreenState extends State<HomeScreen>
                         );
                       }
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      if (!snapshot.hasData ||
+                          snapshot.data!.docs.isEmpty) {
                         return SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                            padding:
+                                const EdgeInsets.fromLTRB(24, 20, 24, 0),
                             child: Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
@@ -431,7 +514,8 @@ class _HomeScreenState extends State<HomeScreen>
                                           fontWeight: FontWeight.w600,
                                           color: palette.ink)),
                                   const SizedBox(height: 6),
-                                  Text('Tap Add Transaction to get started.',
+                                  Text(
+                                      'Tap Add Transaction to get started.',
                                       style: GoogleFonts.syne(
                                           fontSize: 13,
                                           color: palette.inkMuted),
@@ -443,13 +527,14 @@ class _HomeScreenState extends State<HomeScreen>
                         );
                       }
 
-                      final docs = snapshot.data!.docs.take(10).toList();
+                      final docs =
+                          snapshot.data!.docs.take(10).toList();
 
                       return SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, i) {
-                            final data =
-                                docs[i].data() as Map<String, dynamic>;
+                            final data = docs[i].data()
+                                as Map<String, dynamic>;
                             final isIncome = data['type'] == 'income';
                             final amount =
                                 (data['amount'] as num).toDouble();
@@ -457,14 +542,15 @@ class _HomeScreenState extends State<HomeScreen>
                                 .toDate() as DateTime;
 
                             return Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                              padding: const EdgeInsets.fromLTRB(
+                                  24, 10, 24, 0),
                               child: Container(
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: palette.card,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: palette.border),
+                                  border:
+                                      Border.all(color: palette.border),
                                 ),
                                 child: Row(
                                   children: [
@@ -472,7 +558,8 @@ class _HomeScreenState extends State<HomeScreen>
                                       width: 42, height: 42,
                                       decoration: BoxDecoration(
                                         color: isIncome
-                                            ? palette.accent.withOpacity(0.12)
+                                            ? palette.accent
+                                                .withOpacity(0.12)
                                             : const Color(0xFFB5446E)
                                                 .withOpacity(0.1),
                                         borderRadius:
@@ -497,7 +584,8 @@ class _HomeScreenState extends State<HomeScreen>
                                           Text(data['title'] ?? '',
                                               style: GoogleFonts.syne(
                                                   fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
+                                                  fontWeight:
+                                                      FontWeight.w600,
                                                   color: palette.ink)),
                                           const SizedBox(height: 2),
                                           Text(
@@ -554,8 +642,8 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         child: SafeArea(
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 24, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -707,7 +795,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
     return Container(
       decoration: BoxDecoration(
         color: palette.bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
           24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 24),
@@ -749,7 +838,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                       }),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? palette.accent
@@ -760,7 +850,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                           child: Text(
                             t == 'expense' ? 'Expense' : 'Income',
                             style: GoogleFonts.syne(
-                                fontSize: 13, fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                                 color: isSelected
                                     ? palette.accentFg
                                     : palette.inkMuted),
@@ -774,7 +865,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
             ),
             const SizedBox(height: 16),
             _sheetField(controller: _titleController,
-                hint: 'What was this for?', label: 'Title', palette: palette),
+                hint: 'What was this for?', label: 'Title',
+                palette: palette),
             const SizedBox(height: 12),
             _sheetField(controller: _amountController,
                 hint: '0.00', label: 'Amount (₹)', palette: palette,
@@ -794,15 +886,17 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                   final cat = _categories[i];
                   final isSelected = _selectedCategory == cat['id'];
                   return GestureDetector(
-                    onTap: () =>
-                        setState(() => _selectedCategory = cat['id']),
+                    onTap: () => setState(
+                        () => _selectedCategory = cat['id']),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? palette.accent : palette.bg2,
+                        color: isSelected
+                            ? palette.accent
+                            : palette.bg2,
                         borderRadius: BorderRadius.circular(100),
                         border: Border.all(
                             color: isSelected
@@ -811,7 +905,8 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                       ),
                       child: Text(cat['name'],
                           style: GoogleFonts.syne(
-                              fontSize: 12, fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
                               color: isSelected
                                   ? palette.accentFg
                                   : palette.inkMuted)),
@@ -829,7 +924,9 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                   firstDate: DateTime(2020),
                   lastDate: DateTime.now(),
                 );
-                if (picked != null) setState(() => _selectedDate = picked);
+                if (picked != null) {
+                  setState(() => _selectedDate = picked);
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -872,10 +969,12 @@ class _AddTransactionSheetState extends State<_AddTransactionSheet> {
                         ? SizedBox(
                             width: 20, height: 20,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: palette.accentFg))
+                                strokeWidth: 2,
+                                color: palette.accentFg))
                         : Text('Save transaction',
                             style: GoogleFonts.dmSerifDisplay(
-                                fontSize: 17, fontStyle: FontStyle.italic,
+                                fontSize: 17,
+                                fontStyle: FontStyle.italic,
                                 color: palette.accentFg)),
                   ),
                 ),
@@ -946,14 +1045,20 @@ class _SentenceChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white10,
+          color: palette.isDark
+              ? palette.border.withOpacity(0.3)
+              : Colors.white10,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style: GoogleFonts.syne(fontSize: 9, color: Colors.white54)),
+                style: GoogleFonts.syne(
+                    fontSize: 9,
+                    color: palette.isDark
+                        ? palette.inkMuted
+                        : Colors.white54)),
             const SizedBox(height: 2),
             Text(value,
                 style: GoogleFonts.syne(
@@ -1002,7 +1107,9 @@ class _StatCard extends StatelessWidget {
             child: CustomPaint(
               painter: _IconPainter(
                 type: iconType,
-                color: isPositive ? palette.accent : const Color(0xFFB5446E),
+                color: isPositive
+                    ? palette.accent
+                    : const Color(0xFFB5446E),
               ),
             ),
           ),
@@ -1010,7 +1117,9 @@ class _StatCard extends StatelessWidget {
           Text(value,
               style: GoogleFonts.syne(
                   fontSize: 15, fontWeight: FontWeight.w800,
-                  color: isPositive ? palette.ink : const Color(0xFFB5446E),
+                  color: isPositive
+                      ? palette.ink
+                      : const Color(0xFFB5446E),
                   letterSpacing: -0.5)),
           const SizedBox(height: 2),
           Text(label,
@@ -1018,7 +1127,8 @@ class _StatCard extends StatelessWidget {
                   fontSize: 10, fontWeight: FontWeight.w600,
                   color: palette.ink)),
           Text(sublabel,
-              style: GoogleFonts.syne(fontSize: 9, color: palette.inkMuted)),
+              style: GoogleFonts.syne(
+                  fontSize: 9, color: palette.inkMuted)),
         ],
       ),
     );
@@ -1051,7 +1161,8 @@ class _NavItem extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isActive
                   ? palette.accent.withOpacity(0.12)
@@ -1065,8 +1176,9 @@ class _NavItem extends StatelessWidget {
           Text(label,
               style: GoogleFonts.syne(
                   fontSize: 10,
-                  fontWeight:
-                      isActive ? FontWeight.w600 : FontWeight.w400,
+                  fontWeight: isActive
+                      ? FontWeight.w600
+                      : FontWeight.w400,
                   color: isActive ? palette.accent : palette.inkMuted)),
         ],
       ),
@@ -1108,7 +1220,8 @@ class _IconPainter extends CustomPainter {
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
-                    center: Offset(cx - 10, cy + 8), width: 11, height: 4),
+                    center: Offset(cx - 10, cy + 8),
+                    width: 11, height: 4),
                 const Radius.circular(1.5)),
             pf);
         canvas.drawLine(
@@ -1116,13 +1229,15 @@ class _IconPainter extends CustomPainter {
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
-                    center: Offset(cx + 10, cy - 10), width: 11, height: 4),
+                    center: Offset(cx + 10, cy - 10),
+                    width: 11, height: 4),
                 const Radius.circular(1.5)),
             pf);
         break;
 
       case 'memory':
-        canvas.drawLine(Offset(cx, cy - 10), Offset(cx, cy + 10), p);
+        canvas.drawLine(
+            Offset(cx, cy - 10), Offset(cx, cy + 10), p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10),
@@ -1140,12 +1255,14 @@ class _IconPainter extends CustomPainter {
           ..strokeCap = StrokeCap.round;
         canvas.drawLine(
             Offset(cx - 10, cy - 4), Offset(cx - 3, cy - 4), lp2);
-        canvas.drawLine(Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
+        canvas.drawLine(
+            Offset(cx - 10, cy), Offset(cx - 3, cy), lp2);
         canvas.drawLine(
             Offset(cx - 10, cy + 4), Offset(cx - 3, cy + 4), lp2);
         canvas.drawLine(
             Offset(cx + 3, cy - 4), Offset(cx + 10, cy - 4), lp2);
-        canvas.drawLine(Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
+        canvas.drawLine(
+            Offset(cx + 3, cy), Offset(cx + 10, cy), lp2);
         break;
 
       case 'spendlist':
