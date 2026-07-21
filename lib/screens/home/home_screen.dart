@@ -65,7 +65,8 @@ class _HomeScreenState extends State<HomeScreen>
           _trueBalance = balance;
           _monthlyIncome = summary['income'] ?? 0;
           _monthlyExpense = summary['expense'] ?? 0;
-          _userName = user?.displayName?.split(' ').first ?? 'there';
+          _userName =
+              user?.displayName?.split(' ').first ?? 'there';
           _isLoading = false;
         });
       }
@@ -145,12 +146,64 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  void _showDeleteConfirm(
+      BuildContext context, String txId, LedgrrPalette palette) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: palette.card,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete transaction?',
+            style: GoogleFonts.syne(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: palette.ink)),
+        content: Text(
+            'This cannot be undone. Your balance will update.',
+            style: GoogleFonts.syne(
+                fontSize: 13, color: palette.inkMuted)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: palette.inkMuted)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _transactionService
+                  .deleteTransaction(txId);
+              _loadData();
+            },
+            child: Text('Delete',
+                style: GoogleFonts.syne(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFE53935))),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,
+      floatingActionButton: _currentNavIndex == 0
+          ? FloatingActionButton(
+              backgroundColor: palette.accent,
+              onPressed: () => _showQuickAdd(context, palette),
+              child: Icon(Icons.bolt_rounded,
+                  color: palette.accentFg, size: 26),
+            )
+          : null,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.endFloat,
       body: IndexedStack(
         index: _currentNavIndex,
         children: [
@@ -168,8 +221,7 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Row(
                         children: [
                           Container(
-                            width: 34,
-                            height: 34,
+                            width: 34, height: 34,
                             decoration: BoxDecoration(
                               color: palette.ink,
                               borderRadius: BorderRadius.circular(9),
@@ -215,8 +267,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   BorderRadius.circular(12),
                               onTap: _signOut,
                               child: Container(
-                                width: 40,
-                                height: 40,
+                                width: 40, height: 40,
                                 decoration: BoxDecoration(
                                   borderRadius:
                                       BorderRadius.circular(12),
@@ -230,8 +281,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           const SizedBox(width: 10),
                           Container(
-                            width: 40,
-                            height: 40,
+                            width: 40, height: 40,
                             decoration: BoxDecoration(
                               color: palette.accent,
                               borderRadius: BorderRadius.circular(12),
@@ -301,7 +351,8 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         padding: const EdgeInsets.all(20),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
                           children: [
                             Row(
                               children: [
@@ -383,13 +434,12 @@ class _HomeScreenState extends State<HomeScreen>
                         padding:
                             const EdgeInsets.fromLTRB(24, 12, 24, 0),
                         child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _currentNavIndex = 1),
+                          onTap: () => setState(
+                              () => _currentNavIndex = 1),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color:
-                                  palette.accent.withOpacity(0.1),
+                              color: palette.accent.withOpacity(0.1),
                               borderRadius:
                                   BorderRadius.circular(16),
                               border: Border.all(
@@ -419,8 +469,9 @@ class _HomeScreenState extends State<HomeScreen>
                                               .difference(
                                                   DateTime.now())
                                               .inDays;
-                                          final name = e['name'] ??
-                                              'Upcoming event';
+                                          final name =
+                                              e['name'] ??
+                                                  'Upcoming event';
                                           if (days == 0)
                                             return '$name is today.';
                                           if (days == 1)
@@ -583,8 +634,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40,
-                                  height: 40,
+                                  width: 40, height: 40,
                                   decoration: BoxDecoration(
                                     color: palette.accent
                                         .withOpacity(0.12),
@@ -655,8 +705,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40,
-                                  height: 40,
+                                  width: 40, height: 40,
                                   decoration: BoxDecoration(
                                     color: palette.accent
                                         .withOpacity(0.12),
@@ -727,8 +776,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: Row(
                               children: [
                                 Container(
-                                  width: 40,
-                                  height: 40,
+                                  width: 40, height: 40,
                                   decoration: BoxDecoration(
                                     color: palette.accent
                                         .withOpacity(0.12),
@@ -836,8 +884,7 @@ class _HomeScreenState extends State<HomeScreen>
                               child: Column(
                                 children: [
                                   Icon(
-                                      Icons
-                                          .receipt_long_outlined,
+                                      Icons.receipt_long_outlined,
                                       color: palette.inkMuted,
                                       size: 40),
                                   const SizedBox(height: 12),
@@ -852,8 +899,7 @@ class _HomeScreenState extends State<HomeScreen>
                                       'Tap Add Transaction to get started.',
                                       style: GoogleFonts.syne(
                                           fontSize: 13,
-                                          color:
-                                              palette.inkMuted),
+                                          color: palette.inkMuted),
                                       textAlign:
                                           TextAlign.center),
                                 ],
@@ -869,7 +915,8 @@ class _HomeScreenState extends State<HomeScreen>
                       return SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, i) {
-                            final data = docs[i].data()
+                            final doc = docs[i];
+                            final data = doc.data()
                                 as Map<String, dynamic>;
                             final isIncome =
                                 data['type'] == 'income';
@@ -880,90 +927,182 @@ class _HomeScreenState extends State<HomeScreen>
                                     as DateTime;
 
                             return Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(
-                                      24, 10, 24, 0),
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  color: palette.card,
-                                  borderRadius:
-                                      BorderRadius.circular(16),
-                                  border: Border.all(
-                                      color: palette.border),
+                              padding: const EdgeInsets.fromLTRB(
+                                  24, 10, 24, 0),
+                              child: Dismissible(
+                                key: Key(doc.id),
+                                direction:
+                                    DismissDirection.endToStart,
+                                background: Container(
+                                  margin: const EdgeInsets.only(
+                                      left: 60),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE53935),
+                                    borderRadius:
+                                        BorderRadius.circular(16),
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(
+                                      right: 20),
+                                  child: const Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: Colors.white,
+                                      size: 22),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 42,
-                                      height: 42,
-                                      decoration: BoxDecoration(
-                                        color: isIncome
-                                            ? palette.accent
-                                                .withOpacity(0.12)
-                                            : const Color(
-                                                    0xFFB5446E)
-                                                .withOpacity(0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(
-                                                12),
-                                      ),
-                                      child: Icon(
-                                        isIncome
-                                            ? Icons
-                                                .arrow_downward_rounded
-                                            : Icons
-                                                .arrow_upward_rounded,
-                                        color: isIncome
-                                            ? palette.accent
-                                            : const Color(
-                                                0xFFB5446E),
-                                        size: 18,
-                                      ),
+                                confirmDismiss: (_) async {
+                                  bool confirmed = false;
+                                  await showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                      backgroundColor: palette.card,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                                  20)),
+                                      title: Text(
+                                          'Delete transaction?',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 16,
+                                              fontWeight:
+                                                  FontWeight.w700,
+                                              color: palette.ink)),
+                                      content: Text(
+                                          'This cannot be undone.',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 13,
+                                              color:
+                                                  palette.inkMuted)),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: Text('Cancel',
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 13,
+                                                  color: palette
+                                                      .inkMuted)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            confirmed = true;
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Delete',
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 13,
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                  color: const Color(
+                                                      0xFFE53935))),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment
-                                                .start,
-                                        children: [
-                                          Text(
-                                              data['title'] ?? '',
-                                              style:
-                                                  GoogleFonts.syne(
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight
-                                                              .w600,
-                                                      color: palette
-                                                          .ink)),
-                                          const SizedBox(
-                                              height: 2),
-                                          Text(
-                                            '${data['category']} · ${date.day}/${date.month}/${date.year}',
-                                            style:
-                                                GoogleFonts.syne(
-                                                    fontSize: 11,
-                                                    color: palette
-                                                        .inkMuted),
+                                  );
+                                  if (confirmed) {
+                                    await _transactionService
+                                        .deleteTransaction(doc.id);
+                                    _loadData();
+                                  }
+                                  return confirmed;
+                                },
+                                child: GestureDetector(
+                                  onTap: () =>
+                                      _showEditTransaction(
+                                          context, palette, doc),
+                                  child: Container(
+                                    padding:
+                                        const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: palette.card,
+                                      borderRadius:
+                                          BorderRadius.circular(16),
+                                      border: Border.all(
+                                          color: palette.border),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 42, height: 42,
+                                          decoration: BoxDecoration(
+                                            color: isIncome
+                                                ? palette.accent
+                                                    .withOpacity(0.12)
+                                                : const Color(
+                                                        0xFFB5446E)
+                                                    .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    12),
                                           ),
-                                        ],
-                                      ),
+                                          child: Icon(
+                                            isIncome
+                                                ? Icons
+                                                    .arrow_downward_rounded
+                                                : Icons
+                                                    .arrow_upward_rounded,
+                                            color: isIncome
+                                                ? palette.accent
+                                                : const Color(
+                                                    0xFFB5446E),
+                                            size: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment
+                                                    .start,
+                                            children: [
+                                              Text(
+                                                  data['title'] ?? '',
+                                                  style: GoogleFonts
+                                                      .syne(
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight
+                                                                  .w600,
+                                                          color: palette
+                                                              .ink)),
+                                              const SizedBox(
+                                                  height: 2),
+                                              Text(
+                                                '${data['category']} · ${date.day}/${date.month}/${date.year}',
+                                                style: GoogleFonts
+                                                    .syne(
+                                                        fontSize: 11,
+                                                        color: palette
+                                                            .inkMuted),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
+                                              style: GoogleFonts.syne(
+                                                fontSize: 14,
+                                                fontWeight:
+                                                    FontWeight.w700,
+                                                color: isIncome
+                                                    ? palette.accent
+                                                    : const Color(
+                                                        0xFFB5446E),
+                                              ),
+                                            ),
+                                            Text('tap to edit',
+                                                style: GoogleFonts.syne(
+                                                    fontSize: 9,
+                                                    color: palette
+                                                        .inkMuted)),
+                                          ],
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
-                                      style: GoogleFonts.syne(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: isIncome
-                                            ? palette.accent
-                                            : const Color(
-                                                0xFFB5446E),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             );
@@ -998,16 +1137,14 @@ class _HomeScreenState extends State<HomeScreen>
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: palette.card,
-          border:
-              Border(top: BorderSide(color: palette.border)),
+          border: Border(top: BorderSide(color: palette.border)),
         ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 10),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _NavItem(
                   icon: Icons.home_rounded,
@@ -1069,16 +1206,384 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+
+  void _showEditTransaction(BuildContext context,
+      LedgrrPalette palette, DocumentSnapshot doc) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AddTransactionSheet(
+        palette: palette,
+        onAdded: _loadData,
+        existingDoc: doc,
+      ),
+    );
+  }
+
+  void _showQuickAdd(BuildContext context, LedgrrPalette palette) {
+    final amountController = TextEditingController();
+    final otherController = TextEditingController();
+    String selectedCategory = 'food';
+    String type = 'expense';
+    DateTime selectedDate = DateTime.now();
+
+    final expenseCategories = [
+      {'id': 'food', 'name': 'Food'},
+      {'id': 'transport', 'name': 'Transport'},
+      {'id': 'shopping', 'name': 'Shopping'},
+      {'id': 'dining', 'name': 'Dining Out'},
+      {'id': 'coffee', 'name': 'Coffee'},
+      {'id': 'groceries', 'name': 'Groceries'},
+      {'id': 'entertainment', 'name': 'Fun'},
+      {'id': 'health', 'name': 'Health'},
+      {'id': 'other_expense', 'name': 'Other'},
+    ];
+
+    final incomeCategories = [
+      {'id': 'allowance', 'name': 'Allowance'},
+      {'id': 'freelance', 'name': 'Freelance'},
+      {'id': 'gift', 'name': 'Gift'},
+      {'id': 'salary', 'name': 'Salary'},
+      {'id': 'other_income', 'name': 'Other'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setState) => Container(
+          decoration: BoxDecoration(
+            color: palette.bg,
+            borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+              24,
+              20,
+              24,
+              MediaQuery.of(context).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  decoration: BoxDecoration(
+                    color: palette.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Text('Quick Add',
+                      style: GoogleFonts.syne(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: palette.ink,
+                          letterSpacing: -0.5)),
+                  const Spacer(),
+                  Text('5 seconds. Done.',
+                      style: GoogleFonts.dmSerifDisplay(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                          color: palette.inkMuted)),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Type toggle
+              Container(
+                decoration: BoxDecoration(
+                  color: palette.bg2,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: palette.border),
+                ),
+                child: Row(
+                  children: ['expense', 'income'].map((t) {
+                    final isSelected = type == t;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() {
+                          type = t;
+                          selectedCategory = t == 'expense'
+                              ? 'food'
+                              : 'allowance';
+                        }),
+                        child: AnimatedContainer(
+                          duration:
+                              const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? palette.accent
+                                : Colors.transparent,
+                            borderRadius:
+                                BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              t == 'expense'
+                                  ? 'Expense'
+                                  : 'Income',
+                              style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? palette.accentFg
+                                      : palette.inkMuted),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Amount field
+              Container(
+                decoration: BoxDecoration(
+                  color: palette.bg2,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: palette.border),
+                ),
+                child: TextField(
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                  style: GoogleFonts.syne(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: palette.ink),
+                  decoration: InputDecoration(
+                    hintText: '0',
+                    hintStyle: GoogleFonts.syne(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: palette.border),
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                    prefixText: '₹ ',
+                    prefixStyle: GoogleFonts.syne(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: palette.inkMuted),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Category chips
+              SizedBox(
+                height: 38,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: type == 'expense'
+                      ? expenseCategories.length
+                      : incomeCategories.length,
+                  itemBuilder: (context, i) {
+                    final cats = type == 'expense'
+                        ? expenseCategories
+                        : incomeCategories;
+                    final cat = cats[i];
+                    final isSelected =
+                        selectedCategory == cat['id'];
+                    return GestureDetector(
+                      onTap: () => setState(() =>
+                          selectedCategory = cat['id']!),
+                      child: AnimatedContainer(
+                        duration:
+                            const Duration(milliseconds: 150),
+                        margin:
+                            const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? palette.accent
+                              : palette.bg2,
+                          borderRadius:
+                              BorderRadius.circular(100),
+                          border: Border.all(
+                              color: isSelected
+                                  ? palette.accent
+                                  : palette.border),
+                        ),
+                        child: Text(cat['name']!,
+                            style: GoogleFonts.syne(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isSelected
+                                    ? palette.accentFg
+                                    : palette.inkMuted)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Other text field
+              if (selectedCategory == 'other_expense' ||
+                  selectedCategory == 'other_income') ...[
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: palette.bg2,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: TextField(
+                    controller: otherController,
+                    style: GoogleFonts.syne(
+                        fontSize: 15, color: palette.ink),
+                    decoration: InputDecoration(
+                      hintText: 'What was this for?',
+                      hintStyle: GoogleFonts.syne(
+                          fontSize: 14,
+                          color: palette.inkMuted),
+                      border: InputBorder.none,
+                      contentPadding:
+                          const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 12),
+
+              // Date picker
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    setState(() => selectedDate = picked);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: palette.bg2,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined,
+                          color: palette.accent, size: 15),
+                      const SizedBox(width: 10),
+                      Text(
+                        selectedDate.day == DateTime.now().day &&
+                                selectedDate.month ==
+                                    DateTime.now().month
+                            ? 'Today'
+                            : '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                        style: GoogleFonts.syne(
+                            fontSize: 13, color: palette.ink),
+                      ),
+                      const Spacer(),
+                      Text('Change date',
+                          style: GoogleFonts.syne(
+                              fontSize: 11,
+                              color: palette.accent)),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Save button
+              Material(
+                color: palette.accent,
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () async {
+                    final amount = double.tryParse(
+                        amountController.text.trim());
+                    if (amount == null || amount <= 0) return;
+                    final cats = type == 'expense'
+                        ? expenseCategories
+                        : incomeCategories;
+                    final catName = cats.firstWhere(
+                        (c) => c['id'] == selectedCategory,
+                        orElse: () => {
+                              'id': selectedCategory,
+                              'name': selectedCategory
+                            })['name']!;
+                    final isOther =
+                        selectedCategory == 'other_expense' ||
+                            selectedCategory == 'other_income';
+                    final title = isOther &&
+                            otherController.text
+                                .trim()
+                                .isNotEmpty
+                        ? otherController.text.trim()
+                        : catName;
+                    await _transactionService.addTransaction(
+                      title: title,
+                      amount: amount,
+                      category: selectedCategory,
+                      type: type,
+                      date: selectedDate,
+                      note: '',
+                    );
+                    _loadData();
+                    if (context.mounted)
+                      Navigator.pop(context);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16),
+                    child: Center(
+                      child: Text('Done',
+                          style: GoogleFonts.dmSerifDisplay(
+                              fontSize: 17,
+                              fontStyle: FontStyle.italic,
+                              color: palette.accentFg)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-// ─── ADD TRANSACTION SHEET ─────────────────────────────────────────────────
+// ─── ADD / EDIT TRANSACTION SHEET ──────────────────────────────────────────
 
 class _AddTransactionSheet extends StatefulWidget {
   final LedgrrPalette palette;
   final VoidCallback onAdded;
+  final DocumentSnapshot? existingDoc;
 
-  const _AddTransactionSheet(
-      {required this.palette, required this.onAdded});
+  const _AddTransactionSheet({
+    required this.palette,
+    required this.onAdded,
+    this.existingDoc,
+  });
 
   @override
   State<_AddTransactionSheet> createState() =>
@@ -1138,6 +1643,24 @@ class _AddTransactionSheetState
           ? _expenseCategories
           : _incomeCategories;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingDoc != null) {
+      final data =
+          widget.existingDoc!.data() as Map<String, dynamic>;
+      _titleController.text = data['title'] ?? '';
+      _amountController.text =
+          (data['amount'] as num?)?.toString() ?? '';
+      _noteController.text = data['note'] ?? '';
+      _type = data['type'] ?? 'expense';
+      _selectedCategory = data['category'] ?? 'food';
+      _selectedDate =
+          (data['date'] as Timestamp?)?.toDate() ??
+              DateTime.now();
+    }
+  }
+
   Future<void> _save() async {
     if (_titleController.text.trim().isEmpty) return;
     if (_amountController.text.trim().isEmpty) return;
@@ -1146,14 +1669,26 @@ class _AddTransactionSheetState
     if (amount == null || amount <= 0) return;
     setState(() => _isLoading = true);
     try {
-      await _transactionService.addTransaction(
-        title: _titleController.text.trim(),
-        amount: amount,
-        category: _selectedCategory,
-        type: _type,
-        date: _selectedDate,
-        note: _noteController.text.trim(),
-      );
+      if (widget.existingDoc != null) {
+        await _transactionService.updateTransaction(
+          transactionId: widget.existingDoc!.id,
+          title: _titleController.text.trim(),
+          amount: amount,
+          category: _selectedCategory,
+          type: _type,
+          date: _selectedDate,
+          note: _noteController.text.trim(),
+        );
+      } else {
+        await _transactionService.addTransaction(
+          title: _titleController.text.trim(),
+          amount: amount,
+          category: _selectedCategory,
+          type: _type,
+          date: _selectedDate,
+          note: _noteController.text.trim(),
+        );
+      }
       widget.onAdded();
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
@@ -1172,12 +1707,13 @@ class _AddTransactionSheetState
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette;
+    final isEditing = widget.existingDoc != null;
 
     return Container(
       decoration: BoxDecoration(
         color: palette.bg,
-        borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(24, 20, 24,
           MediaQuery.of(context).viewInsets.bottom + 24),
@@ -1188,8 +1724,7 @@ class _AddTransactionSheetState
           children: [
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 40, height: 4,
                 decoration: BoxDecoration(
                   color: palette.border,
                   borderRadius: BorderRadius.circular(2),
@@ -1197,7 +1732,10 @@ class _AddTransactionSheetState
               ),
             ),
             const SizedBox(height: 20),
-            Text('Add transaction',
+            Text(
+                isEditing
+                    ? 'Edit transaction'
+                    : 'Add transaction',
                 style: GoogleFonts.syne(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -1369,12 +1907,14 @@ class _AddTransactionSheetState
                   child: Center(
                     child: _isLoading
                         ? SizedBox(
-                            width: 20,
-                            height: 20,
+                            width: 20, height: 20,
                             child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: palette.accentFg))
-                        : Text('Save transaction',
+                        : Text(
+                            isEditing
+                                ? 'Save changes'
+                                : 'Save transaction',
                             style: GoogleFonts.dmSerifDisplay(
                                 fontSize: 17,
                                 fontStyle: FontStyle.italic,
@@ -1511,8 +2051,7 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 28,
-            height: 28,
+            width: 28, height: 28,
             child: CustomPaint(
               painter: _IconPainter(
                 type: iconType,
@@ -1637,8 +2176,7 @@ class _IconPainter extends CustomPainter {
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
                     center: Offset(cx - 10, cy + 8),
-                    width: 11,
-                    height: 4),
+                    width: 11, height: 4),
                 const Radius.circular(1.5)),
             pf);
         canvas.drawLine(Offset(cx + 10, cy - 1),
@@ -1647,8 +2185,7 @@ class _IconPainter extends CustomPainter {
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
                     center: Offset(cx + 10, cy - 10),
-                    width: 11,
-                    height: 4),
+                    width: 11, height: 4),
                 const Radius.circular(1.5)),
             pf);
         break;
@@ -1658,14 +2195,12 @@ class _IconPainter extends CustomPainter {
             Offset(cx, cy - 10), Offset(cx, cy + 10), p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
-                Rect.fromLTRB(
-                    cx - 13, cy - 10, cx, cy + 10),
+                Rect.fromLTRB(cx - 13, cy - 10, cx, cy + 10),
                 const Radius.circular(2)),
             p);
         canvas.drawRRect(
             RRect.fromRectAndRadius(
-                Rect.fromLTRB(
-                    cx, cy - 10, cx + 13, cy + 10),
+                Rect.fromLTRB(cx, cy - 10, cx + 13, cy + 10),
                 const Radius.circular(2)),
             p);
         final lp2 = Paint()
@@ -1690,8 +2225,7 @@ class _IconPainter extends CustomPainter {
             RRect.fromRectAndRadius(
                 Rect.fromCenter(
                     center: Offset(cx, cy),
-                    width: 22,
-                    height: 24),
+                    width: 22, height: 24),
                 const Radius.circular(4)),
             p);
         final lp2 = Paint()
@@ -1714,8 +2248,7 @@ class _IconPainter extends CustomPainter {
         canvas.drawLine(Offset(cx + 1, cy + 1),
             Offset(cx + 7, cy + 1), lp2);
         canvas.drawCircle(
-            Offset(cx - 6, cy + 7),
-            2,
+            Offset(cx - 6, cy + 7), 2,
             Paint()
               ..color = color
               ..style = PaintingStyle.stroke

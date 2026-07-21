@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
+import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 import '../home/home_screen.dart';
 
@@ -98,7 +100,7 @@ class _SetupScreenState extends State<SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = LedgrrColors.mint;
+    final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,
@@ -144,7 +146,7 @@ class _SetupScreenState extends State<SetupScreen> {
                       hint: '0.00',
                       label: 'Current total balance (₹)',
                       palette: palette,
-                      helpText: 'Check your bank app and add any cash you have on hand.',
+                      helpText: 'Bank balance + cash in hand + UPI wallets (PhonePe, Paytm, GPay). Do not include FDs or money people owe you.',
                     ),
                   ),
 
