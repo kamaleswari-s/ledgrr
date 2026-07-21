@@ -7,6 +7,7 @@ import '../../theme/app_theme.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/groq_service.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
@@ -19,7 +20,6 @@ import '../ask/ask_screen.dart';
 import '../history/history_screen.dart';
 import '../piggybank/piggybank_screen.dart';
 import '../dues/dues_screen.dart';
-import '../../services/groq_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,14 +35,15 @@ class _HomeScreenState extends State<HomeScreen>
   int _currentNavIndex = 0;
   final _transactionService = TransactionService();
   final _authService = AuthService();
+  final _groqService = GroqService();
   double _trueBalance = 0;
   double _monthlyIncome = 0;
   double _monthlyExpense = 0;
   bool _isLoading = true;
   String _userName = '';
-  List<Map<String, dynamic>> _upcomingEvents = [];
-  final _groqService = GroqService();
+  int _currentStreak = 0;
   String? _aiSentence;
+  List<Map<String, dynamic>> _upcomingEvents = [];
 
   @override
   void initState() {
@@ -68,13 +69,20 @@ class _HomeScreenState extends State<HomeScreen>
       final summary = await _transactionService.getMonthlySummary(
         now.year, now.month,
       );
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .get();
+      final streak =
+          (userDoc.data()?['currentStreak'] as num?)?.toInt() ?? 0;
       if (mounted) {
         setState(() {
           _trueBalance = balance;
           _monthlyIncome = summary['income'] ?? 0;
           _monthlyExpense = summary['expense'] ?? 0;
           _userName =
-              user?.displayName?.split(' ').first ?? 'there';
+              user.displayName?.split(' ').first ?? 'there';
+          _currentStreak = streak;
           _isLoading = false;
         });
       }
@@ -82,6 +90,7 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
   Future<void> _loadDailySentence() async {
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
@@ -445,6 +454,21 @@ class _HomeScreenState extends State<HomeScreen>
                                     palette: palette),
                               ],
                             ),
+                            if (_currentStreak > 0) ...[
+                              const SizedBox(height: 12),
+                              Text(
+                                _currentStreak == 1
+                                    ? 'Showed up today.'
+                                    : '$_currentStreak days in a row.',
+                                style: GoogleFonts.syne(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: palette.isDark
+                                      ? palette.inkMuted
+                                      : Colors.white54,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -694,6 +718,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                   ),
+
                   // Dues Tracker button
                   SliverToBoxAdapter(
                     child: Padding(
@@ -715,6 +740,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                   ),
+
                   // Learn Finance button
                   SliverToBoxAdapter(
                     child: Padding(
@@ -2393,6 +2419,7 @@ class _JarHomePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter old) => false;
 }
+
 // ─── DUES HOME PAINTER ─────────────────────────────────────────────────────
 // Two opposite-curving arrows, matching the icon used on the Dues screen.
 

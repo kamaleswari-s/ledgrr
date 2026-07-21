@@ -20,22 +20,46 @@ class _GhostScreenState extends State<GhostScreen> {
   List<_GhostItem> _ghosts = [];
   double _totalGhostAmount = 0;
 
+  // Categories that make a single, unrepeated charge worth flagging
+  // as a possible recurring charge (weak signal on its own).
+  static const _recurringLeaningCategories = [
+    'subscriptions', 'internet', 'mobile', 'utilities',
+    'electricity', 'water', 'rent',
+  ];
+
   @override
   void initState() {
     super.initState();
     _scanForGhosts();
   }
 
+  String _sanitizeKey(String key) =>
+      key.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+
   Future<void> _scanForGhosts() async {
     setState(() => _isLoading = true);
     try {
+      final sixMonthsAgo =
+          DateTime.now().subtract(const Duration(days: 180));
+
       final snapshot = await _db
           .collection('users')
           .doc(_uid)
           .collection('transactions')
           .where('type', isEqualTo: 'expense')
+          .where('date',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(sixMonthsAgo))
           .orderBy('date', descending: true)
           .get();
+
+      final dismissedSnapshot = await _db
+          .collection('users')
+          .doc(_uid)
+          .collection('dismissedGhosts')
+          .get();
+      final dismissedKeys = dismissedSnapshot.docs
+          .map((d) => d.data()['key'] as String? ?? '')
+          .toSet();
 
       final docs = snapshot.docs;
       final ghosts = <_GhostItem>[];
@@ -45,90 +69,127 @@ class _GhostScreenState extends State<GhostScreen> {
         final data = doc.data();
         final title = (data['title'] as String).toLowerCase().trim();
         final category = data['category'] as String;
-        final isSubscriptionCategory = [
-          'subscriptions', 'internet', 'mobile', 'utilities',
-          'electricity', 'water',
-        ].contains(category);
 
         String key = title;
         bool found = false;
         for (final existingKey in grouped.keys) {
-          if (_isSimilar(title, existingKey)) {
+          final existingCategory =
+              grouped[existingKey]!.first['category'] as String;
+          if (_isSimilar(title, existingKey) &&
+              category == existingCategory) {
             key = existingKey;
             found = true;
             break;
           }
         }
         if (!found) grouped[key] = [];
-        grouped[key]!.add({
-          ...data, 'id': doc.id, 'isSubscription': isSubscriptionCategory,
-        });
+        grouped[key]!.add({...data, 'id': doc.id});
       }
 
       for (final entry in grouped.entries) {
+        if (dismissedKeys.contains(entry.key)) continue;
+
         final transactions = entry.value;
+        final category = transactions.first['category'] as String;
 
         if (transactions.length >= 2) {
           final amounts = transactions
               .map((t) => (t['amount'] as num).toDouble())
               .toList();
-          final avgAmount = amounts.reduce((a, b) => a + b) / amounts.length;
-          final isConsistent =
-              amounts.every((a) => (a - avgAmount).abs() < avgAmount * 0.2);
+          final avgAmount =
+              amounts.reduce((a, b) => a + b) / amounts.length;
+          final amountConsistent = amounts
+              .every((a) => (a - avgAmount).abs() < avgAmount * 0.2);
 
-          if (isConsistent) {
-            final lastDate =
-                (transactions.first['date'] as Timestamp).toDate();
-            final daysSinceLast =
-                DateTime.now().difference(lastDate).inDays;
+          // Sort ascending by date to compute real gaps between
+          // consecutive occurrences.
+          final sortedDates = transactions
+              .map((t) => (t['date'] as Timestamp).toDate())
+              .toList()
+            ..sort();
 
-            String ghostType = 'Recurring expense';
-            String reason =
-                'This charge appears ${transactions.length} times in your history.';
+          final gaps = <int>[];
+          for (var i = 1; i < sortedDates.length; i++) {
+            gaps.add(sortedDates[i].difference(sortedDates[i - 1]).inDays);
+          }
+          final avgGap = gaps.isEmpty
+              ? 0
+              : gaps.reduce((a, b) => a + b) / gaps.length;
+          final gapConsistent = gaps.isEmpty
+              ? false
+              : gaps.every((g) =>
+                  (g - avgGap).abs() <= (avgGap * 0.4).clamp(3, 999));
 
-            if (transactions.first['isSubscription'] == true) {
-              ghostType = 'Subscription detected';
+          final lastDate = sortedDates.last;
+          final daysSinceLast =
+              DateTime.now().difference(lastDate).inDays;
+
+          if (amountConsistent && gapConsistent) {
+            String ghostType;
+            String reason;
+
+            if (avgGap <= 10) {
+              ghostType = 'Weekly recurring';
               reason =
-                  'Appears to be a recurring subscription. Check if you still use this.';
-            }
-            if (daysSinceLast > 25 && daysSinceLast < 45) {
+                  'Repeats roughly every week. Last charged $daysSinceLast days ago.';
+            } else if (avgGap <= 20) {
+              ghostType = 'Biweekly recurring';
+              reason =
+                  'Repeats roughly every two weeks. Last charged $daysSinceLast days ago.';
+            } else if (avgGap <= 40) {
               ghostType = 'Monthly recurring';
               reason =
-                  'This charge appears monthly. Last charged $daysSinceLast days ago.';
+                  'Repeats roughly every month. Last charged $daysSinceLast days ago.';
+            } else {
+              ghostType = 'Recurring pattern';
+              reason =
+                  'Repeats on a longer cycle (about every ${avgGap.round()} days).';
             }
 
             ghosts.add(_GhostItem(
+              key: entry.key,
               title: _capitalize(entry.key),
               amount: avgAmount,
               occurrences: transactions.length,
               lastSeen: lastDate,
               ghostType: ghostType,
               reason: reason,
-              category: transactions.first['category'] as String,
+              category: category,
+            ));
+          } else if (amountConsistent && transactions.length >= 3) {
+            // Same amount, same title/category, repeats often — just not
+            // on a clean schedule. Still worth surfacing.
+            ghosts.add(_GhostItem(
+              key: entry.key,
+              title: _capitalize(entry.key),
+              amount: avgAmount,
+              occurrences: transactions.length,
+              lastSeen: lastDate,
+              ghostType: 'Irregular but recurring',
+              reason:
+                  'Charged ${transactions.length} times without a fixed schedule. Worth a second look.',
+              category: category,
             ));
           }
         }
 
-        if (transactions.length == 1) {
+        if (transactions.length == 1 &&
+            _recurringLeaningCategories.contains(category)) {
           final data = transactions.first;
           final amount = (data['amount'] as num).toDouble();
-          final category = data['category'] as String;
           final date = (data['date'] as Timestamp).toDate();
 
-          if (category == 'subscriptions' ||
-              category == 'internet' ||
-              category == 'mobile') {
-            ghosts.add(_GhostItem(
-              title: _capitalize(entry.key),
-              amount: amount,
-              occurrences: 1,
-              lastSeen: date,
-              ghostType: 'Possible subscription',
-              reason:
-                  'Logged under ${_capitalize(category)}. Verify if this is recurring.',
-              category: category,
-            ));
-          }
+          ghosts.add(_GhostItem(
+            key: entry.key,
+            title: _capitalize(entry.key),
+            amount: amount,
+            occurrences: 1,
+            lastSeen: date,
+            ghostType: 'Possible recurring charge',
+            reason:
+                'Logged under ${_capitalize(category)}. Keep an eye out — this could recur.',
+            category: category,
+          ));
         }
       }
 
@@ -145,6 +206,46 @@ class _GhostScreenState extends State<GhostScreen> {
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _dismissGhost(_GhostItem ghost) async {
+    final docId = _sanitizeKey(ghost.key);
+    await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('dismissedGhosts')
+        .doc(docId)
+        .set({
+      'key': ghost.key,
+      'title': ghost.title,
+      'dismissedAt': FieldValue.serverTimestamp(),
+    });
+
+    if (!mounted) return;
+
+    setState(() {
+      _ghosts.removeWhere((g) => g.key == ghost.key);
+      _totalGhostAmount =
+          _ghosts.fold(0.0, (sum, g) => sum + g.amount);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Dismissed "${ghost.title}". Won\'t show again.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () async {
+            await _db
+                .collection('users')
+                .doc(_uid)
+                .collection('dismissedGhosts')
+                .doc(docId)
+                .delete();
+            if (mounted) _scanForGhosts();
+          },
+        ),
+      ),
+    );
   }
 
   bool _isSimilar(String a, String b) {
@@ -239,7 +340,7 @@ class _GhostScreenState extends State<GhostScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Recurring charges and forgotten subscriptions found in your transactions.',
+                'Recurring charges and spending patterns found in your last 6 months.',
                 style: GoogleFonts.dmSerifDisplay(
                     fontSize: 14, fontStyle: FontStyle.italic,
                     color: palette.inkMuted),
@@ -424,6 +525,15 @@ class _GhostScreenState extends State<GhostScreen> {
                                             style: GoogleFonts.syne(
                                                 fontSize: 11,
                                                 color: palette.inkMuted)),
+                                        const Spacer(),
+                                        GestureDetector(
+                                          onTap: () => _dismissGhost(ghost),
+                                          child: Text('Dismiss',
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: palette.inkMuted)),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -441,6 +551,7 @@ class _GhostScreenState extends State<GhostScreen> {
 }
 
 class _GhostItem {
+  final String key;
   final String title;
   final double amount;
   final int occurrences;
@@ -450,6 +561,7 @@ class _GhostItem {
   final String category;
 
   const _GhostItem({
+    required this.key,
     required this.title,
     required this.amount,
     required this.occurrences,

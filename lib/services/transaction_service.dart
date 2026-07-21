@@ -29,6 +29,39 @@ class TransactionService {
       'note': note,
       'createdAt': FieldValue.serverTimestamp(),
     });
+    await _updateStreak();
+  }
+
+  // Updates the user's daily logging streak. Called whenever a
+  // transaction is added. Quiet by design — no notifications, no
+  // punishment for breaking it, just a simple count.
+  Future<void> _updateStreak() async {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final userRef = _db.collection('users').doc(_uid);
+    final userDoc = await userRef.get();
+    final data = userDoc.data() ?? {};
+
+    final lastLoggedDate = data['lastLoggedDate'] as String?;
+    final currentStreak = (data['currentStreak'] as num?)?.toInt() ?? 0;
+    final longestStreak = (data['longestStreak'] as num?)?.toInt() ?? 0;
+
+    if (lastLoggedDate == today) {
+      // Already logged today — no change.
+      return;
+    }
+
+    final yesterday = DateTime.now()
+        .subtract(const Duration(days: 1))
+        .toIso8601String()
+        .substring(0, 10);
+
+    final newStreak = lastLoggedDate == yesterday ? currentStreak + 1 : 1;
+
+    await userRef.set({
+      'lastLoggedDate': today,
+      'currentStreak': newStreak,
+      'longestStreak': newStreak > longestStreak ? newStreak : longestStreak,
+    }, SetOptions(merge: true));
   }
 
   // Get all transactions stream
