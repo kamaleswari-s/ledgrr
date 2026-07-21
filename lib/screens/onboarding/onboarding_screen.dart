@@ -16,58 +16,58 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_FeatureData> _features = const [
     _FeatureData(
-      iconType: 'ghost',
-      name: 'Ghost Money Detector',
+      iconType: 'sentence',
+      name: 'Daily Sentence',
       desc:
-          'Forgotten subscriptions, unclaimed refunds, and unpaid social debts — LEDGRR finds every rupee that has been silently draining or waiting to return.',
-    ),
-    _FeatureData(
-      iconType: 'chat',
-      name: 'Ask Your Money',
-      desc:
-          'Type any question in plain language. "Can I eat out twice this week?" LEDGRR reads your actual data and answers honestly.',
-    ),
-    _FeatureData(
-      iconType: 'fog',
-      name: 'Financial Fog Index',
-      desc:
-          'Measures the gap between your bank balance and how financially safe you actually feel — then explains exactly why the fog exists.',
-    ),
-    _FeatureData(
-      iconType: 'storm',
-      name: 'Bill Storm Warning',
-      desc:
-          'Detects when multiple bills cluster in the same week and warns you 10 days ahead with a calm, specific preparation plan.',
-    ),
-    _FeatureData(
-      iconType: 'rewind',
-      name: 'Rewind Mode',
-      desc:
-          'See what last month looked like without that one impulse purchase. Teaches your spending patterns without ever shaming you.',
+          'Every morning LEDGRR reads your finances and gives you one honest sentence. Not a dashboard. Not a graph. Just the truth — in plain English.',
     ),
     _FeatureData(
       iconType: 'balance',
       name: 'True Balance',
       desc:
-          'Not what the bank shows. Your real available money after deducting pending debts, upcoming bills, and ghost obligations.',
+          'Not what your bank shows. Your real available money — calculated from every rupee that came in and every rupee that went out. From day one.',
     ),
     _FeatureData(
-      iconType: 'firstaid',
-      name: 'Financial First Aid',
+      iconType: 'ghost',
+      name: 'Ghost Money Detector',
       desc:
-          'When multiple stress signals align, LEDGRR activates a calm 3-step recovery plan with exact amounts and actions. Never overwhelming.',
+          'Forgotten subscriptions, recurring charges you stopped noticing — LEDGRR scans your transactions and surfaces every rupee silently draining you.',
     ),
     _FeatureData(
       iconType: 'memory',
       name: 'Money Memory',
       desc:
-          'An auto-written daily financial journal. Add your own notes. Read your financial story at the end of every week and month.',
+          'An auto-written daily financial journal. LEDGRR writes your money story. You add your own notes. Read it at the end of the month and see yourself clearly.',
+    ),
+    _FeatureData(
+      iconType: 'calendar',
+      name: 'Event Wallet',
+      desc:
+          'Appa\'s birthday. Goa trip. Diwali shopping. Save toward life moments before they arrive. LEDGRR nudges you when the date is close and your goal is not.',
     ),
     _FeatureData(
       iconType: 'spendlist',
       name: 'Spend List',
       desc:
-          'Plan your spending before you leave. Set a budget cap, check off items as you buy, watch your balance update live. Auto-logs to Memory.',
+          'Plan your spending before you leave. Set a budget cap, check off items as you buy, watch your balance update live. No more overspending at the store.',
+    ),
+    _FeatureData(
+      iconType: 'stats',
+      name: 'Statistics + Identity',
+      desc:
+          'Charts, category breakdowns, and LEDGRR\'s honest take on your month. Plus your spender identity — are you a Steady Saver, a Front-Loader, or a Comfort Buyer?',
+    ),
+    _FeatureData(
+      iconType: 'learn',
+      name: 'Learn Finance',
+      desc:
+          '21 lessons across 3 levels. Plain English. Real Indian examples. From what a budget actually is to how compound interest works — built for students, not accountants.',
+    ),
+    _FeatureData(
+      iconType: 'chat',
+      name: 'Ask Your Money',
+      desc:
+          'Type any question. "Can I afford Pondicherry this weekend?" LEDGRR reads your actual balance, upcoming events, and spending rate — then answers honestly.',
     ),
   ];
 
@@ -107,9 +107,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 16,
-              ),
+                  horizontal: 24, vertical: 16),
               child: Row(
                 children: [
                   if (_currentPage < totalPages - 1)
@@ -117,18 +115,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onTap: () {
                         _pageController.animateToPage(
                           totalPages - 1,
-                          duration: const Duration(milliseconds: 400),
+                          duration:
+                              const Duration(milliseconds: 400),
                           curve: Curves.easeInOut,
                         );
                       },
-                      child: Text(
-                        'Skip',
-                        style: GoogleFonts.syne(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: palette.inkMuted,
-                        ),
-                      ),
+                      child: Text('Skip',
+                          style: GoogleFonts.syne(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: palette.inkMuted)),
                     )
                   else
                     const SizedBox(width: 40),
@@ -138,11 +134,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       final isActive = i == _currentPage;
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        margin:
+                            const EdgeInsets.symmetric(horizontal: 3),
                         width: isActive ? 20 : 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: isActive ? palette.accent : palette.border,
+                          color: isActive
+                              ? palette.accent
+                              : palette.border,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       );
@@ -152,10 +151,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Text(
                     '${_currentPage + 1}/$totalPages',
                     style: GoogleFonts.syne(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: palette.inkMuted,
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: palette.inkMuted),
                   ),
                 ],
               ),
@@ -163,11 +161,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView(
                 controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentPage = i),
+                onPageChanged: (i) =>
+                    setState(() => _currentPage = i),
                 children: [
                   _WelcomePage(palette: palette),
                   ..._features.map(
-                    (f) => _FeaturePage(feature: f, palette: palette),
+                    (f) =>
+                        _FeaturePage(feature: f, palette: palette),
                   ),
                   _GetStartedPage(palette: palette),
                 ],
@@ -185,17 +185,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(100),
                         onTap: _prevPage,
                         child: Container(
-                          width: 52,
-                          height: 52,
+                          width: 52, height: 52,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(color: palette.border),
+                            borderRadius:
+                                BorderRadius.circular(100),
+                            border:
+                                Border.all(color: palette.border),
                           ),
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: palette.ink,
-                            size: 20,
-                          ),
+                          child: Icon(Icons.arrow_back_rounded,
+                              color: palette.ink, size: 20),
                         ),
                       ),
                     ),
@@ -209,16 +207,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onTap: _nextPage,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
+                              horizontal: 32, vertical: 16),
                           child: Text(
-                            _currentPage == 0 ? 'See features' : 'Next',
+                            _currentPage == 0
+                                ? 'See features'
+                                : 'Next',
                             style: GoogleFonts.dmSerifDisplay(
-                              fontSize: 16,
-                              fontStyle: FontStyle.italic,
-                              color: palette.accentFg,
-                            ),
+                                fontSize: 16,
+                                fontStyle: FontStyle.italic,
+                                color: palette.accentFg),
                           ),
                         ),
                       ),
@@ -248,8 +245,7 @@ class _WelcomePage extends StatelessWidget {
         children: [
           const SizedBox(height: 24),
           Container(
-            width: 64,
-            height: 64,
+            width: 64, height: 64,
             decoration: BoxDecoration(
               color: palette.ink,
               borderRadius: BorderRadius.circular(16),
@@ -263,31 +259,28 @@ class _WelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: palette.bg2,
               borderRadius: BorderRadius.circular(100),
               border: Border.all(color: palette.border),
             ),
-            child: Text(
-              'AI-powered finance clarity',
-              style: GoogleFonts.syne(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: palette.accent,
-                letterSpacing: 0.04,
-              ),
-            ),
+            child: Text('Finance clarity for students',
+                style: GoogleFonts.syne(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: palette.accent,
+                    letterSpacing: 0.04)),
           ),
           const SizedBox(height: 20),
           RichText(
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: 'Your money\nhas been ',
+                  text: 'Old word.\n',
                   style: GoogleFonts.syne(
-                    fontSize: 34,
+                    fontSize: 36,
                     fontWeight: FontWeight.w800,
                     color: palette.ink,
                     height: 1.15,
@@ -295,35 +288,9 @@ class _WelcomePage extends StatelessWidget {
                   ),
                 ),
                 TextSpan(
-                  text: 'talking.',
+                  text: 'New brain.',
                   style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 36,
-                    fontStyle: FontStyle.italic,
-                    color: palette.ink,
-                    height: 1.15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 6),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: 'We ',
-                  style: GoogleFonts.syne(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    color: palette.ink,
-                    height: 1.15,
-                    letterSpacing: -1,
-                  ),
-                ),
-                TextSpan(
-                  text: 'translate it.',
-                  style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 36,
+                    fontSize: 38,
                     fontStyle: FontStyle.italic,
                     color: palette.accent,
                     height: 1.15,
@@ -334,20 +301,20 @@ class _WelcomePage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'LEDGRR decodes your spending patterns, surfaces hidden money, and gives you one honest sentence about your finances — every single morning.',
+            'LEDGRR is a finance app built for students who are tired of being overwhelmed by money. One honest sentence every morning. Real data. No jargon. No guilt.',
             style: GoogleFonts.syne(
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              color: palette.inkMuted,
-              height: 1.65,
-            ),
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: palette.inkMuted,
+                height: 1.65),
           ),
           const SizedBox(height: 28),
           Row(
             children: [
               _StatChip(label: '9 features', palette: palette),
               const SizedBox(width: 8),
-              _StatChip(label: '1 daily sentence', palette: palette),
+              _StatChip(
+                  label: '1 daily sentence', palette: palette),
               const SizedBox(width: 8),
               _StatChip(label: '0 jargon', palette: palette),
             ],
@@ -367,20 +334,18 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: palette.bg2,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: palette.border),
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.syne(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: palette.ink,
-        ),
-      ),
+      child: Text(label,
+          style: GoogleFonts.syne(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: palette.ink)),
     );
   }
 }
@@ -398,260 +363,13 @@ class _FeatureData {
   });
 }
 
-// ─── FEATURE ICON ──────────────────────────────────────────────────────────
-
-class _FeatureIcon extends StatelessWidget {
-  final String type;
-  final Color color;
-  final Color bg;
-
-  const _FeatureIcon({
-    required this.type,
-    required this.color,
-    required this.bg,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: CustomPaint(
-        painter: _IconPainter(type: type, color: color),
-      ),
-    );
-  }
-}
-
-class _IconPainter extends CustomPainter {
-  final String type;
-  final Color color;
-
-  const _IconPainter({required this.type, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final pf = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    switch (type) {
-      case 'ghost':
-        final path = Path();
-        path.moveTo(cx - 14, cy + 14);
-        path.lineTo(cx - 14, cy - 4);
-        path.quadraticBezierTo(cx - 14, cy - 18, cx, cy - 18);
-        path.quadraticBezierTo(cx + 14, cy - 18, cx + 14, cy - 4);
-        path.lineTo(cx + 14, cy + 14);
-        path.lineTo(cx + 7, cy + 8);
-        path.lineTo(cx, cy + 14);
-        path.lineTo(cx - 7, cy + 8);
-        path.close();
-        canvas.drawPath(path, p);
-        canvas.drawCircle(Offset(cx - 5, cy - 4), 2.5, pf);
-        canvas.drawCircle(Offset(cx + 5, cy - 4), 2.5, pf);
-        break;
-
-      case 'chat':
-        final rRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx, cy - 2), width: 28, height: 22),
-          const Radius.circular(10),
-        );
-        canvas.drawRRect(rRect, p);
-        final tail = Path();
-        tail.moveTo(cx - 4, cy + 9);
-        tail.lineTo(cx - 10, cy + 16);
-        tail.lineTo(cx + 2, cy + 9);
-        canvas.drawPath(tail, p);
-        canvas.drawCircle(Offset(cx - 7, cy - 2), 2, pf);
-        canvas.drawCircle(Offset(cx, cy - 2), 2, pf);
-        canvas.drawCircle(Offset(cx + 7, cy - 2), 2, pf);
-        break;
-
-      case 'fog':
-        final fogP1 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeCap = StrokeCap.round;
-        final fogP2 = Paint()
-          ..color = color.withOpacity(0.55)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeCap = StrokeCap.round;
-        final fogP3 = Paint()
-          ..color = color.withOpacity(0.25)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeCap = StrokeCap.round;
-        canvas.drawLine(
-            Offset(cx - 16, cy - 8), Offset(cx + 16, cy - 8), fogP1);
-        canvas.drawLine(
-            Offset(cx - 12, cy), Offset(cx + 12, cy), fogP2);
-        canvas.drawLine(
-            Offset(cx - 8, cy + 8), Offset(cx + 8, cy + 8), fogP3);
-        canvas.drawCircle(Offset(cx + 20, cy - 8), 4, pf);
-        break;
-
-      case 'storm':
-        final cloud = Path();
-        cloud.moveTo(cx - 14, cy - 2);
-        cloud.quadraticBezierTo(cx - 14, cy - 14, cx - 4, cy - 14);
-        cloud.quadraticBezierTo(cx - 2, cy - 20, cx + 6, cy - 18);
-        cloud.quadraticBezierTo(cx + 16, cy - 16, cx + 14, cy - 6);
-        cloud.quadraticBezierTo(cx + 18, cy - 4, cx + 14, cy + 2);
-        cloud.lineTo(cx - 14, cy + 2);
-        cloud.close();
-        canvas.drawPath(cloud, p);
-        canvas.drawLine(
-            Offset(cx - 8, cy + 6), Offset(cx - 10, cy + 14), p);
-        canvas.drawLine(
-            Offset(cx, cy + 6), Offset(cx - 2, cy + 14), p);
-        canvas.drawLine(
-            Offset(cx + 8, cy + 6), Offset(cx + 6, cy + 14), p);
-        break;
-
-      case 'rewind':
-        final arc1 = Path();
-        arc1.moveTo(cx + 10, cy - 12);
-        arc1.quadraticBezierTo(cx - 16, cy - 12, cx - 16, cy + 2);
-        arc1.quadraticBezierTo(cx - 16, cy + 14, cx + 4, cy + 14);
-        canvas.drawPath(arc1, p);
-        final ah = Path();
-        ah.moveTo(cx + 10, cy - 18);
-        ah.lineTo(cx + 10, cy - 6);
-        ah.lineTo(cx + 16, cy - 12);
-        ah.close();
-        canvas.drawPath(ah, pf);
-        break;
-
-      case 'balance':
-        canvas.drawLine(Offset(cx, cy - 16), Offset(cx, cy + 16), p);
-        canvas.drawLine(
-            Offset(cx - 14, cy - 2), Offset(cx + 14, cy - 2), p);
-        canvas.drawLine(
-            Offset(cx - 14, cy - 2), Offset(cx - 14, cy + 8), p);
-        final leftPlate = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx - 14, cy + 11), width: 16, height: 5),
-          const Radius.circular(2),
-        );
-        canvas.drawRRect(leftPlate, pf);
-        canvas.drawLine(
-            Offset(cx + 14, cy - 2), Offset(cx + 14, cy - 10), p);
-        final rightPlate = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx + 14, cy - 13), width: 16, height: 5),
-          const Radius.circular(2),
-        );
-        canvas.drawRRect(rightPlate, pf);
-        break;
-
-      case 'firstaid':
-        final vRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx, cy), width: 8, height: 28),
-          const Radius.circular(4),
-        );
-        final hRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx, cy), width: 28, height: 8),
-          const Radius.circular(4),
-        );
-        canvas.drawRRect(vRect, pf);
-        canvas.drawRRect(hRect, pf);
-        break;
-
-      case 'memory':
-        canvas.drawLine(Offset(cx, cy - 14), Offset(cx, cy + 14), p);
-        final leftPage = RRect.fromRectAndRadius(
-          Rect.fromLTRB(cx - 18, cy - 14, cx, cy + 14),
-          const Radius.circular(3),
-        );
-        canvas.drawRRect(leftPage, p);
-        final rightPage = RRect.fromRectAndRadius(
-          Rect.fromLTRB(cx, cy - 14, cx + 18, cy + 14),
-          const Radius.circular(3),
-        );
-        canvas.drawRRect(rightPage, p);
-        final lp2 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5
-          ..strokeCap = StrokeCap.round;
-        canvas.drawLine(
-            Offset(cx - 14, cy - 6), Offset(cx - 4, cy - 6), lp2);
-        canvas.drawLine(Offset(cx - 14, cy), Offset(cx - 4, cy), lp2);
-        canvas.drawLine(
-            Offset(cx - 14, cy + 6), Offset(cx - 4, cy + 6), lp2);
-        canvas.drawLine(
-            Offset(cx + 4, cy - 6), Offset(cx + 14, cy - 6), lp2);
-        canvas.drawLine(Offset(cx + 4, cy), Offset(cx + 14, cy), lp2);
-        break;
-
-      case 'spendlist':
-        final listRect = RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(cx, cy), width: 30, height: 32),
-          const Radius.circular(6),
-        );
-        canvas.drawRRect(listRect, p);
-        final lp2 = Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5
-          ..strokeCap = StrokeCap.round;
-        final check1 = Path();
-        check1.moveTo(cx - 10, cy - 8);
-        check1.lineTo(cx - 7, cy - 5);
-        check1.lineTo(cx - 2, cy - 11);
-        canvas.drawPath(check1, lp2);
-        canvas.drawLine(
-            Offset(cx, cy - 8), Offset(cx + 10, cy - 8), lp2);
-        final check2 = Path();
-        check2.moveTo(cx - 10, cy);
-        check2.lineTo(cx - 7, cy + 3);
-        check2.lineTo(cx - 2, cy - 3);
-        canvas.drawPath(check2, lp2);
-        canvas.drawLine(Offset(cx, cy), Offset(cx + 10, cy), lp2);
-        canvas.drawCircle(
-            Offset(cx - 8, cy + 8),
-            3,
-            Paint()
-              ..color = color
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 1.5);
-        canvas.drawLine(
-            Offset(cx, cy + 8), Offset(cx + 10, cy + 8), lp2);
-        break;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
-}
-
 // ─── FEATURE PAGE ──────────────────────────────────────────────────────────
 
 class _FeaturePage extends StatelessWidget {
   final _FeatureData feature;
   final LedgrrPalette palette;
-  const _FeaturePage({required this.feature, required this.palette});
+  const _FeaturePage(
+      {required this.feature, required this.palette});
 
   @override
   Widget build(BuildContext context) {
@@ -661,41 +379,40 @@ class _FeaturePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 32),
-          _FeatureIcon(
-            type: feature.iconType,
-            color: palette.accent,
-            bg: palette.bg2,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            feature.name,
-            style: GoogleFonts.syne(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: palette.ink,
-              letterSpacing: -0.8,
-              height: 1.2,
+          Container(
+            width: 72, height: 72,
+            decoration: BoxDecoration(
+              color: palette.bg2,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: CustomPaint(
+              painter: _IconPainter(
+                  type: feature.iconType, color: palette.accent),
             ),
           ),
+          const SizedBox(height: 32),
+          Text(feature.name,
+              style: GoogleFonts.syne(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: palette.ink,
+                  letterSpacing: -0.8,
+                  height: 1.2)),
           const SizedBox(height: 8),
           Container(
-            width: 40,
-            height: 3,
+            width: 40, height: 3,
             decoration: BoxDecoration(
               color: palette.accent,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 24),
-          Text(
-            feature.desc,
-            style: GoogleFonts.syne(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: palette.ink,
-              height: 1.7,
-            ),
-          ),
+          Text(feature.desc,
+              style: GoogleFonts.syne(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: palette.ink,
+                  height: 1.7)),
           const SizedBox(height: 40),
         ],
       ),
@@ -720,22 +437,20 @@ class _GetStartedPage extends StatelessWidget {
           Text(
             'Ready to know\nyour truth?',
             style: GoogleFonts.syne(
-              fontSize: 34,
-              fontWeight: FontWeight.w800,
-              color: palette.ink,
-              letterSpacing: -1,
-              height: 1.15,
-            ),
+                fontSize: 34,
+                fontWeight: FontWeight.w800,
+                color: palette.ink,
+                letterSpacing: -1,
+                height: 1.15),
           ),
           const SizedBox(height: 16),
           Text(
             'LEDGRR never stores your card details. It reads your transactions to give you clarity — nothing else.',
             style: GoogleFonts.syne(
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              color: palette.inkMuted,
-              height: 1.65,
-            ),
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: palette.inkMuted,
+                height: 1.65),
           ),
           const SizedBox(height: 40),
           Material(
@@ -743,25 +458,21 @@ class _GetStartedPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AuthScreen(isSignUp: true),
-                  ),
-                );
-              },
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) =>
+                        const AuthScreen(isSignUp: true)),
+              ),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 18),
                 child: Center(
-                  child: Text(
-                    'Create your account',
-                    style: GoogleFonts.dmSerifDisplay(
-                      fontSize: 18,
-                      fontStyle: FontStyle.italic,
-                      color: palette.accentFg,
-                    ),
-                  ),
+                  child: Text('Create your account',
+                      style: GoogleFonts.dmSerifDisplay(
+                          fontSize: 18,
+                          fontStyle: FontStyle.italic,
+                          color: palette.accentFg)),
                 ),
               ),
             ),
@@ -772,29 +483,25 @@ class _GetStartedPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AuthScreen(isSignUp: false),
-                  ),
-                );
-              },
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) =>
+                        const AuthScreen(isSignUp: false)),
+              ),
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 18),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: palette.border),
                 ),
                 child: Center(
-                  child: Text(
-                    'I already have an account',
-                    style: GoogleFonts.syne(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: palette.ink,
-                    ),
-                  ),
+                  child: Text('I already have an account',
+                      style: GoogleFonts.syne(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: palette.ink)),
                 ),
               ),
             ),
@@ -810,21 +517,17 @@ class _GetStartedPage extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.lock_outline_rounded,
-                  size: 16,
-                  color: palette.accent,
-                ),
+                Icon(Icons.lock_outline_rounded,
+                    size: 16, color: palette.accent),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Read-only access. No card numbers. No transfer permissions. RBI-compliant. Your money stays yours.',
+                    'Read-only access. No card numbers. No transfer permissions. Your money stays yours.',
                     style: GoogleFonts.syne(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: palette.ink,
-                      height: 1.55,
-                    ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: palette.ink,
+                        height: 1.55),
                   ),
                 ),
               ],
@@ -837,13 +540,276 @@ class _GetStartedPage extends StatelessWidget {
   }
 }
 
+// ─── ICON PAINTER ──────────────────────────────────────────────────────────
+
+class _IconPainter extends CustomPainter {
+  final String type;
+  final Color color;
+
+  const _IconPainter({required this.type, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    switch (type) {
+      // Daily Sentence — speech quote marks
+      case 'sentence':
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawArc(
+            Rect.fromCenter(
+                center: Offset(cx - 8, cy - 2),
+                width: 14, height: 14),
+            3.14, 3.14, false, lp2);
+        canvas.drawLine(
+            Offset(cx - 8, cy + 5), Offset(cx - 4, cy + 11), lp2);
+        canvas.drawArc(
+            Rect.fromCenter(
+                center: Offset(cx + 6, cy - 2),
+                width: 14, height: 14),
+            3.14, 3.14, false, lp2);
+        canvas.drawLine(
+            Offset(cx + 6, cy + 5), Offset(cx + 10, cy + 11), lp2);
+        break;
+
+      // True Balance — scales
+      case 'balance':
+        canvas.drawLine(
+            Offset(cx, cy - 16), Offset(cx, cy + 16), p);
+        canvas.drawLine(
+            Offset(cx - 14, cy - 2), Offset(cx + 14, cy - 2), p);
+        canvas.drawLine(
+            Offset(cx - 14, cy - 2), Offset(cx - 14, cy + 8), p);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx - 14, cy + 11),
+                    width: 16, height: 5),
+                const Radius.circular(2)),
+            pf);
+        canvas.drawLine(
+            Offset(cx + 14, cy - 2), Offset(cx + 14, cy - 10), p);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx + 14, cy - 13),
+                    width: 16, height: 5),
+                const Radius.circular(2)),
+            pf);
+        break;
+
+      // Ghost Money Detector
+      case 'ghost':
+        final path = Path();
+        path.moveTo(cx - 14, cy + 14);
+        path.lineTo(cx - 14, cy - 4);
+        path.quadraticBezierTo(cx - 14, cy - 18, cx, cy - 18);
+        path.quadraticBezierTo(cx + 14, cy - 18, cx + 14, cy - 4);
+        path.lineTo(cx + 14, cy + 14);
+        path.lineTo(cx + 7, cy + 8);
+        path.lineTo(cx, cy + 14);
+        path.lineTo(cx - 7, cy + 8);
+        path.close();
+        canvas.drawPath(path, p);
+        canvas.drawCircle(Offset(cx - 5, cy - 4), 2.5, pf);
+        canvas.drawCircle(Offset(cx + 5, cy - 4), 2.5, pf);
+        break;
+
+      // Money Memory — open book
+      case 'memory':
+        canvas.drawLine(
+            Offset(cx, cy - 14), Offset(cx, cy + 14), p);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx - 18, cy - 14, cx, cy + 14),
+                const Radius.circular(3)),
+            p);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx, cy - 14, cx + 18, cy + 14),
+                const Radius.circular(3)),
+            p);
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 14, cy - 6), Offset(cx - 4, cy - 6), lp2);
+        canvas.drawLine(
+            Offset(cx - 14, cy), Offset(cx - 4, cy), lp2);
+        canvas.drawLine(
+            Offset(cx - 14, cy + 6), Offset(cx - 4, cy + 6), lp2);
+        canvas.drawLine(
+            Offset(cx + 4, cy - 6), Offset(cx + 14, cy - 6), lp2);
+        canvas.drawLine(
+            Offset(cx + 4, cy), Offset(cx + 14, cy), lp2);
+        break;
+
+      // Event Wallet — calendar
+      case 'calendar':
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx, cy + 2),
+                    width: 30, height: 26),
+                const Radius.circular(5)),
+            p);
+        canvas.drawLine(
+            Offset(cx - 15, cy - 4), Offset(cx + 15, cy - 4), p);
+        canvas.drawLine(
+            Offset(cx - 8, cy - 12), Offset(cx - 8, cy - 4), p);
+        canvas.drawLine(
+            Offset(cx + 8, cy - 12), Offset(cx + 8, cy - 4), p);
+        canvas.drawCircle(Offset(cx - 6, cy + 4), 2, pf);
+        canvas.drawCircle(Offset(cx, cy + 4), 2, pf);
+        canvas.drawCircle(Offset(cx + 6, cy + 4), 2, pf);
+        canvas.drawCircle(Offset(cx - 6, cy + 10), 2, pf);
+        canvas.drawCircle(Offset(cx, cy + 10), 2, pf);
+        break;
+
+      // Spend List — checklist
+      case 'spendlist':
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx, cy),
+                    width: 30, height: 32),
+                const Radius.circular(6)),
+            p);
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        final check1 = Path();
+        check1.moveTo(cx - 10, cy - 8);
+        check1.lineTo(cx - 7, cy - 5);
+        check1.lineTo(cx - 2, cy - 11);
+        canvas.drawPath(check1, lp2);
+        canvas.drawLine(
+            Offset(cx, cy - 8), Offset(cx + 10, cy - 8), lp2);
+        final check2 = Path();
+        check2.moveTo(cx - 10, cy);
+        check2.lineTo(cx - 7, cy + 3);
+        check2.lineTo(cx - 2, cy - 3);
+        canvas.drawPath(check2, lp2);
+        canvas.drawLine(Offset(cx, cy), Offset(cx + 10, cy), lp2);
+        canvas.drawCircle(
+            Offset(cx - 8, cy + 8), 3,
+            Paint()
+              ..color = color
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5);
+        canvas.drawLine(
+            Offset(cx, cy + 8), Offset(cx + 10, cy + 8), lp2);
+        break;
+
+      // Statistics + Identity — bar chart with person
+      case 'stats':
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 14, cy + 12), Offset(cx + 14, cy + 12), lp2);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx - 12, cy + 2, cx - 6, cy + 12),
+                const Radius.circular(2)),
+            pf);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx - 3, cy - 4, cx + 3, cy + 12),
+                const Radius.circular(2)),
+            pf);
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromLTRB(cx + 6, cy - 10, cx + 12, cy + 12),
+                const Radius.circular(2)),
+            pf);
+        canvas.drawCircle(Offset(cx + 10, cy - 14), 4, p);
+        break;
+
+      // Learn Finance — book with star
+      case 'learn':
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx - 2, cy + 2),
+                    width: 24, height: 30),
+                const Radius.circular(4)),
+            p);
+        canvas.drawLine(
+            Offset(cx - 2, cy - 13), Offset(cx - 2, cy + 17), p);
+        final lp2 = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+            Offset(cx - 10, cy - 4), Offset(cx - 4, cy - 4), lp2);
+        canvas.drawLine(
+            Offset(cx - 10, cy + 2), Offset(cx - 4, cy + 2), lp2);
+        canvas.drawLine(
+            Offset(cx - 10, cy + 8), Offset(cx - 4, cy + 8), lp2);
+        canvas.drawCircle(Offset(cx + 10, cy - 10), 7, p);
+        canvas.drawLine(
+            Offset(cx + 10, cy - 15), Offset(cx + 10, cy - 5), lp2);
+        canvas.drawLine(
+            Offset(cx + 5, cy - 10), Offset(cx + 15, cy - 10), lp2);
+        break;
+
+      // Ask Your Money — chat bubble
+      case 'chat':
+        canvas.drawRRect(
+            RRect.fromRectAndRadius(
+                Rect.fromCenter(
+                    center: Offset(cx, cy - 2),
+                    width: 28, height: 22),
+                const Radius.circular(10)),
+            p);
+        final tail = Path();
+        tail.moveTo(cx - 4, cy + 9);
+        tail.lineTo(cx - 10, cy + 16);
+        tail.lineTo(cx + 2, cy + 9);
+        canvas.drawPath(tail, p);
+        canvas.drawCircle(Offset(cx - 7, cy - 2), 2, pf);
+        canvas.drawCircle(Offset(cx, cy - 2), 2, pf);
+        canvas.drawCircle(Offset(cx + 7, cy - 2), 2, pf);
+        break;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
 // ─── RR LOGO PAINTER ───────────────────────────────────────────────────────
 
 class _RRPainter extends CustomPainter {
   final Color leftColor;
   final Color rightColor;
 
-  const _RRPainter({required this.leftColor, required this.rightColor});
+  const _RRPainter(
+      {required this.leftColor, required this.rightColor});
 
   @override
   void paint(Canvas canvas, Size size) {
