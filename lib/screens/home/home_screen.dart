@@ -15,6 +15,7 @@ import '../profile/profile_screen.dart';
 import '../ghost/ghost_screen.dart';
 import '../memory/memory_screen.dart';
 import '../learn/learn_screen.dart';
+import '../ask/ask_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -146,62 +147,26 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  void _showDeleteConfirm(
-      BuildContext context, String txId, LedgrrPalette palette) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: palette.card,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete transaction?',
-            style: GoogleFonts.syne(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: palette.ink)),
-        content: Text(
-            'This cannot be undone. Your balance will update.',
-            style: GoogleFonts.syne(
-                fontSize: 13, color: palette.inkMuted)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel',
-                style: GoogleFonts.syne(
-                    fontSize: 13, color: palette.inkMuted)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _transactionService
-                  .deleteTransaction(txId);
-              _loadData();
-            },
-            child: Text('Delete',
-                style: GoogleFonts.syne(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFFE53935))),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<ThemeProvider>().palette;
 
     return Scaffold(
       backgroundColor: palette.bg,
-      floatingActionButton: _currentNavIndex == 0
-          ? FloatingActionButton(
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _AskFAB(palette: palette),
+          const SizedBox(height: 12),
+          if (_currentNavIndex == 0)
+            FloatingActionButton(
               backgroundColor: palette.accent,
               onPressed: () => _showQuickAdd(context, palette),
               child: Icon(Icons.bolt_rounded,
                   color: palette.accentFg, size: 26),
-            )
-          : null,
+            ),
+        ],
+      ),
       floatingActionButtonLocation:
           FloatingActionButtonLocation.endFloat,
       body: IndexedStack(
@@ -613,67 +578,17 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Padding(
                       padding:
                           const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                      child: Material(
-                        color: palette.bg2,
-                        borderRadius: BorderRadius.circular(16),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const GhostScreen()),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              border:
-                                  Border.all(color: palette.border),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40, height: 40,
-                                  decoration: BoxDecoration(
-                                    color: palette.accent
-                                        .withOpacity(0.12),
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                  ),
-                                  child: CustomPaint(
-                                    painter: _GhostHomePainter(
-                                        color: palette.accent),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Ghost Money Detector',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w700,
-                                              color: palette.ink)),
-                                      Text(
-                                          'Scan for forgotten subscriptions',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 11,
-                                              color:
-                                                  palette.inkMuted)),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 14,
-                                    color: palette.inkMuted),
-                              ],
-                            ),
-                          ),
+                      child: _FeatureCard(
+                        palette: palette,
+                        icon: CustomPaint(
+                          painter: _GhostHomePainter(
+                              color: palette.accent),
+                        ),
+                        title: 'Ghost Money Detector',
+                        subtitle: 'Scan for forgotten subscriptions',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const GhostScreen()),
                         ),
                       ),
                     ),
@@ -684,67 +599,15 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Padding(
                       padding:
                           const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                      child: Material(
-                        color: palette.bg2,
-                        borderRadius: BorderRadius.circular(16),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const MemoryScreen()),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              border:
-                                  Border.all(color: palette.border),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40, height: 40,
-                                  decoration: BoxDecoration(
-                                    color: palette.accent
-                                        .withOpacity(0.12),
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(
-                                      Icons.auto_stories_rounded,
-                                      color: palette.accent,
-                                      size: 20),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Money Memory',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w700,
-                                              color: palette.ink)),
-                                      Text(
-                                          'Your auto-written financial journal',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 11,
-                                              color:
-                                                  palette.inkMuted)),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 14,
-                                    color: palette.inkMuted),
-                              ],
-                            ),
-                          ),
+                      child: _FeatureCard(
+                        palette: palette,
+                        icon: Icon(Icons.auto_stories_rounded,
+                            color: palette.accent, size: 20),
+                        title: 'Money Memory',
+                        subtitle: 'Your auto-written financial journal',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const MemoryScreen()),
                         ),
                       ),
                     ),
@@ -755,66 +618,16 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Padding(
                       padding:
                           const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                      child: Material(
-                        color: palette.bg2,
-                        borderRadius: BorderRadius.circular(16),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    const LearnScreen()),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              border:
-                                  Border.all(color: palette.border),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40, height: 40,
-                                  decoration: BoxDecoration(
-                                    color: palette.accent
-                                        .withOpacity(0.12),
-                                    borderRadius:
-                                        BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(Icons.school_rounded,
-                                      color: palette.accent,
-                                      size: 20),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Learn Finance',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w700,
-                                              color: palette.ink)),
-                                      Text(
-                                          '21 lessons. Plain English. Built for students.',
-                                          style: GoogleFonts.syne(
-                                              fontSize: 11,
-                                              color:
-                                                  palette.inkMuted)),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 14,
-                                    color: palette.inkMuted),
-                              ],
-                            ),
-                          ),
+                      child: _FeatureCard(
+                        palette: palette,
+                        icon: Icon(Icons.school_rounded,
+                            color: palette.accent, size: 20),
+                        title: 'Learn Finance',
+                        subtitle:
+                            '21 lessons. Plain English. Built for students.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const LearnScreen()),
                         ),
                       ),
                     ),
@@ -937,7 +750,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   margin: const EdgeInsets.only(
                                       left: 60),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE53935),
+                                    color:
+                                        const Color(0xFFE53935),
                                     borderRadius:
                                         BorderRadius.circular(16),
                                   ),
@@ -945,7 +759,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   padding: const EdgeInsets.only(
                                       right: 20),
                                   child: const Icon(
-                                      Icons.delete_outline_rounded,
+                                      Icons
+                                          .delete_outline_rounded,
                                       color: Colors.white,
                                       size: 22),
                                 ),
@@ -1026,10 +841,12 @@ class _HomeScreenState extends State<HomeScreen>
                                           decoration: BoxDecoration(
                                             color: isIncome
                                                 ? palette.accent
-                                                    .withOpacity(0.12)
+                                                    .withOpacity(
+                                                        0.12)
                                                 : const Color(
                                                         0xFFB5446E)
-                                                    .withOpacity(0.1),
+                                                    .withOpacity(
+                                                        0.1),
                                             borderRadius:
                                                 BorderRadius.circular(
                                                     12),
@@ -1055,10 +872,12 @@ class _HomeScreenState extends State<HomeScreen>
                                                     .start,
                                             children: [
                                               Text(
-                                                  data['title'] ?? '',
+                                                  data['title'] ??
+                                                      '',
                                                   style: GoogleFonts
                                                       .syne(
-                                                          fontSize: 13,
+                                                          fontSize:
+                                                              13,
                                                           fontWeight:
                                                               FontWeight
                                                                   .w600,
@@ -1083,7 +902,8 @@ class _HomeScreenState extends State<HomeScreen>
                                           children: [
                                             Text(
                                               '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
-                                              style: GoogleFonts.syne(
+                                              style:
+                                                  GoogleFonts.syne(
                                                 fontSize: 14,
                                                 fontWeight:
                                                     FontWeight.w700,
@@ -1094,10 +914,11 @@ class _HomeScreenState extends State<HomeScreen>
                                               ),
                                             ),
                                             Text('tap to edit',
-                                                style: GoogleFonts.syne(
-                                                    fontSize: 9,
-                                                    color: palette
-                                                        .inkMuted)),
+                                                style: GoogleFonts
+                                                    .syne(
+                                                        fontSize: 9,
+                                                        color: palette
+                                                            .inkMuted)),
                                           ],
                                         ),
                                       ],
@@ -1114,7 +935,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
 
                   const SliverToBoxAdapter(
-                      child: SizedBox(height: 100)),
+                      child: SizedBox(height: 120)),
                 ],
               ),
             ),
@@ -1260,9 +1081,7 @@ class _HomeScreenState extends State<HomeScreen>
                 top: Radius.circular(24)),
           ),
           padding: EdgeInsets.fromLTRB(
-              24,
-              20,
-              24,
+              24, 20, 24,
               MediaQuery.of(context).viewInsets.bottom + 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1295,8 +1114,6 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
               const SizedBox(height: 16),
-
-              // Type toggle
               Container(
                 decoration: BoxDecoration(
                   color: palette.bg2,
@@ -1345,10 +1162,7 @@ class _HomeScreenState extends State<HomeScreen>
                   }).toList(),
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              // Amount field
               Container(
                 decoration: BoxDecoration(
                   color: palette.bg2,
@@ -1370,9 +1184,8 @@ class _HomeScreenState extends State<HomeScreen>
                         fontWeight: FontWeight.w800,
                         color: palette.border),
                     border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
                     prefixText: '₹ ',
                     prefixStyle: GoogleFonts.syne(
                         fontSize: 28,
@@ -1381,10 +1194,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              // Category chips
               SizedBox(
                 height: 38,
                 child: ListView.builder(
@@ -1405,8 +1215,7 @@ class _HomeScreenState extends State<HomeScreen>
                       child: AnimatedContainer(
                         duration:
                             const Duration(milliseconds: 150),
-                        margin:
-                            const EdgeInsets.only(right: 8),
+                        margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
@@ -1432,8 +1241,6 @@ class _HomeScreenState extends State<HomeScreen>
                   },
                 ),
               ),
-
-              // Other text field
               if (selectedCategory == 'other_expense' ||
                   selectedCategory == 'other_income') ...[
                 const SizedBox(height: 12),
@@ -1453,17 +1260,13 @@ class _HomeScreenState extends State<HomeScreen>
                           fontSize: 14,
                           color: palette.inkMuted),
                       border: InputBorder.none,
-                      contentPadding:
-                          const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                     ),
                   ),
                 ),
               ],
-
               const SizedBox(height: 12),
-
-              // Date picker
               GestureDetector(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -1490,7 +1293,8 @@ class _HomeScreenState extends State<HomeScreen>
                           color: palette.accent, size: 15),
                       const SizedBox(width: 10),
                       Text(
-                        selectedDate.day == DateTime.now().day &&
+                        selectedDate.day ==
+                                    DateTime.now().day &&
                                 selectedDate.month ==
                                     DateTime.now().month
                             ? 'Today'
@@ -1507,10 +1311,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // Save button
               Material(
                 color: palette.accent,
                 borderRadius: BorderRadius.circular(16),
@@ -1533,9 +1334,7 @@ class _HomeScreenState extends State<HomeScreen>
                         selectedCategory == 'other_expense' ||
                             selectedCategory == 'other_income';
                     final title = isOther &&
-                            otherController.text
-                                .trim()
-                                .isNotEmpty
+                            otherController.text.trim().isNotEmpty
                         ? otherController.text.trim()
                         : catName;
                     await _transactionService.addTransaction(
@@ -1547,8 +1346,7 @@ class _HomeScreenState extends State<HomeScreen>
                       note: '',
                     );
                     _loadData();
-                    if (context.mounted)
-                      Navigator.pop(context);
+                    if (context.mounted) Navigator.pop(context);
                   },
                   child: Container(
                     width: double.infinity,
@@ -1564,6 +1362,74 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── FEATURE CARD ──────────────────────────────────────────────────────────
+
+class _FeatureCard extends StatelessWidget {
+  final LedgrrPalette palette;
+  final Widget icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _FeatureCard({
+    required this.palette,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: palette.bg2,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: palette.accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: icon,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: GoogleFonts.syne(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: palette.ink)),
+                    Text(subtitle,
+                        style: GoogleFonts.syne(
+                            fontSize: 11,
+                            color: palette.inkMuted)),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 14, color: palette.inkMuted),
             ],
           ),
         ),
@@ -1825,8 +1691,7 @@ class _AddTransactionSheetState
                     child: AnimatedContainer(
                       duration:
                           const Duration(milliseconds: 200),
-                      margin:
-                          const EdgeInsets.only(right: 8),
+                      margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
@@ -2349,6 +2214,110 @@ class _GhostHomePainter extends CustomPainter {
     canvas.drawPath(path, p);
     canvas.drawCircle(Offset(cx - 3, cy - 2), 1.8, pf);
     canvas.drawCircle(Offset(cx + 3, cy - 2), 1.8, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── ASK FAB ───────────────────────────────────────────────────────────────
+
+class _AskFAB extends StatelessWidget {
+  final LedgrrPalette palette;
+  const _AskFAB({required this.palette});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => DraggableScrollableSheet(
+            initialChildSize: 0.85,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (_, __) => Container(
+              decoration: BoxDecoration(
+                color: palette.bg,
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24)),
+              ),
+              child: const AskScreen(),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 56, height: 56,
+        decoration: BoxDecoration(
+          color: palette.ink,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: palette.ink.withOpacity(0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: CustomPaint(
+          painter: _MiniRRPainter(
+            leftColor: palette.bg2,
+            rightColor: palette.accent,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── MINI RR PAINTER ───────────────────────────────────────────────────────
+
+class _MiniRRPainter extends CustomPainter {
+  final Color leftColor;
+  final Color rightColor;
+
+  const _MiniRRPainter(
+      {required this.leftColor, required this.rightColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final left = Paint()
+      ..color = leftColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final right = Paint()
+      ..color = rightColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final lp = Path();
+    lp.moveTo(cx - 11, cy + 11);
+    lp.lineTo(cx - 11, cy - 5);
+    lp.quadraticBezierTo(cx - 11, cy - 11, cx - 6, cy - 11);
+    lp.quadraticBezierTo(cx - 1, cy - 11, cx - 1, cy - 5);
+    lp.quadraticBezierTo(cx - 1, cy + 1, cx - 6, cy + 1);
+    lp.lineTo(cx - 2, cy + 11);
+    canvas.drawPath(lp, left);
+
+    final rp = Path();
+    rp.moveTo(cx + 11, cy + 11);
+    rp.lineTo(cx + 11, cy - 5);
+    rp.quadraticBezierTo(cx + 11, cy - 11, cx + 6, cy - 11);
+    rp.quadraticBezierTo(cx + 1, cy - 11, cx + 1, cy - 5);
+    rp.quadraticBezierTo(cx + 1, cy + 1, cx + 6, cy + 1);
+    rp.lineTo(cx + 2, cy + 11);
+    canvas.drawPath(rp, right);
   }
 
   @override
