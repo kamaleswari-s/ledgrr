@@ -16,6 +16,7 @@ import '../ghost/ghost_screen.dart';
 import '../memory/memory_screen.dart';
 import '../learn/learn_screen.dart';
 import '../ask/ask_screen.dart';
+import '../history/history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -647,8 +648,9 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: palette.ink)),
                           const Spacer(),
                           GestureDetector(
-                            onTap: () => setState(
-                                () => _currentNavIndex = 3),
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const HistoryScreen()),
+),
                             child: Text('See all',
                                 style: GoogleFonts.syne(
                                     fontSize: 12,
