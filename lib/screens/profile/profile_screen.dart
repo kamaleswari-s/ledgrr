@@ -274,13 +274,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _sectionLabel('Financial settings', palette),
                     const SizedBox(height: 12),
                     _editField(
-                      label: 'Monthly income or allowance (₹)',
+                      label: 'Approximate monthly income or allowance (₹)',
                       controller: _incomeController,
                       hint: '0',
                       palette: palette,
                       keyboardType: TextInputType.number,
                       helpText:
-                          'Used to calculate savings rate and Financial Fog Index.',
+                          'Used as a reference for insights. Your actual balance is always calculated from your logged transactions.',
                     ),
                     const SizedBox(height: 14),
                     _editField(
@@ -290,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       palette: palette,
                       keyboardType: TextInputType.number,
                       helpText:
-                          'LEDGRR warns you when you are approaching this limit.',
+                          'A soft guide for monthly spending. Log your actual transactions and LEDGRR will tell you where you stand.',
                     ),
 
                     const SizedBox(height: 24),

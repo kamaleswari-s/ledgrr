@@ -17,6 +17,9 @@ import '../memory/memory_screen.dart';
 import '../learn/learn_screen.dart';
 import '../ask/ask_screen.dart';
 import '../history/history_screen.dart';
+import '../piggybank/piggybank_screen.dart';
+import '../dues/dues_screen.dart';
+import '../../services/groq_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,6 +41,8 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isLoading = true;
   String _userName = '';
   List<Map<String, dynamic>> _upcomingEvents = [];
+  final _groqService = GroqService();
+  String? _aiSentence;
 
   @override
   void initState() {
@@ -51,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
     _loadData();
     _loadUpcomingEvents();
+    _loadDailySentence();
     _controller.forward();
   }
 
@@ -74,6 +80,55 @@ class _HomeScreenState extends State<HomeScreen>
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+  Future<void> _loadDailySentence() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      final today =
+          DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      final data = userDoc.data();
+
+      // Use cached sentence if it was generated today.
+      if (data != null &&
+          data['dailySentenceDate'] == today &&
+          (data['dailySentence'] as String?)?.isNotEmpty == true) {
+        if (mounted) {
+          setState(() => _aiSentence = data['dailySentence'] as String);
+        }
+        return;
+      }
+
+      final now = DateTime.now();
+      final categories = await _transactionService.getCategorySpending(
+        now.year, now.month,
+      );
+
+      final sentence = await _groqService.generateDailySentence(
+        userName: _userName.isNotEmpty ? _userName : 'there',
+        trueBalance: _trueBalance,
+        monthlyIncome: _monthlyIncome,
+        monthlyExpense: _monthlyExpense,
+        topCategories: categories,
+      );
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).set(
+        {
+          'dailySentence': sentence,
+          'dailySentenceDate': today,
+        },
+        SetOptions(merge: true),
+      );
+
+      if (mounted) setState(() => _aiSentence = sentence);
+    } catch (e) {
+      // Silently fall back — the getter already handles a null
+      // _aiSentence by using the rule-based sentence.
     }
   }
 
@@ -112,6 +167,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   String get _dailySentence {
     if (_isLoading) return 'Loading your financial truth...';
+    if (_aiSentence != null && _aiSentence!.isNotEmpty) {
+      return _aiSentence!;
+    }
     if (_trueBalance == 0 && _monthlyExpense == 0) {
       return 'Welcome to LEDGRR. Add your first transaction to get started.';
     }
@@ -614,6 +672,49 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Savings Jars button
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      child: _FeatureCard(
+                        palette: palette,
+                        icon: CustomPaint(
+                          painter: _JarHomePainter(
+                              color: palette.accent),
+                        ),
+                        title: 'Savings Jars',
+                        subtitle:
+                            'Named savings jars. Deposit, withdraw, track.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  const PiggyBankScreen()),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Dues Tracker button
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                      child: _FeatureCard(
+                        palette: palette,
+                        icon: CustomPaint(
+                          painter: _DuesHomePainter(
+                              color: palette.accent),
+                        ),
+                        title: 'Dues Tracker',
+                        subtitle:
+                            'Who owes you, who you owe. Settle up.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const DuesScreen()),
+                        ),
+                      ),
+                    ),
+                  ),
                   // Learn Finance button
                   SliverToBoxAdapter(
                     child: Padding(
@@ -648,9 +749,12 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: palette.ink)),
                           const Spacer(),
                           GestureDetector(
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const HistoryScreen()),
-),
+                            onTap: () =>
+                                Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const HistoryScreen()),
+                            ),
                             child: Text('See all',
                                 style: GoogleFonts.syne(
                                     fontSize: 12,
@@ -1295,8 +1399,7 @@ class _HomeScreenState extends State<HomeScreen>
                           color: palette.accent, size: 15),
                       const SizedBox(width: 10),
                       Text(
-                        selectedDate.day ==
-                                    DateTime.now().day &&
+                        selectedDate.day == DateTime.now().day &&
                                 selectedDate.month ==
                                     DateTime.now().month
                             ? 'Today'
@@ -2216,6 +2319,127 @@ class _GhostHomePainter extends CustomPainter {
     canvas.drawPath(path, p);
     canvas.drawCircle(Offset(cx - 3, cy - 2), 1.8, pf);
     canvas.drawCircle(Offset(cx + 3, cy - 2), 1.8, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── JAR HOME PAINTER ──────────────────────────────────────────────────────
+// Replaces the old piggy icon: a simple mason jar with lid, a slight neck
+// taper, and a fill line inside suggesting saved money.
+
+class _JarHomePainter extends CustomPainter {
+  final Color color;
+  const _JarHomePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillLine = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    // Lid (small rounded rect sitting on top of the neck)
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+            center: Offset(cx, cy - 11), width: 15, height: 4),
+        const Radius.circular(1.2),
+      ),
+      pf,
+    );
+
+    // Jar body: neck tapers slightly outward into a rounded body,
+    // rounded bottom corners.
+    final body = Path();
+    body.moveTo(cx - 5, cy - 9); // top-left of neck
+    body.lineTo(cx - 5, cy - 5);
+    body.quadraticBezierTo(cx - 11, cy - 3, cx - 11, cy + 4);
+    body.lineTo(cx - 11, cy + 8);
+    body.quadraticBezierTo(cx - 11, cy + 12, cx - 7, cy + 12);
+    body.lineTo(cx + 7, cy + 12);
+    body.quadraticBezierTo(cx + 11, cy + 12, cx + 11, cy + 8);
+    body.lineTo(cx + 11, cy + 4);
+    body.quadraticBezierTo(cx + 11, cy - 3, cx + 5, cy - 5);
+    body.lineTo(cx + 5, cy - 9);
+    body.close();
+    canvas.drawPath(body, p);
+
+    // "Fill level" line inside, suggesting saved contents
+    canvas.drawLine(
+        Offset(cx - 8, cy + 3), Offset(cx + 8, cy + 3), fillLine);
+
+    // A couple of small coin/dot marks above the fill line
+    canvas.drawCircle(Offset(cx - 3, cy - 1), 1.4, pf);
+    canvas.drawCircle(Offset(cx + 4, cy + 0.5), 1.4, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+// ─── DUES HOME PAINTER ─────────────────────────────────────────────────────
+// Two opposite-curving arrows, matching the icon used on the Dues screen.
+
+class _DuesHomePainter extends CustomPainter {
+  final Color color;
+  const _DuesHomePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final top = Path();
+    top.moveTo(cx - 8, cy - 3);
+    top.quadraticBezierTo(cx, cy - 10, cx + 8, cy - 3);
+    canvas.drawPath(top, p);
+    final topHead = Path();
+    topHead.moveTo(cx + 8, cy - 3);
+    topHead.lineTo(cx + 4, cy - 5);
+    topHead.moveTo(cx + 8, cy - 3);
+    topHead.lineTo(cx + 5, cy + 0.5);
+    canvas.drawPath(topHead, p);
+
+    final bottom = Path();
+    bottom.moveTo(cx + 8, cy + 3);
+    bottom.quadraticBezierTo(cx, cy + 10, cx - 8, cy + 3);
+    canvas.drawPath(bottom, p);
+    final bottomHead = Path();
+    bottomHead.moveTo(cx - 8, cy + 3);
+    bottomHead.lineTo(cx - 4, cy + 5);
+    bottomHead.moveTo(cx - 8, cy + 3);
+    bottomHead.lineTo(cx - 5, cy - 0.5);
+    canvas.drawPath(bottomHead, p);
+
+    canvas.drawCircle(Offset(cx - 8, cy - 3), 1.6, pf);
+    canvas.drawCircle(Offset(cx + 8, cy + 3), 1.6, pf);
   }
 
   @override
