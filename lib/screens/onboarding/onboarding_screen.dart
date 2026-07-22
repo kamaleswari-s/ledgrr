@@ -61,7 +61,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       iconType: 'learn',
       name: 'Learn Finance',
       desc:
-          '21 lessons across 3 levels. Plain English. Real Indian examples. From what a budget actually is to how compound interest works — built for students, not accountants.',
+          '44 lessons across 3 levels. Plain English. Real Indian examples. From what a budget actually is to how compound interest works — built for students, not accountants.',
     ),
     _FeatureData(
       iconType: 'chat',
@@ -522,7 +522,7 @@ class _GetStartedPage extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Read-only access. No card numbers. No transfer permissions. Your money stays yours.',
+                    'No card numbers, no bank login, no transfer permissions. You control every entry — your money stays yours.',
                     style: GoogleFonts.syne(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
