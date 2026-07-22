@@ -31,9 +31,12 @@ class GroqService {
         'Write exactly ONE short sentence (under 25 words) that tells '
         'the user the truth about their money today. Be honest, direct, '
         'and calm — never guilt-tripping, never falsely cheerful. Use '
-        'their real numbers only if it helps the sentence land. Plain '
-        'English only, no other language, no greetings, no quotation '
-        'marks, no emoji. Return only the sentence, nothing else.';
+        'their real numbers only if it helps the sentence land. Speak '
+        'only in plain conversational English. Never use Hindi, Tamil, '
+        'or any other language. Never say Namaste or any other greeting '
+        'in any language. Do not open with a greeting at all — start '
+        'directly with the observation. No quotation marks, no emoji. '
+        'Return only the sentence, nothing else.';
 
     final userPrompt = '''
 User: $userName
