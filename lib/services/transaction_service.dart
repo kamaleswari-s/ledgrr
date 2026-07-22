@@ -158,7 +158,37 @@ class TransactionService {
     }
     return balance;
   }
+  // Get summary for a single specific day
+  Future<Map<String, double>> getDailySummary(DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
+    final end = DateTime(date.year, date.month, date.day, 23, 59, 59);
 
+    final snapshot = await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('transactions')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .get();
+
+    double income = 0;
+    double expense = 0;
+
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      if (data['type'] == 'income') {
+        income += (data['amount'] as num).toDouble();
+      } else {
+        expense += (data['amount'] as num).toDouble();
+      }
+    }
+
+    return {
+      'income': income,
+      'expense': expense,
+      'balance': income - expense,
+    };
+  }
   // Get monthly summary
   Future<Map<String, double>> getMonthlySummary(int year, int month) async {
     final start = DateTime(year, month, 1);

@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isLoading = true;
   String _userName = '';
   int _currentStreak = 0;
+  int _statsRefreshKey = 0;
   String? _aiSentence;
   List<Map<String, dynamic>> _upcomingEvents = [];
 
@@ -668,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen>
                               color: palette.accent),
                         ),
                         title: 'Ghost Money Detector',
-                        subtitle: 'Scan for forgotten subscriptions',
+                        subtitle: 'Find recurring spending patterns',
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const GhostScreen()),
@@ -687,7 +688,7 @@ class _HomeScreenState extends State<HomeScreen>
                         icon: Icon(Icons.auto_stories_rounded,
                             color: palette.accent, size: 20),
                         title: 'Money Memory',
-                        subtitle: 'Your auto-written financial journal',
+                        subtitle: 'A new entry, written for you daily',
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const MemoryScreen()),
@@ -752,7 +753,7 @@ class _HomeScreenState extends State<HomeScreen>
                             color: palette.accent, size: 20),
                         title: 'Learn Finance',
                         subtitle:
-                            '21 lessons. Plain English. Built for students.',
+                            '44 lessons. Plain English. Built for students.',
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const LearnScreen()),
@@ -1080,7 +1081,7 @@ class _HomeScreenState extends State<HomeScreen>
           const SpendListScreen(),
 
           // Tab 3 — Statistics
-          const StatisticsScreen(),
+          StatisticsScreen(key: ValueKey(_statsRefreshKey)),
 
           // Tab 4 — Profile
           const ProfileScreen(),
@@ -1104,8 +1105,10 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'Home',
                   isActive: _currentNavIndex == 0,
                   palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 0),
+                  onTap: () {
+                    setState(() => _currentNavIndex = 0);
+                    _loadData();
+                  },
                 ),
                 _NavItem(
                   icon: Icons.calendar_month_rounded,
@@ -1128,8 +1131,12 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'Statistics',
                   isActive: _currentNavIndex == 3,
                   palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 3),
+                  onTap: () {
+                    setState(() {
+                      _currentNavIndex = 3;
+                      _statsRefreshKey++;
+                    });
+                  },
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,

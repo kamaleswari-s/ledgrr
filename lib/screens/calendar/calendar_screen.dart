@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/transaction_service.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -16,6 +17,7 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   final _db = FirebaseFirestore.instance;
   final _uid = FirebaseAuth.instance.currentUser!.uid;
+  final _transactionService = TransactionService();
 
   Stream<QuerySnapshot> get _eventsStream => _db
       .collection('users')
@@ -61,14 +63,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
         .delete();
   }
 
-  Future<void> _addSavings(
-      String eventId, double amount, double current) async {
+  Future<void> _addSavings(String eventId, String eventName, double amount,
+      double current) async {
     await _db
         .collection('users')
         .doc(_uid)
         .collection('events')
         .doc(eventId)
         .update({'savedAmount': current + amount});
+
+    await _transactionService.addTransaction(
+      title: 'Saved for $eventName',
+      amount: amount,
+      category: 'event_savings',
+      type: 'expense',
+      date: DateTime.now(),
+      note: '',
+    );
+  }
+
+  Future<void> _withdrawSavings(String eventId, String eventName,
+      double amount, double current) async {
+    await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('events')
+        .doc(eventId)
+        .update({'savedAmount': current - amount});
+
+    await _transactionService.addTransaction(
+      title: 'Withdrew from $eventName',
+      amount: amount,
+      category: 'event_savings',
+      type: 'income',
+      date: DateTime.now(),
+      note: '',
+    );
   }
 
   String _daysUntil(DateTime date) {
@@ -252,6 +282,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       final priority =
                           data['priority'] as String? ?? 'Want to happen';
                       final iconType = data['iconType'] as String? ?? 'general';
+                      final eventName = data['name'] as String? ?? 'Untitled';
                       final daysUntil = _daysUntil(date);
                       final isUrgent = date
                               .difference(DateTime.now())
@@ -313,7 +344,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            data['name'] ?? 'Untitled',
+                                            eventName,
                                             style: GoogleFonts.syne(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w700,
@@ -495,8 +526,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         child: InkWell(
                                           borderRadius:
                                               BorderRadius.circular(10),
-                                          onTap: () => _showAddSavings(
-                                              context, doc.id, saved, palette),
+                                          onTap: () => _showAddSavings(context,
+                                              doc.id, eventName, saved,
+                                              palette),
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 horizontal: 12, vertical: 8),
@@ -518,6 +550,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                           ),
                                         ),
                                       ),
+                                    if (saved > 0) ...[
+                                      const SizedBox(width: 8),
+                                      Material(
+                                        color: palette.bg2,
+                                        borderRadius:
+                                            BorderRadius.circular(10),
+                                        child: InkWell(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          onTap: () => _showWithdrawSavings(
+                                              context,
+                                              doc.id,
+                                              eventName,
+                                              saved,
+                                              palette),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12, vertical: 8),
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.remove_rounded,
+                                                    color: palette.ink,
+                                                    size: 14),
+                                                const SizedBox(width: 5),
+                                                Text('Withdraw',
+                                                    style: GoogleFonts.syne(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: palette.ink)),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                     const Spacer(),
                                     Material(
                                       color: palette.bg2,
@@ -569,8 +637,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void _showAddSavings(BuildContext context, String eventId, double current,
-      LedgrrPalette palette) {
+  void _showAddSavings(BuildContext context, String eventId,
+      String eventName, double current, LedgrrPalette palette) {
     final controller = TextEditingController();
     showModalBottomSheet(
       context: context,
@@ -603,7 +671,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     color: palette.ink,
                     letterSpacing: -0.5)),
             const SizedBox(height: 6),
-            Text('How much are you setting aside for this event?',
+            Text(
+                'This amount will be deducted from your True Balance.',
                 style:
                     GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
             const SizedBox(height: 20),
@@ -640,7 +709,50 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 onTap: () async {
                   final amount = double.tryParse(controller.text.trim());
                   if (amount == null || amount <= 0) return;
-                  await _addSavings(eventId, amount, current);
+
+                  final trueBalance =
+                      await _transactionService.getTrueBalance();
+                  if (amount > trueBalance) {
+                    final proceed = await showDialog<bool>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        backgroundColor: palette.card,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        title: Text('This exceeds your True Balance',
+                            style: GoogleFonts.syne(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: palette.ink)),
+                        content: Text(
+                          'Your True Balance is ${_formatAmount(trueBalance)}. Saving ${_formatAmount(amount)} will put you ${_formatAmount(amount - trueBalance)} in the red. Continue anyway?',
+                          style: GoogleFonts.syne(
+                              fontSize: 13,
+                              color: palette.inkMuted,
+                              height: 1.5),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('Cancel',
+                                style: GoogleFonts.syne(
+                                    fontSize: 13, color: palette.inkMuted)),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('Save anyway',
+                                style: GoogleFonts.syne(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: palette.accent)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (proceed != true) return;
+                  }
+
+                  await _addSavings(eventId, eventName, amount, current);
                   if (context.mounted) Navigator.pop(context);
                 },
                 child: Container(
@@ -652,6 +764,141 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             fontSize: 17,
                             fontStyle: FontStyle.italic,
                             color: palette.accentFg)),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showWithdrawSavings(BuildContext context, String eventId,
+      String eventName, double current, LedgrrPalette palette) {
+    final controller = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: palette.bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.fromLTRB(
+            24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                    color: palette.border,
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('Withdraw savings',
+                style: GoogleFonts.syne(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: palette.ink,
+                    letterSpacing: -0.5)),
+            const SizedBox(height: 6),
+            Text(
+                'Available: ${_formatAmount(current)}. This will be added back to your True Balance.',
+                style:
+                    GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                color: palette.bg2,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: palette.border),
+              ),
+              child: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
+                decoration: InputDecoration(
+                  hintText: '0.00',
+                  hintStyle:
+                      GoogleFonts.syne(fontSize: 14, color: palette.inkMuted),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  prefixText: '₹ ',
+                  prefixStyle:
+                      GoogleFonts.syne(fontSize: 15, color: palette.inkMuted),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Material(
+              color: const Color(0xFFB5446E),
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  final amount = double.tryParse(controller.text.trim());
+                  if (amount == null || amount <= 0) return;
+                  if (amount > current) return;
+
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      backgroundColor: palette.card,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      title: Text('Are you sure?',
+                          style: GoogleFonts.syne(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: palette.ink)),
+                      content: Text(
+                        'You are withdrawing ${_formatAmount(amount)} from $eventName. This will be added back to your True Balance.',
+                        style: GoogleFonts.syne(
+                            fontSize: 13,
+                            color: palette.inkMuted,
+                            height: 1.5),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text('Cancel',
+                              style: GoogleFonts.syne(
+                                  fontSize: 13, color: palette.inkMuted)),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text('Withdraw',
+                              style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFFB5446E))),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed != true) return;
+
+                  await _withdrawSavings(eventId, eventName, amount, current);
+                  if (context.mounted) Navigator.pop(context);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Text('Withdraw',
+                        style: GoogleFonts.dmSerifDisplay(
+                            fontSize: 17,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.white)),
                   ),
                 ),
               ),
@@ -1103,7 +1350,6 @@ class _EventIconPainter extends CustomPainter {
 
     switch (type) {
       case 'birthday':
-        // Cake with candle
         canvas.drawRRect(
             RRect.fromRectAndRadius(
                 Rect.fromLTRB(cx - 12, cy, cx + 12, cy + 12),
@@ -1251,7 +1497,6 @@ class _EventIconPainter extends CustomPainter {
         break;
 
       default:
-        // General — pin
         canvas.drawCircle(Offset(cx, cy - 6), 6, p);
         canvas.drawLine(Offset(cx, cy), Offset(cx, cy + 10), p);
         canvas.drawCircle(Offset(cx, cy - 6), 2.5, pf);

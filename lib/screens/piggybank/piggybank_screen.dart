@@ -1047,6 +1047,55 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                               amountController.text.trim());
                           if (amount == null || amount <= 0)
                             return;
+
+                          final trueBalance =
+                              await _transactionService
+                                  .getTrueBalance();
+                          if (amount > trueBalance) {
+                            final proceed = await showDialog<bool>(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                backgroundColor: palette.card,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(20)),
+                                title: Text(
+                                    'This exceeds your True Balance',
+                                    style: GoogleFonts.syne(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: palette.ink)),
+                                content: Text(
+                                  'Your True Balance is ${_formatAmount(trueBalance)}. Saving ${_formatAmount(amount)} will put you ${_formatAmount(amount - trueBalance)} in the red. Continue anyway?',
+                                  style: GoogleFonts.syne(
+                                      fontSize: 13,
+                                      color: palette.inkMuted,
+                                      height: 1.5),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: Text('Cancel',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 13,
+                                            color: palette.inkMuted)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: Text('Save anyway',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: palette.accent)),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (proceed != true) return;
+                          }
+
                           setState(() => isSaving = true);
 
                           final batch = _db.batch();
@@ -1466,9 +1515,6 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
 }
 
 // ─── JAR PAINTER ───────────────────────────────────────────────────────────
-// Same jar-with-lid-and-fill-line design as home_screen.dart's
-// _JarHomePainter, scaled proportionally so it looks right at the three
-// sizes this screen uses it at (48, 70, and 100px containers).
 
 class _JarPainter extends CustomPainter {
   final Color color;
@@ -1476,8 +1522,6 @@ class _JarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Scale factor relative to the 22x22-ish coordinate space the
-    // home screen icon was designed at (based on the shorter side).
     final s = size.shortestSide / 22;
 
     final p = Paint()
@@ -1500,7 +1544,6 @@ class _JarPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
 
-    // Lid
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -1512,8 +1555,6 @@ class _JarPainter extends CustomPainter {
       pf,
     );
 
-    // Jar body: tapered neck into a rounded body with rounded
-    // bottom corners.
     final body = Path();
     body.moveTo(cx - 5 * s, cy - 9 * s);
     body.lineTo(cx - 5 * s, cy - 5 * s);
@@ -1532,13 +1573,11 @@ class _JarPainter extends CustomPainter {
     body.close();
     canvas.drawPath(body, p);
 
-    // Fill level line
     canvas.drawLine(
         Offset(cx - 8 * s, cy + 3 * s),
         Offset(cx + 8 * s, cy + 3 * s),
         fillLine);
 
-    // Coin marks above the fill line
     canvas.drawCircle(Offset(cx - 3 * s, cy - 1 * s), 1.4 * s, pf);
     canvas.drawCircle(
         Offset(cx + 4 * s, cy + 0.5 * s), 1.4 * s, pf);

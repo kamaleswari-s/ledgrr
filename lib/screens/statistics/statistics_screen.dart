@@ -24,6 +24,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   double _totalExpense = 0;
   Map<String, double> _categorySpending = {};
   List<Map<String, dynamic>> _weeklyData = [];
+  List<Map<String, dynamic>> _monthlyData = [];
   int _totalTransactionCount = 0;
 
   @override
@@ -40,6 +41,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     try {
       final summary = await _transactionService.getMonthlySummary(
         _now.year, _now.month,
@@ -54,17 +56,31 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       final allSnapshot = await allStream.first;
       final count = allSnapshot.docs.length;
 
-      // Build weekly data
+      // Build weekly data — each day summed correctly on its own.
       final weeklyData = <Map<String, dynamic>>[];
       for (int i = 6; i >= 0; i--) {
         final date = _now.subtract(Duration(days: i));
-        final dayData = await _transactionService.getMonthlySummary(
-          date.year, date.month,
-        );
+        final dayData =
+            await _transactionService.getDailySummary(date);
         weeklyData.add({
           'day': _dayLabel(date.weekday),
           'expense': dayData['expense'] ?? 0,
           'income': dayData['income'] ?? 0,
+        });
+      }
+
+      // Build last-6-months data — genuinely per month, reusing the
+      // correct getMonthlySummary.
+      final monthlyData = <Map<String, dynamic>>[];
+      for (int i = 5; i >= 0; i--) {
+        final targetDate =
+            DateTime(_now.year, _now.month - i, 1);
+        final monthData = await _transactionService
+            .getMonthlySummary(targetDate.year, targetDate.month);
+        monthlyData.add({
+          'month': _monthShortLabel(targetDate.month),
+          'expense': monthData['expense'] ?? 0,
+          'income': monthData['income'] ?? 0,
         });
       }
 
@@ -74,6 +90,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
           _totalExpense = summary['expense'] ?? 0;
           _categorySpending = categorySpending;
           _weeklyData = weeklyData;
+          _monthlyData = monthlyData;
           _totalTransactionCount = count;
           _isLoading = false;
         });
@@ -86,6 +103,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   String _dayLabel(int weekday) {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days[weekday - 1];
+  }
+
+  String _monthShortLabel(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[month - 1];
   }
 
   String _formatAmount(double amount) {
@@ -666,9 +691,11 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             ),
             child: SizedBox(
               height: 180,
-              child: _weeklyData.isEmpty
+              child: _weeklyData.isEmpty ||
+                      _weeklyData.every(
+                          (d) => (d['expense'] as double) == 0)
                   ? Center(
-                      child: Text('No data yet',
+                      child: Text('No spending in the last 7 days',
                           style: GoogleFonts.syne(
                               fontSize: 13,
                               color: palette.inkMuted)))
@@ -747,6 +774,151 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                         borderData: FlBorderData(show: false),
                       ),
                     ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Last 6 months trend chart
+          Text('Last 6 months',
+              style: GoogleFonts.syne(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: palette.ink)),
+          const SizedBox(height: 4),
+          Text('Income vs spending, month by month.',
+              style: GoogleFonts.dmSerifDisplay(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: palette.inkMuted)),
+          const SizedBox(height: 14),
+
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: palette.card,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: palette.border),
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 180,
+                  child: _monthlyData.isEmpty ||
+                          _monthlyData.every((d) =>
+                              (d['expense'] as double) == 0 &&
+                              (d['income'] as double) == 0)
+                      ? Center(
+                          child: Text('No data in the last 6 months',
+                              style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  color: palette.inkMuted)))
+                      : BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: _monthlyData
+                                    .expand((d) => [
+                                          d['expense'] as double,
+                                          d['income'] as double,
+                                        ])
+                                    .fold(0.0,
+                                        (a, b) => a > b ? a : b) *
+                                1.2,
+                            barGroups: _monthlyData
+                                .asMap()
+                                .entries
+                                .map((e) {
+                              return BarChartGroupData(
+                                x: e.key,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: e.value['income']
+                                        as double,
+                                    color: palette.accent,
+                                    width: 8,
+                                    borderRadius:
+                                        const BorderRadius.vertical(
+                                            top: Radius.circular(4)),
+                                  ),
+                                  BarChartRodData(
+                                    toY: e.value['expense']
+                                        as double,
+                                    color: const Color(0xFFB5446E),
+                                    width: 8,
+                                    borderRadius:
+                                        const BorderRadius.vertical(
+                                            top: Radius.circular(4)),
+                                  ),
+                                ],
+                                barsSpace: 4,
+                              );
+                            }).toList(),
+                            titlesData: FlTitlesData(
+                              leftTitles: const AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              rightTitles: const AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              topTitles: const AxisTitles(
+                                  sideTitles:
+                                      SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    final index = value.toInt();
+                                    if (index < _monthlyData.length) {
+                                      return Padding(
+                                        padding:
+                                            const EdgeInsets.only(
+                                                top: 6),
+                                        child: Text(
+                                          _monthlyData[index]
+                                              ['month'],
+                                          style: GoogleFonts.syne(
+                                              fontSize: 10,
+                                              color:
+                                                  palette.inkMuted),
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+                            ),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              getDrawingHorizontalLine: (value) =>
+                                  FlLine(
+                                color: palette.border,
+                                strokeWidth: 0.5,
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _LegendItem(
+                        color: palette.accent,
+                        label: 'Income',
+                        value: '',
+                        palette: palette),
+                    const SizedBox(width: 24),
+                    _LegendItem(
+                        color: const Color(0xFFB5446E),
+                        label: 'Spent',
+                        value: '',
+                        palette: palette),
+                  ],
+                ),
+              ],
             ),
           ),
 
@@ -1076,11 +1248,12 @@ class _LegendItem extends StatelessWidget {
             Text(label,
                 style: GoogleFonts.syne(
                     fontSize: 11, color: palette.inkMuted)),
-            Text(value,
-                style: GoogleFonts.syne(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: palette.ink)),
+            if (value.isNotEmpty)
+              Text(value,
+                  style: GoogleFonts.syne(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: palette.ink)),
           ],
         ),
       ],

@@ -23,10 +23,19 @@ class _MemoryScreenState extends State<MemoryScreen> {
   bool _isSavingNote = false;
 
   @override
+  void initState() {
+    super.initState();
+    _autoWriteTodayIfMissing();
+  }
+
+  @override
   void dispose() {
     _noteController.dispose();
     super.dispose();
   }
+
+  String _dateKeyFor(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   String _formatDate(DateTime date) {
     const months = [
@@ -48,59 +57,75 @@ class _MemoryScreenState extends State<MemoryScreen> {
     return '${months[date.month - 1]} ${date.day}';
   }
 
+  /// Checks if today already has a memory entry. If not, writes one
+  /// silently — this is what makes the journal feel automatic instead
+  /// of requiring a manual tap every day.
+  Future<void> _autoWriteTodayIfMissing() async {
+    final today = DateTime.now();
+    final dateKey = _dateKeyFor(today);
+
+    final existing = await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('memory')
+        .doc(dateKey)
+        .get();
+
+    if (existing.exists) return;
+
+    await _generateAndSaveEntry(today);
+  }
+
+  /// Builds a sentence describing THIS SPECIFIC DAY, using only that
+  /// day's own transactions — not the whole month.
   Future<String> _generateDailySentence(DateTime date) async {
     try {
-      final summary = await _transactionService.getMonthlySummary(
-        date.year, date.month,
-      );
-      final balance = await _transactionService.getTrueBalance();
-      final categorySpending = await _transactionService.getCategorySpending(
-        date.year, date.month,
-      );
-
-      final income = summary['income'] ?? 0.0;
-      final expense = summary['expense'] ?? 0.0;
-      final savings = income - expense;
+      final dayData = await _transactionService.getDailySummary(date);
+      final income = dayData['income'] ?? 0.0;
+      final expense = dayData['expense'] ?? 0.0;
 
       if (income == 0 && expense == 0) {
-        return 'No transactions recorded today. Start adding your expenses to see your financial picture.';
+        return 'No transactions logged today.';
       }
 
-      if (balance < 0) {
-        return 'Balance is in the red at ₹${balance.abs().toStringAsFixed(0)}. Focus on reducing expenses this week.';
-      }
+      final balance = await _transactionService.getTrueBalance();
+      final categorySpending =
+          await _transactionService.getCategorySpending(
+        date.year, date.month,
+      );
 
-      if (expense > income && income > 0) {
-        return 'Spending exceeded income by ₹${(expense - income).toStringAsFixed(0)} this month. Time to review your budget.';
-      }
-
-      if (savings > 0 && income > 0) {
-        final savingsRate = (savings / income * 100).toStringAsFixed(0);
+      if (expense > 0 && income == 0) {
         final topCategory = categorySpending.isNotEmpty
             ? categorySpending.entries
                 .reduce((a, b) => a.value > b.value ? a : b)
                 .key
             : null;
-
         if (topCategory != null) {
-          return 'Saved $savingsRate% of income this month. Highest spending in $topCategory — ₹${categorySpending[topCategory]!.toStringAsFixed(0)}.';
+          return 'Spent ₹${expense.toStringAsFixed(0)} today, mostly on $topCategory. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
         }
-        return 'Saved $savingsRate% of income this month. True balance stands at ₹${balance.toStringAsFixed(0)}.';
+        return 'Spent ₹${expense.toStringAsFixed(0)} today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
       }
 
-      return 'True balance: ₹${balance.toStringAsFixed(0)}. Keep tracking every rupee for a clearer picture.';
+      if (income > 0 && expense == 0) {
+        return 'Added ₹${income.toStringAsFixed(0)} in income today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+      }
+
+      final net = income - expense;
+      if (net >= 0) {
+        return 'Earned ₹${income.toStringAsFixed(0)} and spent ₹${expense.toStringAsFixed(0)} today — net positive. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+      }
+      return 'Spent ₹${expense.toStringAsFixed(0)} against ₹${income.toStringAsFixed(0)} earned today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
     } catch (e) {
       return 'Keep tracking your transactions and LEDGRR will write your financial story here.';
     }
   }
 
   Future<void> _generateAndSaveEntry(DateTime date) async {
-    setState(() => _isGenerating = true);
+    if (mounted) setState(() => _isGenerating = true);
 
     try {
       final sentence = await _generateDailySentence(date);
-      final dateKey =
-          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dateKey = _dateKeyFor(date);
 
       await _db
           .collection('users')
@@ -187,10 +212,10 @@ class _MemoryScreenState extends State<MemoryScreen> {
                                     color: palette.accentFg))
                             : Row(
                                 children: [
-                                  Icon(Icons.auto_awesome_rounded,
+                                  Icon(Icons.refresh_rounded,
                                       color: palette.accentFg, size: 14),
                                   const SizedBox(width: 6),
-                                  Text('Write today',
+                                  Text('Refresh today',
                                       style: GoogleFonts.syne(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -209,7 +234,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Your financial journal. Auto-written by LEDGRR, personalised by you.',
+                'Your financial journal. Written automatically each day, personalised by you.',
                 style: GoogleFonts.dmSerifDisplay(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
@@ -243,37 +268,17 @@ class _MemoryScreenState extends State<MemoryScreen> {
                           Icon(Icons.auto_stories_outlined,
                               color: palette.inkMuted, size: 48),
                           const SizedBox(height: 16),
-                          Text('No entries yet',
+                          Text('Writing your first entry...',
                               style: GoogleFonts.syne(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: palette.ink)),
                           const SizedBox(height: 8),
                           Text(
-                            'Tap "Write today" and LEDGRR\nwill write your first memory.',
+                            'LEDGRR writes a new entry\nautomatically every day.',
                             style: GoogleFonts.syne(
                                 fontSize: 13, color: palette.inkMuted),
                             textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 24),
-                          Material(
-                            color: palette.accent,
-                            borderRadius: BorderRadius.circular(14),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(14),
-                              onTap: _isGenerating
-                                  ? null
-                                  : () => _generateAndSaveEntry(today),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 14),
-                                child: Text('Write today\'s memory',
-                                    style: GoogleFonts.dmSerifDisplay(
-                                        fontSize: 16,
-                                        fontStyle: FontStyle.italic,
-                                        color: palette.accentFg)),
-                              ),
-                            ),
                           ),
                         ],
                       ),
@@ -293,7 +298,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                           data['autoSentence'] as String? ?? '';
                       final note = data['note'] as String? ?? '';
                       final dateKey = data['dateKey'] as String? ??
-                          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+                          _dateKeyFor(date);
                       final isToday = date.year == today.year &&
                           date.month == today.month &&
                           date.day == today.day;
