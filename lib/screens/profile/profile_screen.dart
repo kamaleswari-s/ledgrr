@@ -60,6 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
+    if (mounted) setState(() => _isLoading = true);
     try {
       final uid = _auth.currentUser!.uid;
       final doc = await _db.collection('users').doc(uid).get();
@@ -368,9 +369,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Divider(height: 20, color: palette.border),
                           _infoRow('Data', 'Firebase — Mumbai', palette),
                           Divider(height: 20, color: palette.border),
-                          _infoRow('Compliance', 'RBI-compliant', palette),
+                          _infoRow('Access',
+                              'Only visible when you\'re signed in', palette),
                           Divider(height: 20, color: palette.border),
-                          _infoRow('Privacy', 'Read-only access', palette),
+                          _infoRow('Security',
+                              'Your data is private to your account',
+                              palette),
                         ],
                       ),
                     ),

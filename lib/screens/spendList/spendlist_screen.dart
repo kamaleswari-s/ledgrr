@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../services/transaction_service.dart';
 
 class SpendListScreen extends StatefulWidget {
   const SpendListScreen({super.key});
@@ -16,6 +17,7 @@ class SpendListScreen extends StatefulWidget {
 class _SpendListScreenState extends State<SpendListScreen> {
   final _db = FirebaseFirestore.instance;
   final _uid = FirebaseAuth.instance.currentUser!.uid;
+  final _transactionService = TransactionService();
 
   Stream<QuerySnapshot> get _listsStream => _db
       .collection('users')
@@ -63,6 +65,25 @@ class _SpendListScreenState extends State<SpendListScreen> {
         .update({'checked': !current});
   }
 
+  Future<void> _finishList(
+      String listId, String listName, double total) async {
+    await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('spendlists')
+        .doc(listId)
+        .update({'completed': true, 'finalTotal': total});
+
+    await _transactionService.addTransaction(
+      title: listName,
+      amount: total,
+      category: 'shopping',
+      type: 'expense',
+      date: DateTime.now(),
+      note: '',
+    );
+  }
+
   Future<void> _deleteList(String listId) async {
     await _db
         .collection('users')
@@ -70,6 +91,65 @@ class _SpendListScreenState extends State<SpendListScreen> {
         .collection('spendlists')
         .doc(listId)
         .delete();
+  }
+
+  void _showEditItemAmount(BuildContext context, String listId,
+      String itemId, double currentAmount, LedgrrPalette palette) {
+    final controller =
+        TextEditingController(text: currentAmount.toStringAsFixed(0));
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: palette.card,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Update actual price',
+            style: GoogleFonts.syne(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: palette.ink)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
+          decoration: InputDecoration(
+            prefixText: '₹ ',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: palette.inkMuted)),
+          ),
+          TextButton(
+            onPressed: () async {
+              final amount = double.tryParse(controller.text.trim());
+              if (amount == null || amount < 0) return;
+              await _db
+                  .collection('users')
+                  .doc(_uid)
+                  .collection('spendlists')
+                  .doc(listId)
+                  .collection('items')
+                  .doc(itemId)
+                  .update({'amount': amount});
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: Text('Save',
+                style: GoogleFonts.syne(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: palette.accent)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showCreateList(BuildContext context, LedgrrPalette palette) {
@@ -366,12 +446,18 @@ class _SpendListScreenState extends State<SpendListScreen> {
                           listId: doc.id,
                           name: data['name'] ?? 'Untitled',
                           budget: budget,
+                          completed: data['completed'] == true,
                           palette: palette,
                           uid: _uid,
                           onAddItem: () =>
                               _showAddItem(context, doc.id, palette),
                           onDelete: () => _deleteList(doc.id),
                           onToggleItem: _toggleItem,
+                          onEditAmount: (itemId, amount) =>
+                              _showEditItemAmount(
+                                  context, doc.id, itemId, amount, palette),
+                          onFinish: (total) => _finishList(
+                              doc.id, data['name'] ?? 'Untitled', total),
                           formatAmount: _fmt,
                         ),
                       );
@@ -391,22 +477,28 @@ class _SpendListCard extends StatelessWidget {
   final String listId;
   final String name;
   final double budget;
+  final bool completed;
   final LedgrrPalette palette;
   final String uid;
   final VoidCallback onAddItem;
   final VoidCallback onDelete;
   final Future<void> Function(String, String, bool) onToggleItem;
+  final void Function(String itemId, double amount) onEditAmount;
+  final Future<void> Function(double total) onFinish;
   final String Function(double) formatAmount;
 
   const _SpendListCard({
     required this.listId,
     required this.name,
     required this.budget,
+    required this.completed,
     required this.palette,
     required this.uid,
     required this.onAddItem,
     required this.onDelete,
     required this.onToggleItem,
+    required this.onEditAmount,
+    required this.onFinish,
     required this.formatAmount,
   });
 
@@ -531,7 +623,9 @@ class _SpendListCard extends StatelessWidget {
                   final amount = (data['amount'] as num?)?.toDouble() ?? 0;
 
                   return InkWell(
-                    onTap: () => onToggleItem(listId, item.id, checked),
+                    onTap: completed
+                        ? null
+                        : () => onToggleItem(listId, item.id, checked),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                       child: Column(
@@ -575,13 +669,26 @@ class _SpendListCard extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                Text(
-                                  amount > 0 ? formatAmount(amount) : '',
-                                  style: GoogleFonts.syne(
-                                    fontSize: 13, fontWeight: FontWeight.w600,
-                                    color: checked
-                                        ? palette.inkMuted
-                                        : palette.ink,
+                                GestureDetector(
+                                  onTap: completed
+                                      ? null
+                                      : () => onEditAmount(item.id, amount),
+                                  child: Text(
+                                    amount > 0
+                                        ? formatAmount(amount)
+                                        : 'Set price',
+                                    style: GoogleFonts.syne(
+                                      fontSize: 13, fontWeight: FontWeight.w600,
+                                      color: amount > 0
+                                          ? (checked
+                                              ? palette.inkMuted
+                                              : palette.ink)
+                                          : palette.accent,
+                                      decoration: completed
+                                          ? null
+                                          : TextDecoration.underline,
+                                      decorationColor: palette.border,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -596,54 +703,154 @@ class _SpendListCard extends StatelessWidget {
                     ),
                   );
                 }),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Text('$checkedCount/${items.length} done',
-                        style: GoogleFonts.syne(
-                            fontSize: 11, color: palette.inkMuted)),
-                    const Spacer(),
-                    Material(
-                      color: palette.bg2,
-                      borderRadius: BorderRadius.circular(10),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: onAddItem,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          child: Row(
-                            children: [
-                              Icon(Icons.add_rounded,
-                                  color: palette.accent, size: 14),
-                              const SizedBox(width: 4),
-                              Text('Add item',
-                                  style: GoogleFonts.syne(
-                                      fontSize: 12, fontWeight: FontWeight.w500,
-                                      color: palette.accent)),
-                            ],
+              if (completed)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: palette.accent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded,
+                            color: palette.accent, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                              'Trip finished — ${formatAmount(totalSpent)} deducted from True Balance',
+                              style: GoogleFonts.syne(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: palette.accent)),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Text('$checkedCount/${items.length} done',
+                              style: GoogleFonts.syne(
+                                  fontSize: 11, color: palette.inkMuted)),
+                          const Spacer(),
+                          Material(
+                            color: palette.bg2,
+                            borderRadius: BorderRadius.circular(10),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: onAddItem,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.add_rounded,
+                                        color: palette.accent, size: 14),
+                                    const SizedBox(width: 4),
+                                    Text('Add item',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: palette.accent)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Material(
+                            color: palette.bg2,
+                            borderRadius: BorderRadius.circular(10),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: onDelete,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(Icons.delete_outline_rounded,
+                                    color: const Color(0xFFE53935), size: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (checkedCount > 0) ...[
+                        const SizedBox(height: 10),
+                        Material(
+                          color: palette.accent,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  backgroundColor: palette.card,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(20)),
+                                  title: Text('Finish this list?',
+                                      style: GoogleFonts.syne(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: palette.ink)),
+                                  content: Text(
+                                    '${formatAmount(totalSpent)} across $checkedCount checked items will be deducted from your True Balance. This cannot be undone.',
+                                    style: GoogleFonts.syne(
+                                        fontSize: 13,
+                                        color: palette.inkMuted,
+                                        height: 1.5),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: Text('Cancel',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 13,
+                                              color: palette.inkMuted)),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: Text('Finish',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: palette.accent)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirmed == true) {
+                                await onFinish(totalSpent);
+                              }
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              child: Center(
+                                child: Text(
+                                    'Finish list — ${formatAmount(totalSpent)}',
+                                    style: GoogleFonts.syne(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: palette.accentFg)),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Material(
-                      color: palette.bg2,
-                      borderRadius: BorderRadius.circular(10),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(10),
-                        onTap: onDelete,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Icon(Icons.delete_outline_rounded,
-                              color: const Color(0xFFE53935), size: 16),
-                        ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         );
