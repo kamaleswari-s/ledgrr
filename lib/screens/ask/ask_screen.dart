@@ -136,11 +136,11 @@ Total transactions logged: $txCount
 
 Answer their question using only this data. If they ask something you cannot answer from this data, say so honestly. Never make up numbers.
 ''';
-    } catch (e) {
+   } catch (e) {
       _userContext =
-          'You are LEDGRR\'s financial assistant for Indian students. The user\'s data could not be loaded. Tell them to add more transactions and try again.';
+          'You are LEDGRR\'s financial assistant for Indian students. Speak only in plain conversational English. Never use Hindi, Tamil, or any other language. Never say Namaste or any other greeting in any language. The user\'s data could not be loaded right now. Tell them honestly that something went wrong loading their data, and to try again in a moment.';
     }
-  }
+  }  
 
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
