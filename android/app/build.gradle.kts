@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "com.example.ledgrr"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "30.0.15729638"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

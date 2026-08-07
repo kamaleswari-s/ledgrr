@@ -42,9 +42,9 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isLoading = true;
   String _userName = '';
   int _currentStreak = 0;
-  int _statsRefreshKey = 0;
   String? _aiSentence;
   List<Map<String, dynamic>> _upcomingEvents = [];
+  int _statsRefreshKey = 0;
 
   @override
   void initState() {
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
       final today =
-          DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+          DateTime.now().toIso8601String().substring(0, 10);
 
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
@@ -104,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen>
           .get();
       final data = userDoc.data();
 
-      // Use cached sentence if it was generated today.
       if (data != null &&
           data['dailySentenceDate'] == today &&
           (data['dailySentence'] as String?)?.isNotEmpty == true) {
@@ -137,8 +136,7 @@ class _HomeScreenState extends State<HomeScreen>
 
       if (mounted) setState(() => _aiSentence = sentence);
     } catch (e) {
-      // Silently fall back — the getter already handles a null
-      // _aiSentence by using the rule-based sentence.
+      // Silently fall back
     }
   }
 
@@ -214,6 +212,118 @@ class _HomeScreenState extends State<HomeScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _showNotifications(BuildContext context, LedgrrPalette palette) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: palette.bg,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: palette.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('Notifications',
+                style: GoogleFonts.syne(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: palette.ink,
+                    letterSpacing: -0.5)),
+            const SizedBox(height: 16),
+            if (_upcomingEvents.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text('Nothing new right now.',
+                      style: GoogleFonts.syne(
+                          fontSize: 13, color: palette.inkMuted)),
+                ),
+              )
+            else
+              ..._upcomingEvents.map((e) {
+                final date = (e['date'] as Timestamp).toDate();
+                final days = date.difference(DateTime.now()).inDays;
+                final name = e['name'] ?? 'Upcoming event';
+                final budget = (e['budget'] as num?)?.toDouble() ?? 0;
+                final saved =
+                    (e['savedAmount'] as num?)?.toDouble() ?? 0;
+                final timeLabel = days == 0
+                    ? 'today'
+                    : days == 1
+                        ? 'tomorrow'
+                        : 'in $days days';
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Material(
+                    color: palette.bg2,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => _currentNavIndex = 1);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: palette.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_month_rounded,
+                                color: palette.accent, size: 18),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text('$name is $timeLabel',
+                                      style: GoogleFonts.syne(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: palette.ink)),
+                                  if (budget > 0)
+                                    Text(
+                                        'Saved ₹${saved.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} goal.',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 11,
+                                            color: palette.inkMuted)),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 12, color: palette.accent),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -293,6 +403,48 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           ),
                           const Spacer(),
+                          Material(
+                            color: palette.bg2,
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () =>
+                                  _showNotifications(context, palette),
+                              child: Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: palette.border),
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Icon(
+                                        Icons.notifications_outlined,
+                                        color: palette.ink,
+                                        size: 18),
+                                    if (_upcomingEvents.isNotEmpty)
+                                      Positioned(
+                                        top: 7, right: 8,
+                                        child: Container(
+                                          width: 8, height: 8,
+                                          decoration: BoxDecoration(
+                                            color: palette.accent,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color: palette.bg2,
+                                                width: 1.5),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
                           Material(
                             color: palette.bg2,
                             borderRadius: BorderRadius.circular(12),
@@ -476,109 +628,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
-                  // Upcoming event nudge
-                  if (_upcomingEvents.isNotEmpty)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                        child: GestureDetector(
-                          onTap: () => setState(
-                              () => _currentNavIndex = 1),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: palette.accent.withOpacity(0.1),
-                              borderRadius:
-                                  BorderRadius.circular(16),
-                              border: Border.all(
-                                  color: palette.accent
-                                      .withOpacity(0.3)),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                    Icons.calendar_month_rounded,
-                                    color: palette.accent,
-                                    size: 20),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        () {
-                                          final e =
-                                              _upcomingEvents.first;
-                                          final date =
-                                              (e['date'] as Timestamp)
-                                                  .toDate();
-                                          final days = date
-                                              .difference(
-                                                  DateTime.now())
-                                              .inDays;
-                                          final name =
-                                              e['name'] ??
-                                                  'Upcoming event';
-                                          if (days == 0)
-                                            return '$name is today.';
-                                          if (days == 1)
-                                            return '$name is tomorrow.';
-                                          return '$name is in $days days.';
-                                        }(),
-                                        style: GoogleFonts.syne(
-                                            fontSize: 13,
-                                            fontWeight:
-                                                FontWeight.w700,
-                                            color: palette.ink),
-                                      ),
-                                      () {
-                                        final e =
-                                            _upcomingEvents.first;
-                                        final budget =
-                                            (e['budget'] as num?)
-                                                    ?.toDouble() ??
-                                                0;
-                                        final saved =
-                                            (e['savedAmount'] as num?)
-                                                    ?.toDouble() ??
-                                                0;
-                                        if (budget > 0) {
-                                          return Text(
-                                            'Saved ₹${saved.toStringAsFixed(0)} of ₹${budget.toStringAsFixed(0)} goal.',
-                                            style: GoogleFonts.syne(
-                                                fontSize: 11,
-                                                color:
-                                                    palette.inkMuted),
-                                          );
-                                        }
-                                        return Text(
-                                            'Tap to view in Calendar.',
-                                            style: GoogleFonts.syne(
-                                                fontSize: 11,
-                                                color:
-                                                    palette.inkMuted));
-                                      }(),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 12,
-                                    color: palette.accent),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
                   // Stat cards
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
                       child: Row(
                         children: [
                           Expanded(
@@ -622,7 +676,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 20, 100, 0),
                       child: Material(
                         color: palette.accent,
                         borderRadius: BorderRadius.circular(16),
@@ -661,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 10, 100, 0),
                       child: _FeatureCard(
                         palette: palette,
                         icon: CustomPaint(
@@ -682,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 10, 100, 0),
                       child: _FeatureCard(
                         palette: palette,
                         icon: Icon(Icons.auto_stories_rounded,
@@ -701,7 +755,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 10, 100, 0),
                       child: _FeatureCard(
                         palette: palette,
                         icon: CustomPaint(
@@ -724,7 +778,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 10, 100, 0),
                       child: _FeatureCard(
                         palette: palette,
                         icon: CustomPaint(
@@ -746,7 +800,7 @@ class _HomeScreenState extends State<HomeScreen>
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
-                          const EdgeInsets.fromLTRB(24, 10, 24, 0),
+                          const EdgeInsets.fromLTRB(24, 10, 100, 0),
                       child: _FeatureCard(
                         palette: palette,
                         icon: Icon(Icons.school_rounded,
@@ -2359,8 +2413,6 @@ class _GhostHomePainter extends CustomPainter {
 }
 
 // ─── JAR HOME PAINTER ──────────────────────────────────────────────────────
-// Replaces the old piggy icon: a simple mason jar with lid, a slight neck
-// taper, and a fill line inside suggesting saved money.
 
 class _JarHomePainter extends CustomPainter {
   final Color color;
@@ -2388,7 +2440,6 @@ class _JarHomePainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height / 2;
 
-    // Lid (small rounded rect sitting on top of the neck)
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
@@ -2398,10 +2449,8 @@ class _JarHomePainter extends CustomPainter {
       pf,
     );
 
-    // Jar body: neck tapers slightly outward into a rounded body,
-    // rounded bottom corners.
     final body = Path();
-    body.moveTo(cx - 5, cy - 9); // top-left of neck
+    body.moveTo(cx - 5, cy - 9);
     body.lineTo(cx - 5, cy - 5);
     body.quadraticBezierTo(cx - 11, cy - 3, cx - 11, cy + 4);
     body.lineTo(cx - 11, cy + 8);
@@ -2414,11 +2463,9 @@ class _JarHomePainter extends CustomPainter {
     body.close();
     canvas.drawPath(body, p);
 
-    // "Fill level" line inside, suggesting saved contents
     canvas.drawLine(
         Offset(cx - 8, cy + 3), Offset(cx + 8, cy + 3), fillLine);
 
-    // A couple of small coin/dot marks above the fill line
     canvas.drawCircle(Offset(cx - 3, cy - 1), 1.4, pf);
     canvas.drawCircle(Offset(cx + 4, cy + 0.5), 1.4, pf);
   }
@@ -2428,7 +2475,6 @@ class _JarHomePainter extends CustomPainter {
 }
 
 // ─── DUES HOME PAINTER ─────────────────────────────────────────────────────
-// Two opposite-curving arrows, matching the icon used on the Dues screen.
 
 class _DuesHomePainter extends CustomPainter {
   final Color color;
