@@ -29,6 +29,8 @@ class _AskScreenState extends State<AskScreen> {
   String _userContext = '';
 
   final List<String> _quickPrompts = [
+    'How much have I spent today?',
+    'How much have I spent this week?',
     'How much have I spent this month?',
     'What is my top spending category?',
     'Am I within my budget?',
@@ -57,7 +59,6 @@ class _AskScreenState extends State<AskScreen> {
       final now = DateTime.now();
       final uid = _uid;
 
-      // Get user profile
       final userDoc = await _db.collection('users').doc(uid).get();
       final userData = userDoc.data() ?? {};
       final name =
@@ -67,18 +68,22 @@ class _AskScreenState extends State<AskScreen> {
       final monthlyBudget =
           (userData['monthlyBudget'] as num?)?.toDouble() ?? 0;
 
-      // Get monthly summary
-      final summary = await _transactionService.getMonthlySummary(
+      final todaySummary = await _transactionService.getDailySummary(now);
+      final weekSummary = await _transactionService.getWeeklySummary();
+      final monthSummary = await _transactionService.getMonthlySummary(
         now.year, now.month,
       );
-      final income = summary['income'] ?? 0.0;
-      final expense = summary['expense'] ?? 0.0;
-      final savings = income - expense;
 
-      // Get true balance
+      final todayIncome = todaySummary['income'] ?? 0.0;
+      final todayExpense = todaySummary['expense'] ?? 0.0;
+      final weekIncome = weekSummary['income'] ?? 0.0;
+      final weekExpense = weekSummary['expense'] ?? 0.0;
+      final monthIncome = monthSummary['income'] ?? 0.0;
+      final monthExpense = monthSummary['expense'] ?? 0.0;
+      final monthSavings = monthIncome - monthExpense;
+
       final balance = await _transactionService.getTrueBalance();
 
-      // Get category spending
       final categories = await _transactionService.getCategorySpending(
         now.year, now.month,
       );
@@ -90,7 +95,6 @@ class _AskScreenState extends State<AskScreen> {
               '${e.key}: ₹${e.value.toStringAsFixed(0)}')
           .join(', ');
 
-      // Get upcoming events
       final eventsSnapshot = await _db
           .collection('users')
           .doc(uid)
@@ -114,27 +118,27 @@ class _AskScreenState extends State<AskScreen> {
         return '${data['name']} in $days days (goal: ₹${budget.toStringAsFixed(0)}, saved: ₹${saved.toStringAsFixed(0)})';
       }).join('; ');
 
-      // Get total transaction count
       final txSnapshot =
           await _transactionService.getTransactionsStream().first;
       final txCount = txSnapshot.docs.length;
 
-      // Build context string
       _userContext = '''
-'You are LEDGRR\'s financial assistant for Indian students. Be honest, direct, and personal — like a trusted friend who knows their finances. Never give generic advice. Always use their actual numbers. Keep answers under 120 words. Do not use bullet points. Speak only in plain conversational English. Never use Hindi, Tamil, or any other language. Never say Namaste or any non-English greeting. Always greet in English only. Never tell the user you will remember something for next time. You do not have memory between sessions. If they share information in chat, use it only for this conversation.',
+'You are LEDGRR\'s financial assistant for Indian students. Be honest, direct, and personal — like a trusted friend who knows their finances. Never give generic advice. Always use their actual numbers. Keep answers under 120 words. Do not use bullet points. Speak only in plain conversational English. Never use Hindi, Tamil, or any other language. Never say Namaste or any non-English greeting. Always greet in English only. Never tell the user you will remember something for next time. You do not have memory between sessions. If they share information in chat, use it only for this conversation. You have data for three different time frames — today, this week (last 7 days), and this month. Always match your answer to the time frame the user actually asks about. If they say "today", use today\'s numbers. If they say "this week", use the week numbers. If they don\'t specify, default to this month.',
 
 User: $name
 True Balance: ₹${balance.toStringAsFixed(0)}
 Monthly income setting: ₹${monthlyIncome.toStringAsFixed(0)}
 Monthly budget limit: ₹${monthlyBudget.toStringAsFixed(0)}
-This month income: ₹${income.toStringAsFixed(0)}
-This month expenses: ₹${expense.toStringAsFixed(0)}
-This month savings: ₹${savings.toStringAsFixed(0)}
-Top spending categories: ${topCats.isEmpty ? 'No data yet' : topCats}
+
+Today — income: ₹${todayIncome.toStringAsFixed(0)}, expense: ₹${todayExpense.toStringAsFixed(0)}
+This week (last 7 days) — income: ₹${weekIncome.toStringAsFixed(0)}, expense: ₹${weekExpense.toStringAsFixed(0)}
+This month — income: ₹${monthIncome.toStringAsFixed(0)}, expense: ₹${monthExpense.toStringAsFixed(0)}, savings: ₹${monthSavings.toStringAsFixed(0)}
+
+Top spending categories this month: ${topCats.isEmpty ? 'No data yet' : topCats}
 Upcoming events (next 30 days): ${events.isEmpty ? 'None' : events}
 Total transactions logged: $txCount
 
-Answer their question using only this data. If they ask something you cannot answer from this data, say so honestly. Never make up numbers.
+Answer their question using only this data, matched to the correct time frame. If they ask something you cannot answer from this data, say so honestly. Never make up numbers.
 ''';
     } catch (e) {
       _userContext =
@@ -154,7 +158,6 @@ Answer their question using only this data. If they ask something you cannot ans
     _scrollToBottom();
 
     try {
-      // Build conversation history for Groq
       final messages = [
         {'role': 'system', 'content': _userContext},
         ..._messages
@@ -231,7 +234,6 @@ Answer their question using only this data. If they ask something you cannot ans
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
@@ -285,7 +287,6 @@ Answer their question using only this data. If they ask something you cannot ans
 
             const SizedBox(height: 8),
 
-            // Privacy line
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
@@ -304,7 +305,6 @@ Answer their question using only this data. If they ask something you cannot ans
 
             const SizedBox(height: 12),
 
-            // Chat area
             Expanded(
               child: _messages.isEmpty
                   ? _buildEmptyState(palette)
@@ -324,44 +324,8 @@ Answer their question using only this data. If they ask something you cannot ans
                     ),
             ),
 
-            // Quick prompts
-            if (_messages.isEmpty)
-              SizedBox(
-                height: 42,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24),
-                  itemCount: _quickPrompts.length,
-                  itemBuilder: (context, i) {
-                    return GestureDetector(
-                      onTap: () =>
-                          _sendMessage(_quickPrompts[i]),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: palette.bg2,
-                          borderRadius:
-                              BorderRadius.circular(100),
-                          border: Border.all(
-                              color: palette.border),
-                        ),
-                        child: Text(_quickPrompts[i],
-                            style: GoogleFonts.syne(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: palette.ink)),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
             const SizedBox(height: 12),
 
-            // Input bar
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
               child: Row(
