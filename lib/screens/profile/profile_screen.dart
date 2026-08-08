@@ -174,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final fileName =
           'ledgrr_transactions_${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}.csv';
 
-      downloadCsv(buffer.toString(), fileName);
+      await downloadCsv(buffer.toString(), fileName);
 
       if (mounted) {
         final p = context.read<ThemeProvider>().palette;

@@ -2,7 +2,7 @@ import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
 // Web implementation — triggers a real browser download.
-void downloadCsv(String csvContent, String fileName) {
+Future<void> downloadCsv(String csvContent, String fileName) async {
   final blobParts = [csvContent.toJS].toJS;
   final blob = web.Blob(blobParts, web.BlobPropertyBag(type: 'text/csv'));
   final url = web.URL.createObjectURL(blob);

@@ -12,35 +12,43 @@ class ReceiptScannerService {
   }
 
   /// Attempts to find the most likely "total" amount from raw OCR
-  /// text off a receipt. Looks for lines containing words like
-  /// "total", "amount", "grand total" followed by a number, and
-  /// falls back to the largest number found anywhere in the text
-  /// if no labeled total is found.
+  /// text off a receipt. Looks for lines containing total-related
+  /// keywords, checked in priority order from most specific to most
+  /// generic, so "grand total" is trusted over a plain "total" if
+  /// both appear on the same receipt. Deliberately does not fall
+  /// back to "largest number found" — that approach is unreliable
+  /// on real receipts, which often contain phone numbers, GST
+  /// numbers, or item codes larger than the actual total. If no
+  /// labeled total is found, returns null so the user can enter the
+  /// amount manually rather than risk logging a wrong number.
   double? extractTotal(String rawText) {
     final lines = rawText.split('\n');
-    final totalKeywords = ['total', 'amount', 'grand total', 'net amount'];
+    final totalKeywords = [
+      'grand total',
+      'net amount',
+      'net total',
+      'total amount',
+      'amount payable',
+      'total',
+      'amount',
+    ];
 
-    // First pass: look for a line containing a total-related keyword.
-    for (final line in lines) {
-      final lower = line.toLowerCase();
-      final hasKeyword =
-          totalKeywords.any((keyword) => lower.contains(keyword));
-      if (hasKeyword) {
-        final match = _extractNumberFrom(line);
-        if (match != null) return match;
+    for (final keyword in totalKeywords) {
+      for (final line in lines) {
+        final lower = line.toLowerCase();
+        if (lower.contains(keyword)) {
+          final match = _extractNumberFrom(line);
+          // Reject obviously wrong matches — phone numbers, long
+          // reference codes, etc. tend to be unusually large or
+          // have too many digits for a real bill amount.
+          if (match != null && match > 0 && match < 1000000) {
+            return match;
+          }
+        }
       }
     }
 
-    // Fallback: grab every number found in the whole text, return
-    // the largest one — usually the total on a simple receipt.
-    final allNumbers = <double>[];
-    for (final line in lines) {
-      final number = _extractNumberFrom(line);
-      if (number != null) allNumbers.add(number);
-    }
-    if (allNumbers.isEmpty) return null;
-    allNumbers.sort();
-    return allNumbers.last;
+    return null;
   }
 
   double? _extractNumberFrom(String text) {
