@@ -16,28 +16,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_FeatureData> _features = const [
     _FeatureData(
-      iconType: 'sentence',
-      name: 'Daily Sentence',
-      desc:
-          'Every morning LEDGRR reads your finances and gives you one honest sentence. Not a dashboard. Not a graph. Just the truth — in plain English.',
-    ),
-    _FeatureData(
       iconType: 'balance',
       name: 'True Balance',
       desc:
-          'Not what your bank shows. Your real available money — calculated from every rupee that came in and every rupee that went out. From day one.',
+          'Not what your bank shows. Your real available money, calculated from every rupee that came in and every rupee that went out. From day one.',
     ),
     _FeatureData(
-      iconType: 'ghost',
-      name: 'Ghost Money Detector',
+      iconType: 'chat',
+      name: 'Ask Your Money',
       desc:
-          'Forgotten subscriptions, recurring charges you stopped noticing — LEDGRR scans your transactions and surfaces every rupee silently draining you.',
-    ),
-    _FeatureData(
-      iconType: 'memory',
-      name: 'Money Memory',
-      desc:
-          'An auto-written daily financial journal. LEDGRR writes your money story. You add your own notes. Read it at the end of the month and see yourself clearly.',
+          'Type any question. Can I afford Pondicherry this weekend. LEDGRR reads your actual balance, upcoming events, and spending rate, then answers honestly.',
     ),
     _FeatureData(
       iconType: 'calendar',
@@ -52,22 +40,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'Plan your spending before you leave. Set a budget cap, check off items as you buy, watch your balance update live. No more overspending at the store.',
     ),
     _FeatureData(
+      iconType: 'ghost',
+      name: 'Ghost Money Detector',
+      desc:
+          'Forgotten subscriptions, recurring charges you stopped noticing. LEDGRR scans your transactions and surfaces every rupee silently draining you.',
+    ),
+    _FeatureData(
       iconType: 'stats',
       name: 'Statistics + Identity',
       desc:
-          'Charts, category breakdowns, and LEDGRR\'s honest take on your month. Plus your spender identity — are you a Steady Saver, a Front-Loader, or a Comfort Buyer?',
+          'Charts, category breakdowns, and LEDGRR\'s honest take on your month. Plus your spender identity. Are you a Steady Saver, a Front-Loader, or a Comfort Buyer.',
+    ),
+    _FeatureData(
+      iconType: 'memory',
+      name: 'Money Memory',
+      desc:
+          'An auto-written daily financial journal. LEDGRR writes your money story. You add your own notes. Read it at the end of the month and see yourself clearly.',
+    ),
+    _FeatureData(
+      iconType: 'sentence',
+      name: 'Daily Sentence',
+      desc:
+          'Every morning LEDGRR reads your finances and gives you one honest sentence. Not a dashboard. Not a graph. Just the truth, in plain English.',
     ),
     _FeatureData(
       iconType: 'learn',
       name: 'Learn Finance',
       desc:
-          '44 lessons across 3 levels. Plain English. Real Indian examples. From what a budget actually is to how compound interest works — built for students, not accountants.',
-    ),
-    _FeatureData(
-      iconType: 'chat',
-      name: 'Ask Your Money',
-      desc:
-          'Type any question. "Can I afford Pondicherry this weekend?" LEDGRR reads your actual balance, upcoming events, and spending rate — then answers honestly.',
+          '44 lessons across 3 levels. Plain English. Real Indian examples. From what a budget actually is to how compound interest works, built for students, not accountants.',
     ),
   ];
 
@@ -238,114 +238,54 @@ class _WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 24),
-          Container(
-            width: 64, height: 64,
-            decoration: BoxDecoration(
-              color: palette.ink,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: CustomPaint(
-              painter: _RRPainter(
-                leftColor: palette.bg2,
-                rightColor: palette.accent,
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 72, height: 72,
+              decoration: BoxDecoration(
+                color: palette.ink,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: CustomPaint(
+                painter: _RRPainter(
+                  leftColor: palette.bg2,
+                  rightColor: palette.accent,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 32),
-          Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: palette.bg2,
-              borderRadius: BorderRadius.circular(100),
-              border: Border.all(color: palette.border),
-            ),
-            child: Text('Finance clarity for students',
+            const SizedBox(height: 20),
+            Text('LEDGRR',
                 style: GoogleFonts.syne(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: palette.accent,
-                    letterSpacing: 0.04)),
-          ),
-          const SizedBox(height: 20),
-          RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: 'Old word.\n',
-                  style: GoogleFonts.syne(
-                    fontSize: 36,
+                    fontSize: 28,
                     fontWeight: FontWeight.w800,
                     color: palette.ink,
-                    height: 1.15,
-                    letterSpacing: -1,
-                  ),
-                ),
-                TextSpan(
-                  text: 'New brain.',
-                  style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 38,
+                    letterSpacing: 1.2),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            Text('Old word. New brain.',
+                style: GoogleFonts.dmSerifDisplay(
+                    fontSize: 20,
                     fontStyle: FontStyle.italic,
-                    color: palette.accent,
-                    height: 1.15,
-                  ),
-                ),
-              ],
+                    color: palette.accent),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 20),
+            Text(
+              'LEDGRR is a finance app built for students who are tired of being overwhelmed by money. One honest sentence every morning. Real data. No jargon. No guilt.',
+              style: GoogleFonts.syne(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: palette.inkMuted,
+                  height: 1.65),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'LEDGRR is a finance app built for students who are tired of being overwhelmed by money. One honest sentence every morning. Real data. No jargon. No guilt.',
-            style: GoogleFonts.syne(
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: palette.inkMuted,
-                height: 1.65),
-          ),
-          const SizedBox(height: 28),
-          Row(
-            children: [
-              _StatChip(label: '9 features', palette: palette),
-              const SizedBox(width: 8),
-              _StatChip(
-                  label: '1 daily sentence', palette: palette),
-              const SizedBox(width: 8),
-              _StatChip(label: '0 jargon', palette: palette),
-            ],
-          ),
-          const SizedBox(height: 24),
-        ],
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  final String label;
-  final LedgrrPalette palette;
-  const _StatChip({required this.label, required this.palette});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: palette.bg2,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: palette.border),
-      ),
-      child: Text(label,
-          style: GoogleFonts.syne(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: palette.ink)),
     );
   }
 }
@@ -373,48 +313,51 @@ class _FeaturePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 32),
-          Container(
-            width: 72, height: 72,
-            decoration: BoxDecoration(
-              color: palette.bg2,
-              borderRadius: BorderRadius.circular(20),
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 72, height: 72,
+              decoration: BoxDecoration(
+                color: palette.bg2,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: CustomPaint(
+                painter: _IconPainter(
+                    type: feature.iconType, color: palette.accent),
+              ),
             ),
-            child: CustomPaint(
-              painter: _IconPainter(
-                  type: feature.iconType, color: palette.accent),
+            const SizedBox(height: 28),
+            Text(feature.name,
+                style: GoogleFonts.syne(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: palette.ink,
+                    letterSpacing: -0.6,
+                    height: 1.2),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            Container(
+              width: 40, height: 3,
+              decoration: BoxDecoration(
+                color: palette.accent,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
-          Text(feature.name,
-              style: GoogleFonts.syne(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: palette.ink,
-                  letterSpacing: -0.8,
-                  height: 1.2)),
-          const SizedBox(height: 8),
-          Container(
-            width: 40, height: 3,
-            decoration: BoxDecoration(
-              color: palette.accent,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(feature.desc,
-              style: GoogleFonts.syne(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  color: palette.ink,
-                  height: 1.7)),
-          const SizedBox(height: 40),
-        ],
+            const SizedBox(height: 20),
+            Text(feature.desc,
+                style: GoogleFonts.syne(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    color: palette.ink,
+                    height: 1.65),
+                textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
@@ -428,113 +371,116 @@ class _GetStartedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 32),
-          Text(
-            'Ready to know\nyour truth?',
-            style: GoogleFonts.syne(
-                fontSize: 34,
-                fontWeight: FontWeight.w800,
-                color: palette.ink,
-                letterSpacing: -1,
-                height: 1.15),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'LEDGRR never stores your card details. It reads your transactions to give you clarity — nothing else.',
-            style: GoogleFonts.syne(
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                color: palette.inkMuted,
-                height: 1.65),
-          ),
-          const SizedBox(height: 40),
-          Material(
-            color: palette.accent,
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Ready to know\nyour truth?',
+              style: GoogleFonts.syne(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: palette.ink,
+                  letterSpacing: -0.8,
+                  height: 1.2),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'LEDGRR never stores your card details. It reads your transactions to give you clarity, nothing else.',
+              style: GoogleFonts.syne(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
+                  color: palette.inkMuted,
+                  height: 1.65),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Material(
+              color: palette.accent,
               borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) =>
-                        const AuthScreen(isSignUp: true)),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 18),
-                child: Center(
-                  child: Text('Create your account',
-                      style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 18,
-                          fontStyle: FontStyle.italic,
-                          color: palette.accentFg)),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          const AuthScreen(isSignUp: true)),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Material(
-            color: palette.bg2,
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (_) =>
-                        const AuthScreen(isSignUp: false)),
-              ),
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: palette.border),
-                ),
-                child: Center(
-                  child: Text('I already have an account',
-                      style: GoogleFonts.syne(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: palette.ink)),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: palette.bg2,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: palette.border),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.lock_outline_rounded,
-                    size: 16, color: palette.accent),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'No card numbers, no bank login, no transfer permissions. You control every entry — your money stays yours.',
-                    style: GoogleFonts.syne(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: palette.ink,
-                        height: 1.55),
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 18),
+                  child: Center(
+                    child: Text('Create your account',
+                        style: GoogleFonts.dmSerifDisplay(
+                            fontSize: 18,
+                            fontStyle: FontStyle.italic,
+                            color: palette.accentFg)),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
+            const SizedBox(height: 14),
+            Material(
+              color: palette.bg2,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (_) =>
+                          const AuthScreen(isSignUp: false)),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: Center(
+                    child: Text('I already have an account',
+                        style: GoogleFonts.syne(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: palette.ink)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: palette.bg2,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: palette.border),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lock_outline_rounded,
+                      size: 16, color: palette.accent),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'No card numbers, no bank login, no transfer permissions. You control every entry. Your money stays yours.',
+                      style: GoogleFonts.syne(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: palette.ink,
+                          height: 1.55),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -565,7 +511,6 @@ class _IconPainter extends CustomPainter {
     final cy = size.height / 2;
 
     switch (type) {
-      // Daily Sentence — speech quote marks
       case 'sentence':
         final lp2 = Paint()
           ..color = color
@@ -588,7 +533,6 @@ class _IconPainter extends CustomPainter {
             Offset(cx + 6, cy + 5), Offset(cx + 10, cy + 11), lp2);
         break;
 
-      // True Balance — scales
       case 'balance':
         canvas.drawLine(
             Offset(cx, cy - 16), Offset(cx, cy + 16), p);
@@ -614,7 +558,6 @@ class _IconPainter extends CustomPainter {
             pf);
         break;
 
-      // Ghost Money Detector
       case 'ghost':
         final path = Path();
         path.moveTo(cx - 14, cy + 14);
@@ -631,7 +574,6 @@ class _IconPainter extends CustomPainter {
         canvas.drawCircle(Offset(cx + 5, cy - 4), 2.5, pf);
         break;
 
-      // Money Memory — open book
       case 'memory':
         canvas.drawLine(
             Offset(cx, cy - 14), Offset(cx, cy + 14), p);
@@ -662,7 +604,6 @@ class _IconPainter extends CustomPainter {
             Offset(cx + 4, cy), Offset(cx + 14, cy), lp2);
         break;
 
-      // Event Wallet — calendar
       case 'calendar':
         canvas.drawRRect(
             RRect.fromRectAndRadius(
@@ -684,7 +625,6 @@ class _IconPainter extends CustomPainter {
         canvas.drawCircle(Offset(cx, cy + 10), 2, pf);
         break;
 
-      // Spend List — checklist
       case 'spendlist':
         canvas.drawRRect(
             RRect.fromRectAndRadius(
@@ -721,7 +661,6 @@ class _IconPainter extends CustomPainter {
             Offset(cx, cy + 8), Offset(cx + 10, cy + 8), lp2);
         break;
 
-      // Statistics + Identity — bar chart with person
       case 'stats':
         final lp2 = Paint()
           ..color = color
@@ -748,7 +687,6 @@ class _IconPainter extends CustomPainter {
         canvas.drawCircle(Offset(cx + 10, cy - 14), 4, p);
         break;
 
-      // Learn Finance — book with star
       case 'learn':
         canvas.drawRRect(
             RRect.fromRectAndRadius(
@@ -777,7 +715,6 @@ class _IconPainter extends CustomPainter {
             Offset(cx + 5, cy - 10), Offset(cx + 15, cy - 10), lp2);
         break;
 
-      // Ask Your Money — chat bubble
       case 'chat':
         canvas.drawRRect(
             RRect.fromRectAndRadius(

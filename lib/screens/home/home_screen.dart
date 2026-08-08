@@ -754,28 +754,6 @@ class _HomeScreenState extends State<HomeScreen>
                                 height: 1.55,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                _SentenceChip(
-                                    label: 'Balance',
-                                    value:
-                                        _formatAmount(_trueBalance),
-                                    palette: palette),
-                                const SizedBox(width: 8),
-                                _SentenceChip(
-                                    label: 'Income',
-                                    value: _formatAmount(
-                                        _monthlyIncome),
-                                    palette: palette),
-                                const SizedBox(width: 8),
-                                _SentenceChip(
-                                    label: 'Spent',
-                                    value: _formatAmount(
-                                        _monthlyExpense),
-                                    palette: palette),
-                              ],
-                            ),
                             if (_currentStreak > 0) ...[
                               const SizedBox(height: 12),
                               Text(
