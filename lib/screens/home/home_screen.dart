@@ -11,6 +11,7 @@ import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/groq_service.dart';
 import '../../services/receipt_scanner_service.dart';
+import '../../services/notification_service.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen>
   final _authService = AuthService();
   final _groqService = GroqService();
   final _receiptScanner = ReceiptScannerService();
+  final _notificationService = NotificationService();
   double _trueBalance = 0;
   double _monthlyIncome = 0;
   double _monthlyExpense = 0;
@@ -63,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen>
     _loadData();
     _loadUpcomingEvents();
     _loadDailySentence();
+    _setupNotifications();
     _controller.forward();
   }
 
@@ -167,6 +170,27 @@ class _HomeScreenState extends State<HomeScreen>
       }
     } catch (e) {
       // silently fail
+    }
+  }
+
+  Future<void> _setupNotifications() async {
+    try {
+      await _notificationService.initialize();
+      final granted = await _notificationService.requestPermission();
+      if (!granted) return;
+
+      final today = DateTime.now();
+      final dayData = await _transactionService.getDailySummary(today);
+      final loggedToday =
+          (dayData['income']! > 0) || (dayData['expense']! > 0);
+
+      await _notificationService.scheduleDailyReminders(
+        loggedToday: loggedToday,
+        currentStreak: _currentStreak,
+      );
+    } catch (e) {
+      // Silently fail — notifications are a nice-to-have, never
+      // something that should block the app from working.
     }
   }
 

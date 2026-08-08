@@ -31,6 +31,10 @@ class ReceiptScannerService {
       'amount payable',
       'total',
       'amount',
+      'cash',
+      'net payable',
+      'balance due',
+      'bill amount',
     ];
 
     for (final keyword in totalKeywords) {
