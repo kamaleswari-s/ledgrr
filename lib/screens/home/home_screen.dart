@@ -1,13 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/groq_service.dart';
+import '../../services/receipt_scanner_service.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
@@ -36,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen>
   final _transactionService = TransactionService();
   final _authService = AuthService();
   final _groqService = GroqService();
+  final _receiptScanner = ReceiptScannerService();
   double _trueBalance = 0;
   double _monthlyIncome = 0;
   double _monthlyExpense = 0;
@@ -219,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     _controller.dispose();
+    _receiptScanner.dispose();
     super.dispose();
   }
 
@@ -334,8 +339,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  void _showScanComingSoon(BuildContext context, LedgrrPalette palette) {
-    showModalBottomSheet(
+  Future<void> _scanReceipt(
+      BuildContext context, LedgrrPalette palette) async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => Container(
@@ -344,45 +351,72 @@ class _HomeScreenState extends State<HomeScreen>
           borderRadius:
               const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.receipt_long_rounded,
-                color: palette.accent, size: 32),
-            const SizedBox(height: 16),
-            Text('Receipt scanning is on its way',
+            Text('Scan a receipt',
                 style: GoogleFonts.syne(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: palette.ink,
-                    letterSpacing: -0.3)),
-            const SizedBox(height: 8),
-            Text(
-              'Soon you\'ll be able to snap a photo of a bill and LEDGRR will read the total for you. For now, add it manually — it only takes a few seconds.',
-              style: GoogleFonts.syne(
-                  fontSize: 13, color: palette.inkMuted, height: 1.6),
-            ),
+                    color: palette.ink)),
+            const SizedBox(height: 4),
+            Text('LEDGRR will try to read the total for you.',
+                style: GoogleFonts.syne(
+                    fontSize: 12, color: palette.inkMuted)),
             const SizedBox(height: 20),
             Material(
-              color: palette.accent,
+              color: palette.bg2,
               borderRadius: BorderRadius.circular(14),
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showAddTransaction(context, palette);
-                },
+                onTap: () => Navigator.pop(context, ImageSource.camera),
                 child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Center(
-                    child: Text('Add transaction manually',
-                        style: GoogleFonts.syne(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: palette.accentFg)),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.camera_alt_outlined,
+                          color: palette.accent, size: 20),
+                      const SizedBox(width: 12),
+                      Text('Take a photo',
+                          style: GoogleFonts.syne(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: palette.ink)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Material(
+              color: palette.bg2,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: palette.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.photo_library_outlined,
+                          color: palette.accent, size: 20),
+                      const SizedBox(width: 12),
+                      Text('Choose from gallery',
+                          style: GoogleFonts.syne(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: palette.ink)),
+                    ],
                   ),
                 ),
               ),
@@ -391,6 +425,63 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       ),
     );
+
+    if (source == null) return;
+
+    final pickedFile =
+        await picker.pickImage(source: source, imageQuality: 85);
+    if (pickedFile == null) return;
+
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: CircularProgressIndicator(color: palette.accent),
+      ),
+    );
+
+    try {
+      final rawText =
+          await _receiptScanner.scanText(File(pickedFile.path));
+      final total = _receiptScanner.extractTotal(rawText);
+
+      if (context.mounted) Navigator.pop(context);
+      if (!context.mounted) return;
+
+      if (total == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Couldn\'t read a total from that image. Try again or add it manually.',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: Colors.white)),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        return;
+      }
+
+      _showAddTransaction(context, palette, prefilledAmount: total);
+    } catch (e) {
+      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong reading that image.',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: Colors.white)),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -481,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen>
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () =>
-                                  _showScanComingSoon(context, palette),
+                                  _scanReceipt(context, palette),
                               child: Container(
                                 width: 40, height: 40,
                                 decoration: BoxDecoration(
@@ -763,7 +854,7 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
-                  // Feature grid — 2 per row instead of a long stack
+                  // Feature grid — 2 per row
                   SliverToBoxAdapter(
                     child: Padding(
                       padding:
@@ -1258,7 +1349,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _showAddTransaction(
-      BuildContext context, LedgrrPalette palette) {
+      BuildContext context, LedgrrPalette palette,
+      {double? prefilledAmount}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1266,6 +1358,7 @@ class _HomeScreenState extends State<HomeScreen>
       builder: (_) => _AddTransactionSheet(
         palette: palette,
         onAdded: _loadData,
+        prefilledAmount: prefilledAmount,
       ),
     );
   }
@@ -1286,8 +1379,6 @@ class _HomeScreenState extends State<HomeScreen>
 }
 
 // ─── FEATURE GRID CARD ─────────────────────────────────────────────────────
-// Compact, vertical layout designed for a 2-column grid instead of a long
-// horizontal stack.
 
 class _FeatureGridCard extends StatelessWidget {
   final LedgrrPalette palette;
@@ -1354,11 +1445,13 @@ class _AddTransactionSheet extends StatefulWidget {
   final LedgrrPalette palette;
   final VoidCallback onAdded;
   final DocumentSnapshot? existingDoc;
+  final double? prefilledAmount;
 
   const _AddTransactionSheet({
     required this.palette,
     required this.onAdded,
     this.existingDoc,
+    this.prefilledAmount,
   });
 
   @override
@@ -1422,6 +1515,10 @@ class _AddTransactionSheetState
   @override
   void initState() {
     super.initState();
+    if (widget.prefilledAmount != null) {
+      _amountController.text =
+          widget.prefilledAmount!.toStringAsFixed(0);
+    }
     if (widget.existingDoc != null) {
       final data =
           widget.existingDoc!.data() as Map<String, dynamic>;
@@ -1517,6 +1614,12 @@ class _AddTransactionSheetState
                     fontWeight: FontWeight.w800,
                     color: palette.ink,
                     letterSpacing: -0.5)),
+            if (widget.prefilledAmount != null && !isEditing) ...[
+              const SizedBox(height: 6),
+              Text('Amount pulled from your receipt — check it looks right.',
+                  style: GoogleFonts.syne(
+                      fontSize: 12, color: palette.inkMuted)),
+            ],
             const SizedBox(height: 20),
             Container(
               decoration: BoxDecoration(

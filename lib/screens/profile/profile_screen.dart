@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/transaction_service.dart';
+import '../../services/csv_export.dart';
 import '../../providers/theme_provider.dart';
 import '../onboarding/onboarding_screen.dart';
 
@@ -19,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _db = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final _authService = AuthService();
+  final _transactionService = TransactionService();
 
   final _nameController = TextEditingController();
   final _incomeController = TextEditingController();
@@ -26,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isExporting = false;
   String _selectedTheme = 'Deep Mint';
   String? _email;
 
@@ -130,6 +134,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  // Escapes a value for safe CSV inclusion — wraps in quotes if it
+  // contains a comma, quote, or newline, and doubles any inner quotes.
+  String _csvEscape(String value) {
+    if (value.contains(',') ||
+        value.contains('"') ||
+        value.contains('\n')) {
+      return '"${value.replaceAll('"', '""')}"';
+    }
+    return value;
+  }
+
+  Future<void> _exportData() async {
+    setState(() => _isExporting = true);
+    try {
+      final snapshot =
+          await _transactionService.getTransactionsStream().first;
+
+      final buffer = StringBuffer();
+      buffer.writeln('Date,Title,Category,Type,Amount,Note');
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final date = (data['date'] as Timestamp?)?.toDate();
+        final dateStr = date != null
+            ? '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}'
+            : '';
+        final title = _csvEscape(data['title'] ?? '');
+        final category = _csvEscape(data['category'] ?? '');
+        final type = _csvEscape(data['type'] ?? '');
+        final amount = (data['amount'] as num?)?.toString() ?? '0';
+        final note = _csvEscape(data['note'] ?? '');
+
+        buffer.writeln(
+            '$dateStr,$title,$category,$type,$amount,$note');
+      }
+
+      final today = DateTime.now();
+      final fileName =
+          'ledgrr_transactions_${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}.csv';
+
+      downloadCsv(buffer.toString(), fileName);
+
+      if (mounted) {
+        final p = context.read<ThemeProvider>().palette;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${snapshot.docs.length} transactions exported.',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: p.accentFg)),
+            backgroundColor: p.accent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Export isn\'t available on this device yet.',
+                style: GoogleFonts.syne(
+                    fontSize: 13, color: Colors.white)),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
   Future<void> _signOut() async {
     await _authService.signOut();
     if (mounted) {
@@ -144,9 +225,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final palette = context.watch<ThemeProvider>().palette;
 
-    // For the user card we always want dark background with light text
-    // In light themes: use palette.ink (dark) with white text
-    // In dark themes: use palette.card with palette.ink text
     final cardBg = palette.isDark ? palette.card : palette.ink;
     final cardNameColor = palette.isDark ? palette.ink : Colors.white;
     final cardEmailColor =
@@ -349,6 +427,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ],
+
+                    const SizedBox(height: 24),
+
+                    _sectionLabel('Your Data', palette),
+                    const SizedBox(height: 12),
+                    Material(
+                      color: palette.bg2,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: _isExporting ? null : _exportData,
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: palette.border),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: palette.accent.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: _isExporting
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: palette.accent),
+                                      )
+                                    : Icon(Icons.download_rounded,
+                                        color: palette.accent, size: 20),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Export as CSV',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: palette.ink)),
+                                    Text(
+                                        'Download every transaction you\'ve logged',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 11,
+                                            color: palette.inkMuted)),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios_rounded,
+                                  size: 14, color: palette.inkMuted),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
 
                     const SizedBox(height: 24),
 
