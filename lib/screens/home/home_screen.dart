@@ -468,6 +468,7 @@ class _HomeScreenState extends State<HomeScreen>
     try {
       final rawText =
           await _receiptScanner.scanText(File(pickedFile.path));
+      print('RAW OCR TEXT: $rawText');
       final total = _receiptScanner.extractTotal(rawText);
 
       if (context.mounted) Navigator.pop(context);
