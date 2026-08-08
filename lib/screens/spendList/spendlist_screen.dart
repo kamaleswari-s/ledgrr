@@ -160,69 +160,79 @@ class _SpendListScreenState extends State<SpendListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: BoxDecoration(
-          color: palette.bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.fromLTRB(
-          24, 20, 24,
-          MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: palette.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text('New Spend List',
-                style: GoogleFonts.syne(
-                    fontSize: 20, fontWeight: FontWeight.w800,
-                    color: palette.ink, letterSpacing: -0.5)),
-            const SizedBox(height: 6),
-            Text('Give it a name and set a budget cap.',
-                style: GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
-            const SizedBox(height: 20),
-            _field(controller: nameController,
-                hint: 'e.g. Shopping with Dad\'s 10K',
-                label: 'List name', palette: palette),
-            const SizedBox(height: 12),
-            _field(controller: budgetController,
-                hint: '0.00', label: 'Budget cap (₹)',
-                palette: palette, keyboardType: TextInputType.number),
-            const SizedBox(height: 24),
-            Material(
-              color: palette.accent,
-              borderRadius: BorderRadius.circular(16),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () async {
-                  if (nameController.text.trim().isEmpty) return;
-                  final budget = double.tryParse(budgetController.text) ?? 0;
-                  await _createList(nameController.text.trim(), budget);
-                  if (context.mounted) Navigator.pop(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Text('Create list',
-                        style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 17, fontStyle: FontStyle.italic,
-                            color: palette.accentFg)),
+      // FIX: use the builder's own context (sheetContext), not the outer
+      // SpendListScreen context. The outer context sits inside a Scaffold
+      // with resizeToAvoidBottomInset:true, which already zeroes out
+      // viewInsets.bottom for its body — so MediaQuery.of(context) from
+      // there always reports 0 keyboard height, and the sheet never
+      // moves up. sheetContext comes from the modal route itself, above
+      // that consumption, so it reports the real keyboard height.
+      builder: (sheetContext) => Padding(
+        padding: MediaQuery.of(sheetContext).viewInsets,
+        child: Container(
+          decoration: BoxDecoration(
+            color: palette.bg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: palette.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                Text('New Spend List',
+                    style: GoogleFonts.syne(
+                        fontSize: 20, fontWeight: FontWeight.w800,
+                        color: palette.ink, letterSpacing: -0.5)),
+                const SizedBox(height: 6),
+                Text('Give it a name and set a budget cap.',
+                    style: GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
+                const SizedBox(height: 20),
+                _field(controller: nameController,
+                    hint: 'e.g. Shopping with Dad\'s 10K',
+                    label: 'List name', palette: palette),
+                const SizedBox(height: 12),
+                _field(controller: budgetController,
+                    hint: '0.00', label: 'Budget cap (₹)',
+                    palette: palette, keyboardType: TextInputType.number),
+                const SizedBox(height: 24),
+                Material(
+                  color: palette.accent,
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () async {
+                      if (nameController.text.trim().isEmpty) return;
+                      final budget = double.tryParse(budgetController.text) ?? 0;
+                      await _createList(nameController.text.trim(), budget);
+                      if (sheetContext.mounted) Navigator.pop(sheetContext);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text('Create list',
+                            style: GoogleFonts.dmSerifDisplay(
+                                fontSize: 17, fontStyle: FontStyle.italic,
+                                color: palette.accentFg)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -236,66 +246,70 @@ class _SpendListScreenState extends State<SpendListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        decoration: BoxDecoration(
-          color: palette.bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: EdgeInsets.fromLTRB(
-          24, 20, 24,
-          MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: palette.border,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text('Add item',
-                style: GoogleFonts.syne(
-                    fontSize: 20, fontWeight: FontWeight.w800,
-                    color: palette.ink, letterSpacing: -0.5)),
-            const SizedBox(height: 20),
-            _field(controller: nameController,
-                hint: 'What are you buying?',
-                label: 'Item name', palette: palette),
-            const SizedBox(height: 12),
-            _field(controller: amountController,
-                hint: '0.00', label: 'Estimated amount (₹)',
-                palette: palette, keyboardType: TextInputType.number),
-            const SizedBox(height: 24),
-            Material(
-              color: palette.accent,
-              borderRadius: BorderRadius.circular(16),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () async {
-                  if (nameController.text.trim().isEmpty) return;
-                  final amount = double.tryParse(amountController.text) ?? 0;
-                  await _addItem(listId, nameController.text.trim(), amount);
-                  if (context.mounted) Navigator.pop(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Text('Add item',
-                        style: GoogleFonts.dmSerifDisplay(
-                            fontSize: 17, fontStyle: FontStyle.italic,
-                            color: palette.accentFg)),
+      // Same fix as _showCreateList — use the builder's own sheetContext.
+      builder: (sheetContext) => Padding(
+        padding: MediaQuery.of(sheetContext).viewInsets,
+        child: Container(
+          decoration: BoxDecoration(
+            color: palette.bg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: palette.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                Text('Add item',
+                    style: GoogleFonts.syne(
+                        fontSize: 20, fontWeight: FontWeight.w800,
+                        color: palette.ink, letterSpacing: -0.5)),
+                const SizedBox(height: 20),
+                _field(controller: nameController,
+                    hint: 'What are you buying?',
+                    label: 'Item name', palette: palette),
+                const SizedBox(height: 12),
+                _field(controller: amountController,
+                    hint: '0.00', label: 'Estimated amount (₹)',
+                    palette: palette, keyboardType: TextInputType.number),
+                const SizedBox(height: 24),
+                Material(
+                  color: palette.accent,
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () async {
+                      if (nameController.text.trim().isEmpty) return;
+                      final amount = double.tryParse(amountController.text) ?? 0;
+                      await _addItem(listId, nameController.text.trim(), amount);
+                      if (sheetContext.mounted) Navigator.pop(sheetContext);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text('Add item',
+                            style: GoogleFonts.dmSerifDisplay(
+                                fontSize: 17, fontStyle: FontStyle.italic,
+                                color: palette.accentFg)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
