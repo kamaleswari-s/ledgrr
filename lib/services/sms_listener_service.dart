@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:another_telephony/telephony.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'sms_parser.dart';
 
 class SmsListenerService {
   final Telephony _telephony = Telephony.instance;
 
-  // Call this once, typically from Home screen's initState
   Future<void> startListening({
     required void Function(ParsedTransaction) onTransactionDetected,
   }) async {
@@ -22,13 +23,38 @@ class SmsListenerService {
         final parsed = SmsParser.parse(body);
         if (parsed != null) {
           onTransactionDetected(parsed);
+          return;
         }
-        // If parsed is null, it means either not a Canara message,
-        // or a Canara message that didn't match any known template.
-        // We deliberately do nothing here rather than showing an
-        // error, so the user isn't interrupted by every unrelated SMS.
+
+        // Not parsed. If it's a Canara message we just didn't recognise
+        // the format for, log it quietly instead of dropping it, so
+        // there's a trail to check later without interrupting the user.
+        final isCanara = body.toLowerCase().contains('canara') ||
+            body.toLowerCase().contains('canbnk');
+        if (isCanara) {
+          _logUnmatchedMessage(body);
+        }
       },
       listenInBackground: false,
     );
+  }
+
+  Future<void> _logUnmatchedMessage(String body) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('unmatchedSms')
+          .add({
+        'body': body,
+        'receivedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      // Silently fail. This is a nice-to-have log, never something
+      // that should interrupt the user or crash the listener.
+    }
   }
 }
