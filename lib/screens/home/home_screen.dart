@@ -12,6 +12,8 @@ import '../../services/auth_service.dart';
 import '../../services/groq_service.dart';
 import '../../services/receipt_scanner_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/sms_listener_service.dart';
+import '../../services/sms_parser.dart';
 import '../onboarding/onboarding_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
@@ -42,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen>
   final _groqService = GroqService();
   final _receiptScanner = ReceiptScannerService();
   final _notificationService = NotificationService();
+  final _smsListenerService = SmsListenerService();
   double _trueBalance = 0;
   double _monthlyIncome = 0;
   double _monthlyExpense = 0;
@@ -66,6 +69,9 @@ class _HomeScreenState extends State<HomeScreen>
     _loadUpcomingEvents();
     _loadDailySentence();
     _setupNotifications();
+    _smsListenerService.startListening(
+      onTransactionDetected: _showSmsConfirmSheet,
+    );
     _controller.forward();
   }
 
@@ -249,6 +255,197 @@ class _HomeScreenState extends State<HomeScreen>
     _controller.dispose();
     _receiptScanner.dispose();
     super.dispose();
+  }
+
+  // ─── SMS-DETECTED TRANSACTION CONFIRM SHEET ─────────────────────────────
+  // Never logs anything silently. Always shows the parsed amount and
+  // merchant to the user first, and only writes to Firestore once they
+  // tap Confirm. Uses sheetContext throughout so the keyboard doesn't
+  // cover the fields, same fix as Spend List.
+  void _showSmsConfirmSheet(ParsedTransaction parsed) {
+    if (!mounted) return;
+    final palette = Provider.of<ThemeProvider>(context, listen: false).palette;
+
+    final amountController =
+        TextEditingController(text: parsed.amount.toStringAsFixed(0));
+    final titleController =
+        TextEditingController(text: parsed.merchant ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Padding(
+        padding: MediaQuery.of(sheetContext).viewInsets,
+        child: Container(
+          decoration: BoxDecoration(
+            color: palette.bg,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: palette.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  parsed.isCredit
+                      ? 'Income detected from SMS'
+                      : 'Expense detected from SMS',
+                  style: GoogleFonts.syne(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: palette.ink,
+                      letterSpacing: -0.5),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Review the details and confirm to log this transaction.',
+                  style: GoogleFonts.syne(
+                      fontSize: 13, color: palette.inkMuted),
+                ),
+                const SizedBox(height: 20),
+                _confirmField(
+                    controller: titleController,
+                    hint: 'e.g. Nykaa, Vijaya Hospital',
+                    label: 'Title / Merchant',
+                    palette: palette),
+                const SizedBox(height: 12),
+                _confirmField(
+                    controller: amountController,
+                    hint: '0.00',
+                    label: 'Amount (₹)',
+                    palette: palette,
+                    keyboardType: TextInputType.number),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Material(
+                        color: palette.bg2,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => Navigator.pop(sheetContext),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: palette.border),
+                            ),
+                            child: Center(
+                              child: Text('Ignore',
+                                  style: GoogleFonts.syne(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: palette.inkMuted)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Material(
+                        color: palette.accent,
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () async {
+                            final amount =
+                                double.tryParse(amountController.text) ??
+                                    parsed.amount;
+                            await _transactionService.addTransaction(
+                              title: titleController.text.trim().isEmpty
+                                  ? (parsed.isCredit ? 'Income' : 'Expense')
+                                  : titleController.text.trim(),
+                              amount: amount,
+                              category:
+                                  parsed.isCredit ? 'other_income' : 'other_expense',
+                              type: parsed.isCredit ? 'income' : 'expense',
+                              date: parsed.date ?? DateTime.now(),
+                              note: 'Auto-detected from SMS',
+                            );
+                            if (sheetContext.mounted) {
+                              Navigator.pop(sheetContext);
+                            }
+                            _loadData();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16),
+                            child: Center(
+                              child: Text('Confirm & Log',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                      fontSize: 15,
+                                      fontStyle: FontStyle.italic,
+                                      color: palette.accentFg)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _confirmField({
+    required TextEditingController controller,
+    required String hint,
+    required String label,
+    required LedgrrPalette palette,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.syne(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: palette.inkMuted,
+                letterSpacing: 0.05)),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: palette.bg2,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: palette.border),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.syne(
+                  fontSize: 14, color: palette.inkMuted),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void _showNotifications(BuildContext context, LedgrrPalette palette) {
@@ -469,7 +666,7 @@ class _HomeScreenState extends State<HomeScreen>
       final rawText =
           await _receiptScanner.scanText(File(pickedFile.path));
       print('RAW OCR TEXT: $rawText');
-      final total = _receiptScanner.extractTotal(rawText); 
+      final total = _receiptScanner.extractTotal(rawText);
 
       if (context.mounted) Navigator.pop(context);
       if (!context.mounted) return;
