@@ -257,6 +257,53 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
+  // ─── TRUE BALANCE EXPLAINER ──────────────────────────────────────────────
+  // Addresses the "students confuse True Balance with their raw bank
+  // balance" feedback. Tapping the info icon on the True Balance card
+  // opens this plain-English explanation.
+  void _showTrueBalanceInfo(BuildContext context, LedgrrPalette palette) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: palette.bg,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: palette.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text('What is True Balance?',
+                style: GoogleFonts.syne(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: palette.ink)),
+            const SizedBox(height: 12),
+            Text(
+              'True Balance is not your raw bank balance. It shows what you actually have free to spend right now, after money already set aside in Savings Jars and Event Wallets is taken out.\n\nFor example, if your bank shows ₹5,000 but ₹1,000 of that is saved in a Trip Fund jar, your True Balance shows ₹4,000, the amount you can genuinely spend without touching your savings.',
+              style: GoogleFonts.syne(
+                  fontSize: 13.5, color: palette.inkMuted, height: 1.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ─── SMS-DETECTED TRANSACTION CONFIRM SHEET ─────────────────────────────
   // Never logs anything silently. Always shows the parsed amount and
   // merchant to the user first, and only writes to Firestore once they
@@ -939,7 +986,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   decoration: BoxDecoration(
                                     color: (_isStable
                                             ? palette.accent
-                                            : const Color(0xFFB5446E))
+                                            : palette.negative)
                                         .withOpacity(0.2),
                                     borderRadius:
                                         BorderRadius.circular(100),
@@ -951,7 +998,7 @@ class _HomeScreenState extends State<HomeScreen>
                                       fontWeight: FontWeight.w600,
                                       color: _isStable
                                           ? palette.accent
-                                          : const Color(0xFFB5446E),
+                                          : palette.negative,
                                     ),
                                   ),
                                 ),
@@ -1012,6 +1059,8 @@ class _HomeScreenState extends State<HomeScreen>
                               iconType: 'balance',
                               palette: palette,
                               isPositive: _trueBalance >= 0,
+                              onInfoTap: () =>
+                                  _showTrueBalanceInfo(context, palette),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -1359,8 +1408,7 @@ class _HomeScreenState extends State<HomeScreen>
                                                 ? palette.accent
                                                     .withOpacity(
                                                         0.12)
-                                                : const Color(
-                                                        0xFFB5446E)
+                                                : palette.negative
                                                     .withOpacity(
                                                         0.1),
                                             borderRadius:
@@ -1375,8 +1423,7 @@ class _HomeScreenState extends State<HomeScreen>
                                                     .arrow_upward_rounded,
                                             color: isIncome
                                                 ? palette.accent
-                                                : const Color(
-                                                    0xFFB5446E),
+                                                : palette.negative,
                                             size: 18,
                                           ),
                                         ),
@@ -1425,8 +1472,7 @@ class _HomeScreenState extends State<HomeScreen>
                                                     FontWeight.w700,
                                                 color: isIncome
                                                     ? palette.accent
-                                                    : const Color(
-                                                        0xFFB5446E),
+                                                    : palette.negative,
                                               ),
                                             ),
                                             Text('tap to edit',
@@ -2106,6 +2152,7 @@ class _StatCard extends StatelessWidget {
   final String iconType;
   final LedgrrPalette palette;
   final bool isPositive;
+  final VoidCallback? onInfoTap;
 
   const _StatCard({
     required this.label,
@@ -2114,6 +2161,7 @@ class _StatCard extends StatelessWidget {
     required this.iconType,
     required this.palette,
     required this.isPositive,
+    this.onInfoTap,
   });
 
   @override
@@ -2128,16 +2176,28 @@ class _StatCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 28, height: 28,
-            child: CustomPaint(
-              painter: _IconPainter(
-                type: iconType,
-                color: isPositive
-                    ? palette.accent
-                    : const Color(0xFFB5446E),
+          Row(
+            children: [
+              SizedBox(
+                width: 28, height: 28,
+                child: CustomPaint(
+                  painter: _IconPainter(
+                    type: iconType,
+                    color: isPositive
+                        ? palette.accent
+                        : palette.negative,
+                  ),
+                ),
               ),
-            ),
+              if (onInfoTap != null) ...[
+                const Spacer(),
+                GestureDetector(
+                  onTap: onInfoTap,
+                  child: Icon(Icons.info_outline_rounded,
+                      size: 15, color: palette.inkMuted),
+                ),
+              ],
+            ],
           ),
           const SizedBox(height: 10),
           Text(value,
@@ -2146,7 +2206,7 @@ class _StatCard extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   color: isPositive
                       ? palette.ink
-                      : const Color(0xFFB5446E),
+                      : palette.negative,
                   letterSpacing: -0.5)),
           const SizedBox(height: 2),
           Text(label,
