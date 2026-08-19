@@ -275,8 +275,7 @@ class _DuesScreenState extends State<DuesScreen> {
                                                     FontWeight.w800,
                                                 color: net >= 0
                                                     ? palette.accent
-                                                    : const Color(
-                                                        0xFFB5446E),
+                                                    : palette.negative,
                                                 letterSpacing: -1),
                                           ),
                                         ],
@@ -368,8 +367,7 @@ class _DuesScreenState extends State<DuesScreen> {
                                   decoration: BoxDecoration(
                                     color: (isOwedToMe
                                             ? palette.accent
-                                            : const Color(
-                                                0xFFB5446E))
+                                            : palette.negative)
                                         .withOpacity(0.12),
                                     borderRadius:
                                         BorderRadius.circular(12),
@@ -382,7 +380,7 @@ class _DuesScreenState extends State<DuesScreen> {
                                             .arrow_upward_rounded,
                                     color: isOwedToMe
                                         ? palette.accent
-                                        : const Color(0xFFB5446E),
+                                        : palette.negative,
                                     size: 20,
                                   ),
                                 ),
@@ -430,8 +428,7 @@ class _DuesScreenState extends State<DuesScreen> {
                                               FontWeight.w800,
                                           color: isOwedToMe
                                               ? palette.accent
-                                              : const Color(
-                                                  0xFFB5446E),
+                                              : palette.negative,
                                           letterSpacing: -0.5),
                                     ),
                                     Text('tap to manage',
@@ -536,7 +533,7 @@ class _DuesScreenState extends State<DuesScreen> {
                             color: isSelected
                                 ? (value == 'owed_to_me'
                                     ? palette.accent
-                                    : const Color(0xFFB5446E))
+                                    : palette.negative)
                                 : Colors.transparent,
                             borderRadius:
                                 BorderRadius.circular(10),
@@ -581,7 +578,7 @@ class _DuesScreenState extends State<DuesScreen> {
               Material(
                 color: direction == 'owed_to_me'
                     ? palette.accent
-                    : const Color(0xFFB5446E),
+                    : palette.negative,
                 borderRadius: BorderRadius.circular(16),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
@@ -652,7 +649,7 @@ class _DuesScreenState extends State<DuesScreen> {
     final original =
         (data['originalAmount'] as num?)?.toDouble() ?? current;
     final accentColor =
-        isOwedToMe ? palette.accent : const Color(0xFFB5446E);
+        isOwedToMe ? palette.accent : palette.negative;
 
     showModalBottomSheet(
       context: context,
@@ -950,7 +947,7 @@ class _DuesScreenState extends State<DuesScreen> {
     final current =
         (data['currentAmount'] as num?)?.toDouble() ?? 0;
     final accentColor =
-        isOwedToMe ? palette.accent : const Color(0xFFB5446E);
+        isOwedToMe ? palette.accent : palette.negative;
 
     showModalBottomSheet(
       context: context,

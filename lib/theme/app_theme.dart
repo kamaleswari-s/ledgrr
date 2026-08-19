@@ -15,6 +15,7 @@ class LedgrrColors {
     ink: Color(0xFF071C18),
     inkMuted: Color(0xFF2E5C52),
     border: Color(0xFF8ABFB8),
+    negative: Color(0xFFC0435F),
     isDark: false,
   );
 
@@ -28,6 +29,11 @@ class LedgrrColors {
     ink: Color(0xFF2A0F1C),
     inkMuted: Color(0xFF6B2848),
     border: Color(0xFFCCA0B8),
+    // Rose's own accent IS the old hardcoded "negative" pink, so this
+    // theme needs a genuinely different hue for the warning color,
+    // otherwise "you owe money" and "your theme's brand color" would
+    // look identical to the user.
+    negative: Color(0xFF8B4A2B),
     isDark: false,
   );
 
@@ -41,6 +47,7 @@ class LedgrrColors {
     ink: Color(0xFF0C1F35),
     inkMuted: Color(0xFF2E4E6E),
     border: Color(0xFF90B8D8),
+    negative: Color(0xFFC0435F),
     isDark: false,
   );
 
@@ -54,6 +61,7 @@ class LedgrrColors {
     ink: Color(0xFF1A1030),
     inkMuted: Color(0xFF4A3478),
     border: Color(0xFFAA98D8),
+    negative: Color(0xFFC0435F),
     isDark: false,
   );
 
@@ -67,6 +75,9 @@ class LedgrrColors {
     ink: Color(0xFF1A0A00),
     inkMuted: Color(0xFF6A2E10),
     border: Color(0xFFE8A888),
+    // Peach's accent is already a warm orange-red, so negative needs
+    // to be a clearly different hue (pink-red) to stay distinguishable.
+    negative: Color(0xFFB5306E),
     isDark: false,
   );
 
@@ -81,6 +92,7 @@ class LedgrrColors {
     ink: Color(0xFFF0EEFF),
     inkMuted: Color(0xFFB8AAEE),
     border: Color(0xFF3A3A5A),
+    negative: Color(0xFFFF6B81),
     isDark: true,
   );
 
@@ -94,6 +106,7 @@ class LedgrrColors {
     ink: Color(0xFFF5F5F0),
     inkMuted: Color(0xFFAAAAAA),
     border: Color(0xFF383838),
+    negative: Color(0xFFFF6B81),
     isDark: true,
   );
 
@@ -107,6 +120,7 @@ class LedgrrColors {
     ink: Color(0xFFEEF0FF),
     inkMuted: Color(0xFFAAB4E8),
     border: Color(0xFF282C4A),
+    negative: Color(0xFFFF6B81),
     isDark: true,
   );
 
@@ -120,6 +134,9 @@ class LedgrrColors {
     ink: Color(0xFFFFF4EE),
     inkMuted: Color(0xFFDDAA88),
     border: Color(0xFF3C2010),
+    // Ember's accent is already orange, so negative shifts toward a
+    // clearer red-pink rather than another orange tone.
+    negative: Color(0xFFFF4D6D),
     isDark: true,
   );
 
@@ -133,6 +150,7 @@ class LedgrrColors {
     ink: Color(0xFFE8EDF5),
     inkMuted: Color(0xFF88AACC),
     border: Color(0xFF243040),
+    negative: Color(0xFFFF6B81),
     isDark: true,
   );
 
@@ -162,6 +180,11 @@ class LedgrrPalette {
   final Color ink;
   final Color inkMuted;
   final Color border;
+  // Semantic color for "you owe" / warning / negative-balance states.
+  // Deliberately separate from `accent` so a theme whose accent color
+  // happens to be reddish (like Rose) never collides visually with
+  // the app's own warning color.
+  final Color negative;
   final bool isDark;
 
   const LedgrrPalette({
@@ -174,6 +197,7 @@ class LedgrrPalette {
     required this.ink,
     required this.inkMuted,
     required this.border,
+    required this.negative,
     required this.isDark,
   });
 }
