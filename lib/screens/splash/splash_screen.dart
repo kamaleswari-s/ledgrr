@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../onboarding/onboarding_screen.dart';
+import '../auth/auth_screen.dart';
+import '../home/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,10 +26,15 @@ class _SplashScreenState extends State<SplashScreen>
 
   static const String _appName = 'LEDGRR';
   static const String _tagline = 'Finance clarity for students';
+  static const String _seenOnboardingKey = 'hasSeenOnboarding';
 
   int _visibleLetters = 0;
   bool _showTagline = false;
   bool _showButton = false;
+
+  // Decided once, before the button becomes tappable, so the button
+  // always leads somewhere correct instead of hardcoding Onboarding.
+  Widget _destination = const OnboardingScreen();
 
   @override
   void initState() {
@@ -60,11 +69,31 @@ class _SplashScreenState extends State<SplashScreen>
     _runSequence();
   }
 
+  // Figures out where the "Go to LEDGRR" button should actually lead:
+  //   1. Already logged in            -> straight to Home
+  //   2. Logged out, seen onboarding  -> straight to Login
+  //   3. Never seen onboarding        -> show Onboarding
+  Future<void> _determineDestination() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _destination = const HomeScreen();
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool(_seenOnboardingKey) ?? false;
+
+    _destination = hasSeenOnboarding
+        ? const AuthScreen(isSignUp: false)
+        : const OnboardingScreen();
+  }
+
   Future<void> _runSequence() async {
     await _logoController.forward();
     await Future.delayed(const Duration(milliseconds: 150));
     await _textController.forward();
     if (mounted) setState(() => _showTagline = true);
+    await _determineDestination();
     await Future.delayed(const Duration(milliseconds: 400));
     if (mounted) setState(() => _showButton = true);
     // No auto-navigation — the user taps the button when ready.
@@ -157,7 +186,7 @@ class _SplashScreenState extends State<SplashScreen>
                       onTap: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                              builder: (_) => const OnboardingScreen()),
+                              builder: (_) => _destination),
                         );
                       },
                       child: Container(

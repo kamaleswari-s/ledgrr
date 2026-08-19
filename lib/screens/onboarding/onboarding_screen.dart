@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
 import '../auth/auth_screen.dart';
 
@@ -89,6 +90,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
+  // Marks onboarding as seen so Splash never shows it again on this
+  // device after the user reaches this point, even after signing out.
+  Future<void> _markOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -169,7 +177,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     (f) =>
                         _FeaturePage(feature: f, palette: palette),
                   ),
-                  _GetStartedPage(palette: palette),
+                  _GetStartedPage(
+                    palette: palette,
+                    onBeforeNavigate: _markOnboardingSeen,
+                  ),
                 ],
               ),
             ),
@@ -367,7 +378,12 @@ class _FeaturePage extends StatelessWidget {
 
 class _GetStartedPage extends StatelessWidget {
   final LedgrrPalette palette;
-  const _GetStartedPage({required this.palette});
+  final Future<void> Function() onBeforeNavigate;
+
+  const _GetStartedPage({
+    required this.palette,
+    required this.onBeforeNavigate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -404,11 +420,18 @@ class _GetStartedPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          const AuthScreen(isSignUp: true)),
-                ),
+                onTap: () async {
+                  // Onboarding is done being useful once the user
+                  // reaches this point — mark it seen so Splash never
+                  // shows it again for this device.
+                  await onBeforeNavigate();
+                  if (!context.mounted) return;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const AuthScreen(isSignUp: true)),
+                  );
+                },
                 child: Container(
                   width: double.infinity,
                   padding:
@@ -429,11 +452,15 @@ class _GetStartedPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          const AuthScreen(isSignUp: false)),
-                ),
+                onTap: () async {
+                  await onBeforeNavigate();
+                  if (!context.mounted) return;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const AuthScreen(isSignUp: false)),
+                  );
+                },
                 child: Container(
                   width: double.infinity,
                   padding:
