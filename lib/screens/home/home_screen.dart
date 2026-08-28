@@ -194,6 +194,26 @@ class _HomeScreenState extends State<HomeScreen>
         loggedToday: loggedToday,
         currentStreak: _currentStreak,
       );
+
+      // Priority-based Event Wallet reminders — frequency scales with
+      // both how close the event date is and how the user marked its
+      // importance (Must happen / Want to happen / Maybe). Uses the
+      // events already loaded by _loadUpcomingEvents, so this should
+      // run after that has populated _upcomingEvents.
+      if (_upcomingEvents.isNotEmpty) {
+        final eventsForReminders = _upcomingEvents.map((e) {
+          return {
+            'id': e['id'],
+            'name': e['name'],
+            'date': (e['date'] as Timestamp).toDate(),
+            'priority': e['priority'] ?? 'Want to happen',
+            'budget': e['budget'],
+            'saved': e['savedAmount'],
+          };
+        }).toList();
+
+        await _notificationService.scheduleEventReminders(eventsForReminders);
+      }
     } catch (e) {
       // Silently fail — notifications are a nice-to-have, never
       // something that should block the app from working.
