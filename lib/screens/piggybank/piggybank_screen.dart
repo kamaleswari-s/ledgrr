@@ -868,7 +868,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                     color: isDeposit
                                         ? palette.accent
                                             .withOpacity(0.12)
-                                        : const Color(0xFFB5446E)
+                                        : palette.negative
                                             .withOpacity(0.1),
                                     borderRadius:
                                         BorderRadius.circular(
@@ -882,7 +882,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                             .arrow_upward_rounded,
                                     color: isDeposit
                                         ? palette.accent
-                                        : const Color(0xFFB5446E),
+                                        : palette.negative,
                                     size: 16,
                                   ),
                                 ),
@@ -926,8 +926,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                       fontWeight: FontWeight.w700,
                                       color: isDeposit
                                           ? palette.accent
-                                          : const Color(
-                                              0xFFB5446E)),
+                                          : palette.negative),
                                 ),
                               ],
                             ),
@@ -1262,24 +1261,22 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color:
-                      const Color(0xFFB5446E).withOpacity(0.08),
+                  color: palette.negative.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFFB5446E)
-                          .withOpacity(0.2)),
+                      color: palette.negative.withOpacity(0.2)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline_rounded,
-                        color: Color(0xFFB5446E), size: 14),
+                    Icon(Icons.info_outline_rounded,
+                        color: palette.negative, size: 14),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Withdrawing reduces your savings. Only do this if you really need to.',
                         style: GoogleFonts.syne(
                             fontSize: 11,
-                            color: const Color(0xFFB5446E),
+                            color: palette.negative,
                             height: 1.5),
                       ),
                     ),
@@ -1288,7 +1285,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
               ),
               const SizedBox(height: 16),
               Material(
-                color: const Color(0xFFB5446E),
+                color: palette.negative,
                 borderRadius: BorderRadius.circular(16),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
@@ -1343,8 +1340,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                           fontSize: 13,
                                           fontWeight:
                                               FontWeight.w700,
-                                          color: const Color(
-                                              0xFFB5446E))),
+                                          color: palette.negative)),
                                 ),
                               ],
                             ),

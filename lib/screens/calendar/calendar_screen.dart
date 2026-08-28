@@ -19,12 +19,194 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final _uid = FirebaseAuth.instance.currentUser!.uid;
   final _transactionService = TransactionService();
 
+  // Guards against re-triggering the reconciliation check every time
+  // this screen rebuilds — it only needs to run once per visit.
+  bool _checkedReconciliation = false;
+
   Stream<QuerySnapshot> get _eventsStream => _db
       .collection('users')
       .doc(_uid)
       .collection('events')
       .orderBy('date')
       .snapshots();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingReconciliation();
+    });
+  }
+
+  // Finds past events that still have saved money and haven't been
+  // reconciled yet, and asks the user whether the spending actually
+  // happened. This is what returns unused money to True Balance
+  // automatically instead of letting it sit forgotten in an event
+  // that's already passed.
+  Future<void> _checkPendingReconciliation() async {
+    if (_checkedReconciliation) return;
+    _checkedReconciliation = true;
+
+    final now = DateTime.now();
+    try {
+      final snapshot = await _db
+          .collection('users')
+          .doc(_uid)
+          .collection('events')
+          .where('date', isLessThan: Timestamp.fromDate(now))
+          .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final reconciled = data['reconciled'] == true;
+        final saved = (data['savedAmount'] as num?)?.toDouble() ?? 0;
+
+        if (reconciled) continue;
+
+        if (saved <= 0) {
+          // Nothing was ever saved toward this one — nothing to
+          // reconcile, just quietly mark it done.
+          await doc.reference.update({'reconciled': true});
+          continue;
+        }
+
+        if (!mounted) return;
+        await _showReconciliationDialog(doc, data, saved);
+        // Handle one event at a time — if there are more, the next
+        // screen visit (or a manual refresh) will catch the rest.
+        break;
+      }
+    } catch (e) {
+      // Silently fail — this is a background convenience check,
+      // never something that should block the screen from loading.
+    }
+  }
+
+  Future<void> _showReconciliationDialog(
+      DocumentSnapshot doc, Map<String, dynamic> data, double saved) async {
+    final palette = Provider.of<ThemeProvider>(context, listen: false).palette;
+    final name = data['name'] as String? ?? 'this event';
+    final formattedSaved = _formatAmount(saved);
+
+    final didSpend = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: palette.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Did you spend on $name?',
+            style: GoogleFonts.syne(
+                fontSize: 16, fontWeight: FontWeight.w700, color: palette.ink)),
+        content: Text(
+          'You had $formattedSaved saved for this. Let\'s square it up with your True Balance.',
+          style: GoogleFonts.syne(
+              fontSize: 13, color: palette.inkMuted, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('No, didn\'t happen',
+                style: GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Yes, I spent on it',
+                style: GoogleFonts.syne(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: palette.accent)),
+          ),
+        ],
+      ),
+    );
+
+    if (didSpend == null) return; // dialog dismissed some other way
+
+    if (didSpend == false) {
+      // Plans changed — the whole saved amount goes back to True
+      // Balance, and this event stops asking about it.
+      await _withdrawSavings(doc.id, name, saved, saved,
+          note: 'Returned — plans changed', silent: true);
+      await doc.reference.update({'reconciled': true});
+      return;
+    }
+
+    // They did spend — ask how much actually went out, so any
+    // leftover can go back to True Balance instead of staying stuck.
+    final actualController =
+        TextEditingController(text: saved.toStringAsFixed(0));
+
+    final actualAmount = await showDialog<double>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        backgroundColor: palette.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('How much did you spend?',
+            style: GoogleFonts.syne(
+                fontSize: 16, fontWeight: FontWeight.w700, color: palette.ink)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You had $formattedSaved saved for $name.',
+                style: GoogleFonts.syne(
+                    fontSize: 12, color: palette.inkMuted, height: 1.4)),
+            const SizedBox(height: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: palette.bg2,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: palette.border),
+              ),
+              child: TextField(
+                controller: actualController,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: GoogleFonts.syne(fontSize: 16, color: palette.ink),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14, vertical: 12),
+                  prefixText: '₹ ',
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, saved),
+            child: Text('Skip',
+                style: GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
+          ),
+          TextButton(
+            onPressed: () {
+              final val = double.tryParse(actualController.text.trim());
+              Navigator.pop(context, val ?? saved);
+            },
+            child: Text('Confirm',
+                style: GoogleFonts.syne(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: palette.accent)),
+          ),
+        ],
+      ),
+    );
+
+    final actual = actualAmount ?? saved;
+
+    if (actual < saved) {
+      final leftover = saved - actual;
+      await _withdrawSavings(doc.id, name, leftover, saved,
+          note: 'Leftover after actual spend', silent: true);
+    }
+    // If actual >= saved, the full saved amount was already deducted
+    // from True Balance when it was saved — nothing more to do.
+
+    await doc.reference.update({'reconciled': true});
+  }
 
   void _showAddEvent(BuildContext context, LedgrrPalette palette) {
     showModalBottomSheet(
@@ -82,8 +264,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  // `silent` skips nothing functionally right now, but marks calls
+  // coming from the reconciliation flow distinctly in case future
+  // logging wants to tell them apart from a manual withdrawal.
   Future<void> _withdrawSavings(String eventId, String eventName,
-      double amount, double current) async {
+      double amount, double current,
+      {String note = '', bool silent = false}) async {
     await _db
         .collection('users')
         .doc(_uid)
@@ -97,7 +283,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       category: 'event_savings',
       type: 'income',
       date: DateTime.now(),
-      note: '',
+      note: note,
     );
   }
 
@@ -839,7 +1025,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             const SizedBox(height: 24),
             Material(
-              color: const Color(0xFFB5446E),
+              color: palette.negative,
               borderRadius: BorderRadius.circular(16),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
@@ -879,7 +1065,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               style: GoogleFonts.syne(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFFB5446E))),
+                                  color: palette.negative)),
                         ),
                       ],
                     ),
@@ -987,6 +1173,10 @@ class _EventSheetState extends State<_EventSheet> {
     if (_nameController.text.trim().isEmpty) return;
     setState(() => _isSaving = true);
     try {
+      final existingData = widget.existingDoc != null
+          ? widget.existingDoc!.data() as Map<String, dynamic>
+          : null;
+
       final data = {
         'name': _nameController.text.trim(),
         'date': Timestamp.fromDate(_selectedDate),
@@ -994,11 +1184,11 @@ class _EventSheetState extends State<_EventSheet> {
         'notes': _notesController.text.trim(),
         'priority': _selectedPriority,
         'iconType': _selectedIcon,
-        'savedAmount': widget.existingDoc != null
-            ? (widget.existingDoc!.data()
-                    as Map<String, dynamic>)['savedAmount'] ??
-                0
-            : 0,
+        'savedAmount': existingData?['savedAmount'] ?? 0,
+        // New events start unreconciled. Editing an event (e.g. pushing
+        // the date further out) resets this too, so a genuinely
+        // rescheduled event doesn't get prompted about old spending.
+        'reconciled': existingData?['reconciled'] ?? false,
         'createdAt': FieldValue.serverTimestamp(),
       };
 

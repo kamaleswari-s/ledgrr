@@ -18,7 +18,18 @@ class SmsListenerService {
     _telephony.listenIncomingSms(
       onNewMessage: (SmsMessage message) {
         final body = message.body;
+        final sender = message.address ?? '';
         if (body == null) return;
+
+        // Only process messages from Canara Bank's actual sender IDs,
+        // not just any message that happens to mention "Canara" in
+        // the text. Real bank SMS come from short codes like CANBNK
+        // or AD-CANBNK, never from a regular ten-digit number, so
+        // this stops a random text from a friend or contact being
+        // treated as a real bank transaction.
+        final isFromCanara = sender.toUpperCase().contains('CANBNK') ||
+            sender.toUpperCase().contains('CANARA');
+        if (!isFromCanara) return;
 
         final parsed = SmsParser.parse(body);
         if (parsed != null) {
@@ -26,11 +37,11 @@ class SmsListenerService {
           return;
         }
 
-        final isCanara = body.toLowerCase().contains('canara') ||
-            body.toLowerCase().contains('canbnk');
-        if (isCanara) {
-          _logUnmatchedMessage(body);
-        }
+        // Sender was confirmed as Canara, but the message body didn't
+        // match any of our known templates. Log it quietly instead of
+        // dropping it, so there's a trail to check later without
+        // interrupting the user.
+        _logUnmatchedMessage(body);
       },
       listenInBackground: false,
     );
@@ -50,7 +61,8 @@ class SmsListenerService {
         'receivedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      // Silently fail.
+      // Silently fail. This is a nice-to-have log, never something
+      // that should interrupt the user or crash the listener.
     }
   }
 }
