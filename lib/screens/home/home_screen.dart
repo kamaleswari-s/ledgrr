@@ -1044,6 +1044,55 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
 
+                  // Negative balance warning banner — shows automatically
+                  // whenever True Balance goes below zero, disappears the
+                  // moment it isn't. No dismiss button by design, since
+                  // hiding it would defeat the purpose of a loud,
+                  // persistent warning.
+                  if (_trueBalance < 0)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: palette.negative,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded,
+                                  color: Colors.white, size: 22),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text('You\'re in the red',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white)),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Your True Balance is ${_formatAmount(_trueBalance.abs())} negative. Settle a due or add income to fix this.',
+                                      style: GoogleFonts.syne(
+                                          fontSize: 12,
+                                          color: Colors.white
+                                              .withOpacity(0.9),
+                                          height: 1.4),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                   // Stat cards
                   SliverToBoxAdapter(
                     child: Padding(
