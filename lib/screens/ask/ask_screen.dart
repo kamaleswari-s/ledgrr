@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/transaction_service.dart';
 import '../../config/api_keys.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class AskScreen extends StatefulWidget {
   const AskScreen({super.key});
@@ -156,12 +157,29 @@ Answer their question using only this data, matched to the correct time frame. I
     if (text.trim().isEmpty) return;
     _controller.clear();
 
-    setState(() {
+        setState(() {
       _messages.add(_Message(text: text, isUser: true));
       _isLoading = true;
     });
 
     _scrollToBottom();
+
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _messages.add(_Message(
+            text:
+                'Ask Your Money needs an internet connection to work. Try again once you\'re back online.',
+            isUser: false,
+          ));
+        });
+      }
+      _scrollToBottom();
+      return;
+    }
 
     // Refresh context right before this message goes out, so every
     // answer reflects whatever was logged up to this exact second —
