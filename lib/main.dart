@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
 import 'screens/splash/splash_screen.dart';
+import 'widgets/offline_banner.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class LedgrrApp extends StatelessWidget {
       title: 'LEDGRR',
       debugShowCheckedModeBanner: false,
       theme: LedgrrTheme.build(palette),
-      home: const SplashScreen(),
+            home: const OfflineBanner(child: SplashScreen()),
     );
   }
 }
