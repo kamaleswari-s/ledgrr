@@ -4,8 +4,14 @@ import 'package:flutter/material.dart';
 class RupeeFall extends StatefulWidget {
   final Color color;
   final int count;
+  final Duration duration;
 
-  const RupeeFall({super.key, required this.color, this.count = 4});
+  const RupeeFall({
+    super.key,
+    required this.color,
+    this.count = 4,
+    this.duration = const Duration(seconds: 9),
+  });
 
   @override
   State<RupeeFall> createState() => _RupeeFallState();
@@ -21,18 +27,19 @@ class _RupeeFallState extends State<RupeeFall>
   void initState() {
     super.initState();
     final rand = Random();
+    final staggerMs = widget.duration.inMilliseconds ~/ widget.count;
     _controllers = List.generate(widget.count, (i) {
       final controller = AnimationController(
-        duration: const Duration(seconds: 9),
+        duration: widget.duration,
         vsync: this,
       );
-      Future.delayed(Duration(milliseconds: i * 2200), () {
+      Future.delayed(Duration(milliseconds: i * staggerMs), () {
         if (mounted) controller.repeat();
       });
       return controller;
     });
     _lefts = List.generate(widget.count, (_) => 0.08 + rand.nextDouble() * 0.8);
-    _sizes = List.generate(widget.count, (_) => 16.0 + rand.nextDouble() * 12);
+    _sizes = List.generate(widget.count, (_) => 14.0 + rand.nextDouble() * 8);
   }
 
   @override
@@ -54,13 +61,13 @@ class _RupeeFallState extends State<RupeeFall>
                 animation: _controllers[i],
                 builder: (context, _) {
                   final t = _controllers[i].value;
-                  final opacity = t < 0.1
-                      ? (t / 0.1) * 0.32
-                      : t > 0.9
-                          ? ((1 - t) / 0.1) * 0.32
-                          : 0.28;
+                  final opacity = t < 0.12
+                      ? (t / 0.12) * 0.16
+                      : t > 0.88
+                          ? ((1 - t) / 0.12) * 0.08
+                          : 0.13;
                   final top = -30 + t * (constraints.maxHeight + 60);
-                  final rotation = -12 * t * (pi / 180);
+                  final rotation = -10 * t * (pi / 180);
                   return Positioned(
                     left: constraints.maxWidth * _lefts[i],
                     top: top,
