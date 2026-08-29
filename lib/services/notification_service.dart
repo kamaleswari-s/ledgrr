@@ -144,6 +144,7 @@ class NotificationService {
           channelDescription: 'A daily nudge to log your transactions',
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
+          sound: RawResourceAndroidNotificationSound('coin_notify'),
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -302,6 +303,7 @@ class NotificationService {
           ongoing: true,
           autoCancel: false,
           showWhen: false,
+          sound: RawResourceAndroidNotificationSound('coin_notify'),
         ),
       ),
     );
