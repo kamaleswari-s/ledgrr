@@ -1676,7 +1676,7 @@ class _LearnScreenState extends State<LearnScreen>
 
             const SizedBox(height: 8),
 
-            Padding(
+                        Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 'Plain English. Real examples. Lessons that stick.',
@@ -1688,6 +1688,70 @@ class _LearnScreenState extends State<LearnScreen>
             ),
 
             const SizedBox(height: 16),
+
+            // Personalized archetype banner — only shows once enough
+            // real transaction data exists to detect a genuine pattern.
+            // Recomputed fresh every time this screen loads, never
+            // waits for a month to pass.
+            if (_archetype != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: palette.isDark ? palette.bg2 : palette.ink,
+                    borderRadius: BorderRadius.circular(18),
+                    border: palette.isDark
+                        ? Border.all(color: palette.border)
+                        : null,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40, height: 40,
+                        decoration: BoxDecoration(
+                          color: palette.accent.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.auto_awesome_rounded,
+                            color: palette.accent, size: 18),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('This month, you\'re',
+                                style: GoogleFonts.syne(
+                                    fontSize: 10,
+                                    color: palette.isDark
+                                        ? palette.inkMuted
+                                        : Colors.white54)),
+                            const SizedBox(height: 2),
+                            Text(_archetype!.name,
+                                style: GoogleFonts.syne(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: palette.isDark
+                                        ? palette.ink
+                                        : Colors.white)),
+                            const SizedBox(height: 6),
+                            Text(_archetype!.tagline,
+                                style: GoogleFonts.dmSerifDisplay(
+                                    fontSize: 12.5,
+                                    fontStyle: FontStyle.italic,
+                                    color: palette.isDark
+                                        ? palette.inkMuted
+                                        : Colors.white70,
+                                    height: 1.4)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // Tab bar
             Padding(
