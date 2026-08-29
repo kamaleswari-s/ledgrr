@@ -22,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _burstController;
   late final AnimationController _logoController;
   late final AnimationController _textController;
+  late final AnimationController _glowController;
 
   bool _navigating = false;
 
@@ -44,6 +45,11 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
+    _glowController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) _logoController.forward();
     });
@@ -57,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
     _burstController.dispose();
     _logoController.dispose();
     _textController.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -93,90 +100,110 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: splashBg,
       body: Stack(
         children: [
+          // Kept out of the center band entirely, so nothing ever
+          // drifts behind or across the logo.
           Positioned.fill(
             child: RupeeFall(
               color: splashAccent,
-              count: 2,
-              duration: const Duration(seconds: 16),
+              count: 6,
+              duration: const Duration(seconds: 15),
             ),
           ),
           Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Ripple burst, expands once then fades out
-                AnimatedBuilder(
-                  animation: _burstController,
-                  builder: (context, child) {
-                    final scale = 1.0 + _burstController.value * 1.6;
-                    final opacity = 1.0 - _burstController.value;
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Opacity(
-                          opacity: opacity.clamp(0.0, 1.0),
-                          child: Transform.scale(
-                            scale: scale,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedBuilder(
+                    animation: Listenable.merge(
+                        [_burstController, _glowController]),
+                    builder: (context, child) {
+                      final scale = 1.0 + _burstController.value * 1.6;
+                      final burstOpacity = 1.0 - _burstController.value;
+                      final glowScale = 0.9 + _glowController.value * 0.2;
+                      final glowOpacity = 0.12 + _glowController.value * 0.08;
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Transform.scale(
+                            scale: glowScale,
                             child: Container(
-                              width: 84, height: 84,
+                              width: 130, height: 130,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(24),
-                                border: Border.all(
-                                    color: splashAccent, width: 2),
+                                shape: BoxShape.circle,
+                                color: splashAccent.withOpacity(glowOpacity),
                               ),
                             ),
                           ),
-                        ),
-                        child!,
-                      ],
-                    );
-                  },
-                  child: ScaleTransition(
-                    scale: CurvedAnimation(
-                        parent: _logoController,
-                        curve: Curves.elasticOut),
-                    child: Container(
-                      width: 84, height: 84,
-                      decoration: BoxDecoration(
-                        color: splashInk,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: CustomPaint(
-                        painter: _SplashLogoPainter(
-                          leftColor: splashBg,
-                          rightColor: splashAccent,
-                        ),
+                          Opacity(
+                            opacity: burstOpacity.clamp(0.0, 1.0),
+                            child: Transform.scale(
+                              scale: scale,
+                              child: Container(
+                                width: 84, height: 84,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                      color: splashAccent, width: 2),
+                                ),
+                              ),
+                            ),
+                          ),
+                          child!,
+                        ],
+                      );
+                    },
+                    child: ScaleTransition(
+                      scale: CurvedAnimation(
+                          parent: _logoController, curve: Curves.elasticOut),
+                      child: Image.asset(
+                        'assets/images/ledgrr_logo.png',
+                        width: 84,
+                        height: 84,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                FadeTransition(
-                  opacity: _textController,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.3),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                        parent: _textController, curve: Curves.easeOut)),
-                    child: Text('LEDGRR',
-                        style: GoogleFonts.syne(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: splashInk,
-                            letterSpacing: 1.5)),
+                  const SizedBox(height: 24),
+                  FadeTransition(
+                    opacity: _textController,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.3),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                          parent: _textController, curve: Curves.easeOut)),
+                      child: Text('LEDGRR',
+                          style: GoogleFonts.syne(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: splashInk,
+                              letterSpacing: 1.5)),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                FadeTransition(
-                  opacity: _textController,
-                  child: Text('Old world. New brain.',
-                      style: GoogleFonts.dmSerifDisplay(
-                          fontSize: 15,
-                          fontStyle: FontStyle.italic,
-                          color: splashAccent)),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  FadeTransition(
+                    opacity: _textController,
+                    child: Text('Old world. New brain.',
+                        style: GoogleFonts.dmSerifDisplay(
+                            fontSize: 15,
+                            fontStyle: FontStyle.italic,
+                            color: splashAccent)),
+                  ),
+                  const SizedBox(height: 20),
+                  FadeTransition(
+                    opacity: _textController,
+                    child: Text(
+                      'LEDGRR shows you what you can actually spend right now, not just your bank balance, and quietly catches the subscriptions you forgot about.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.syne(
+                          fontSize: 13,
+                          color: splashMuted,
+                          height: 1.6),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           Positioned(
@@ -197,56 +224,4 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
-}
-
-class _SplashLogoPainter extends CustomPainter {
-  final Color leftColor;
-  final Color rightColor;
-
-  const _SplashLogoPainter(
-      {required this.leftColor, required this.rightColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final left = Paint()
-      ..color = leftColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.6
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final right = Paint()
-      ..color = rightColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.6
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    final lp = Path();
-    lp.moveTo(cx - 16, cy + 16);
-    lp.lineTo(cx - 16, cy - 7);
-    lp.quadraticBezierTo(cx - 16, cy - 16, cx - 8, cy - 16);
-    lp.quadraticBezierTo(cx - 1, cy - 16, cx - 1, cy - 7);
-    lp.quadraticBezierTo(cx - 1, cy + 1, cx - 8, cy + 1);
-    lp.lineTo(cx - 3, cy + 16);
-    canvas.drawPath(lp, left);
-
-    final rp = Path();
-    rp.moveTo(cx + 16, cy + 16);
-    rp.lineTo(cx + 16, cy - 7);
-    rp.quadraticBezierTo(cx + 16, cy - 16, cx + 8, cy - 16);
-    rp.quadraticBezierTo(cx + 1, cy - 16, cx + 1, cy - 7);
-    rp.quadraticBezierTo(cx + 1, cy + 1, cx + 8, cy + 1);
-    rp.lineTo(cx + 3, cy + 16);
-    canvas.drawPath(rp, right);
-
-    canvas.drawPath(lp, left);
-    canvas.drawPath(rp, right);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
 }

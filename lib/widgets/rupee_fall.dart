@@ -9,8 +9,8 @@ class RupeeFall extends StatefulWidget {
   const RupeeFall({
     super.key,
     required this.color,
-    this.count = 4,
-    this.duration = const Duration(seconds: 9),
+    this.count = 6,
+    this.duration = const Duration(seconds: 15),
   });
 
   @override
@@ -38,8 +38,16 @@ class _RupeeFallState extends State<RupeeFall>
       });
       return controller;
     });
-    _lefts = List.generate(widget.count, (_) => 0.08 + rand.nextDouble() * 0.8);
-    _sizes = List.generate(widget.count, (_) => 14.0 + rand.nextDouble() * 8);
+    // Keeps every rupee in the left or right quarter of the screen,
+    // skipping the middle band entirely so nothing ever drifts
+    // behind or through the logo sitting in the center.
+    _lefts = List.generate(widget.count, (i) {
+      final onLeft = i % 2 == 0;
+      return onLeft
+          ? 0.04 + rand.nextDouble() * 0.16
+          : 0.80 + rand.nextDouble() * 0.16;
+    });
+    _sizes = List.generate(widget.count, (_) => 18.0 + rand.nextDouble() * 14);
   }
 
   @override
@@ -61,11 +69,11 @@ class _RupeeFallState extends State<RupeeFall>
                 animation: _controllers[i],
                 builder: (context, _) {
                   final t = _controllers[i].value;
-                  final opacity = t < 0.12
-                      ? (t / 0.12) * 0.16
-                      : t > 0.88
-                          ? ((1 - t) / 0.12) * 0.08
-                          : 0.13;
+                  final opacity = t < 0.1
+                      ? (t / 0.1) * 0.45
+                      : t > 0.9
+                          ? ((1 - t) / 0.1) * 0.25
+                          : 0.35;
                   final top = -30 + t * (constraints.maxHeight + 60);
                   final rotation = -10 * t * (pi / 180);
                   return Positioned(
