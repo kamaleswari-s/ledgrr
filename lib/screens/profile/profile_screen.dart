@@ -8,7 +8,7 @@ import '../../services/auth_service.dart';
 import '../../services/transaction_service.dart';
 import '../../services/csv_export.dart';
 import '../../providers/theme_provider.dart';
-import '../onboarding/onboarding_screen.dart';
+import '../onboarding/get_started_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -215,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _authService.signOut();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => const GetStartedScreen()),
         (route) => false,
       );
     }

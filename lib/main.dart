@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'providers/theme_provider.dart';
-import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/splash/splash_screen.dart';
 
 void main() async {

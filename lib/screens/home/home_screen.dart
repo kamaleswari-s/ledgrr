@@ -14,7 +14,7 @@ import '../../services/receipt_scanner_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/sms_listener_service.dart';
 import '../../services/sms_parser.dart';
-import '../onboarding/onboarding_screen.dart';
+import '../onboarding/get_started_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
 import '../statistics/statistics_screen.dart';
@@ -256,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen>
     await _authService.signOut();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+        MaterialPageRoute(builder: (_) => const GetStartedScreen()),
         (route) => false,
       );
     }

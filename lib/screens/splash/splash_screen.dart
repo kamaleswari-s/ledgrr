@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../providers/theme_provider.dart';
-import '../../theme/app_theme.dart';
-import '../onboarding/onboarding_screen.dart';
+import '../../widgets/rupee_fall.dart';
+import '../onboarding/stats_intro_screen.dart';
 import '../auth/auth_screen.dart';
 import '../home/home_screen.dart';
 
@@ -16,251 +14,72 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _logoController;
-  late Animation<double> _logoScale;
-  late Animation<double> _logoFade;
-
-  late AnimationController _textController;
-
-  static const String _appName = 'LEDGRR';
-  static const String _tagline = 'Finance clarity for students';
+class _SplashScreenState extends State<SplashScreen> {
   static const String _seenOnboardingKey = 'hasSeenOnboarding';
-
-  int _visibleLetters = 0;
-  bool _showTagline = false;
-  bool _showButton = false;
-
-  // Decided once, before the button becomes tappable, so the button
-  // always leads somewhere correct instead of hardcoding Onboarding.
-  Widget _destination = const OnboardingScreen();
 
   @override
   void initState() {
     super.initState();
-
-    _logoController = AnimationController(
-      duration: const Duration(milliseconds: 700),
-      vsync: this,
-    );
-    _logoScale = CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.easeOutBack,
-    );
-    _logoFade = CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.easeIn,
-    );
-
-    _textController = AnimationController(
-      duration: Duration(milliseconds: _appName.length * 90),
-      vsync: this,
-    );
-
-    _textController.addListener(() {
-      final progress = _textController.value;
-      final letters = (progress * _appName.length).floor();
-      if (letters != _visibleLetters && mounted) {
-        setState(() => _visibleLetters = letters);
-      }
-    });
-
     _runSequence();
   }
 
-  // Figures out where the "Go to LEDGRR" button should actually lead:
-  //   1. Already logged in            -> straight to Home
-  //   2. Logged out, seen onboarding  -> straight to Login
-  //   3. Never seen onboarding        -> show Onboarding
-  Future<void> _determineDestination() async {
+  Future<Widget> _determineDestination() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      _destination = const HomeScreen();
-      return;
-    }
+    if (user != null) return const HomeScreen();
 
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool(_seenOnboardingKey) ?? false;
 
-    _destination = hasSeenOnboarding
+    return hasSeenOnboarding
         ? const AuthScreen(isSignUp: false)
-        : const OnboardingScreen();
+        : const StatsIntroScreen();
   }
 
   Future<void> _runSequence() async {
-    await _logoController.forward();
-    await Future.delayed(const Duration(milliseconds: 150));
-    await _textController.forward();
-    if (mounted) setState(() => _showTagline = true);
-    await _determineDestination();
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (mounted) setState(() => _showButton = true);
-    // No auto-navigation — the user taps the button when ready.
-  }
-
-  @override
-  void dispose() {
-    _logoController.dispose();
-    _textController.dispose();
-    super.dispose();
+    final destinationFuture = _determineDestination();
+    await Future.delayed(const Duration(milliseconds: 2800));
+    final destination = await destinationFuture;
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => destination),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<ThemeProvider>().palette;
-    final visibleName = _appName.substring(0, _visibleLetters);
-
-    // A soft, light mint tint evoking the Deep Mint brand color,
-    // independent of whichever theme the user currently has active
-    // — this is the very first screen, before they've chosen anything.
-    const splashBg = Color(0xFFEAF7F3);
-    const splashInk = Color(0xFF0B2B24);
-    const splashMuted = Color(0xFF4E7A70);
+    const splashBg = Color(0xFF0B2B24);
+    const splashInk = Color(0xFFEAF7F3);
+    const splashMuted = Color(0xFF8FBFB2);
     const splashAccent = Color(0xFF1A8C7A);
 
     return Scaffold(
       backgroundColor: splashBg,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(flex: 3),
-              ScaleTransition(
-                scale: _logoScale,
-                child: FadeTransition(
-                  opacity: _logoFade,
-                  child: Container(
-                    width: 88, height: 88,
-                    decoration: BoxDecoration(
-                      color: splashInk,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: CustomPaint(
-                      painter: _RRPainter(
-                        leftColor: splashBg,
-                        rightColor: splashAccent,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                height: 34,
-                child: Text(
-                  visibleName,
-                  style: GoogleFonts.syne(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: splashInk,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              AnimatedOpacity(
-                opacity: _showTagline ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 500),
-                child: Text(
-                  _tagline,
-                  style: GoogleFonts.dmSerifDisplay(
-                    fontSize: 15,
-                    fontStyle: FontStyle.italic,
-                    color: splashMuted,
-                  ),
-                ),
-              ),
-              const Spacer(flex: 4),
-              AnimatedOpacity(
-                opacity: _showButton ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 500),
-                child: IgnorePointer(
-                  ignoring: !_showButton,
-                  child: Material(
-                    color: splashAccent,
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                              builder: (_) => _destination),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Center(
-                          child: Text(
-                            'Go to LEDGRR',
-                            style: GoogleFonts.dmSerifDisplay(
-                              fontSize: 17,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: RupeeFall(color: splashAccent, count: 4),
           ),
-        ),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('LEDGRR',
+                    style: GoogleFonts.syne(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: splashInk,
+                        letterSpacing: 1.5)),
+                const SizedBox(height: 10),
+                Text('Finance clarity for students',
+                    style: GoogleFonts.dmSerifDisplay(
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                        color: splashMuted)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _RRPainter extends CustomPainter {
-  final Color leftColor;
-  final Color rightColor;
-
-  const _RRPainter(
-      {required this.leftColor, required this.rightColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final left = Paint()
-      ..color = leftColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final right = Paint()
-      ..color = rightColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    final lp = Path();
-    lp.moveTo(cx - 12, cy + 12);
-    lp.lineTo(cx - 12, cy - 5);
-    lp.quadraticBezierTo(cx - 12, cy - 12, cx - 6, cy - 12);
-    lp.quadraticBezierTo(cx, cy - 12, cx, cy - 5);
-    lp.quadraticBezierTo(cx, cy + 1, cx - 6, cy + 1);
-    lp.lineTo(cx - 2, cy + 12);
-    canvas.drawPath(lp, left);
-
-    final rp = Path();
-    rp.moveTo(cx + 12, cy + 12);
-    rp.lineTo(cx + 12, cy - 5);
-    rp.quadraticBezierTo(cx + 12, cy - 12, cx + 6, cy - 12);
-    rp.quadraticBezierTo(cx, cy - 12, cx, cy - 5);
-    rp.quadraticBezierTo(cx, cy + 1, cx + 6, cy + 1);
-    rp.lineTo(cx + 2, cy + 12);
-    canvas.drawPath(rp, right);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter old) => false;
 }
