@@ -100,20 +100,24 @@ class _TipCard extends StatelessWidget {
     required this.onSkip,
   });
 
-  IconData _iconFor(String key) {
+  // For 'ghost', 'dues', and 'ask', these are drawn with the exact
+  // same custom painters used on the real Home screen icons, so the
+  // tip card matches what the user will actually see, not a generic
+  // stand-in icon.
+  Widget _iconWidget(String key, Color color) {
     switch (key) {
       case 'add':
-        return Icons.add_rounded;
+        return Icon(Icons.add_rounded, color: color, size: 22);
       case 'camera':
-        return Icons.camera_alt_outlined;
+        return Icon(Icons.camera_alt_outlined, color: color, size: 20);
       case 'ghost':
-        return Icons.blur_on_rounded;
+        return CustomPaint(painter: _TipGhostPainter(color: color));
       case 'dues':
-        return Icons.swap_horiz_rounded;
+        return CustomPaint(painter: _TipDuesPainter(color: color));
       case 'ask':
-        return Icons.chat_bubble_outline_rounded;
+        return CustomPaint(painter: _TipRRPainter(color: color));
       default:
-        return Icons.info_outline_rounded;
+        return Icon(Icons.info_outline_rounded, color: color, size: 20);
     }
   }
 
@@ -141,8 +145,7 @@ class _TipCard extends StatelessWidget {
                     color: palette.accent.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(_iconFor(tip.icon),
-                      color: palette.accent, size: 22),
+                  child: _iconWidget(tip.icon, palette.accent),
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -207,4 +210,138 @@ class _TipCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─── GHOST ICON — matches Home screen's Ghost Money card exactly ──────────
+
+class _TipGhostPainter extends CustomPainter {
+  final Color color;
+  const _TipGhostPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final path = Path();
+    path.moveTo(cx - 10, cy + 10);
+    path.lineTo(cx - 10, cy - 2);
+    path.quadraticBezierTo(cx - 10, cy - 12, cx, cy - 12);
+    path.quadraticBezierTo(cx + 10, cy - 12, cx + 10, cy - 2);
+    path.lineTo(cx + 10, cy + 10);
+    path.lineTo(cx + 5, cy + 6);
+    path.lineTo(cx, cy + 10);
+    path.lineTo(cx - 5, cy + 6);
+    path.close();
+    canvas.drawPath(path, p);
+    canvas.drawCircle(Offset(cx - 3, cy - 2), 1.8, pf);
+    canvas.drawCircle(Offset(cx + 3, cy - 2), 1.8, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── DUES ICON — matches Home screen's Dues Tracker card exactly ──────────
+
+class _TipDuesPainter extends CustomPainter {
+  final Color color;
+  const _TipDuesPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final pf = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final top = Path();
+    top.moveTo(cx - 8, cy - 3);
+    top.quadraticBezierTo(cx, cy - 10, cx + 8, cy - 3);
+    canvas.drawPath(top, p);
+    final topHead = Path();
+    topHead.moveTo(cx + 8, cy - 3);
+    topHead.lineTo(cx + 4, cy - 5);
+    topHead.moveTo(cx + 8, cy - 3);
+    topHead.lineTo(cx + 5, cy + 0.5);
+    canvas.drawPath(topHead, p);
+
+    final bottom = Path();
+    bottom.moveTo(cx + 8, cy + 3);
+    bottom.quadraticBezierTo(cx, cy + 10, cx - 8, cy + 3);
+    canvas.drawPath(bottom, p);
+    final bottomHead = Path();
+    bottomHead.moveTo(cx - 8, cy + 3);
+    bottomHead.lineTo(cx - 4, cy + 5);
+    bottomHead.moveTo(cx - 8, cy + 3);
+    bottomHead.lineTo(cx - 5, cy - 0.5);
+    canvas.drawPath(bottomHead, p);
+
+    canvas.drawCircle(Offset(cx - 8, cy - 3), 1.6, pf);
+    canvas.drawCircle(Offset(cx + 8, cy + 3), 1.6, pf);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ─── ASK YOUR MONEY ICON — matches the FAB's "RR" logo mark exactly ───────
+
+class _TipRRPainter extends CustomPainter {
+  final Color color;
+  const _TipRRPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    final lp = Path();
+    lp.moveTo(cx - 8, cy + 8);
+    lp.lineTo(cx - 8, cy - 4);
+    lp.quadraticBezierTo(cx - 8, cy - 8, cx - 4, cy - 8);
+    lp.quadraticBezierTo(cx - 1, cy - 8, cx - 1, cy - 4);
+    lp.quadraticBezierTo(cx - 1, cy, cx - 4, cy);
+    lp.lineTo(cx - 2, cy + 8);
+    canvas.drawPath(lp, p);
+
+    final rp = Path();
+    rp.moveTo(cx + 8, cy + 8);
+    rp.lineTo(cx + 8, cy - 4);
+    rp.quadraticBezierTo(cx + 8, cy - 8, cx + 4, cy - 8);
+    rp.quadraticBezierTo(cx + 1, cy - 8, cx + 1, cy - 4);
+    rp.quadraticBezierTo(cx + 1, cy, cx + 4, cy);
+    rp.lineTo(cx + 2, cy + 8);
+    canvas.drawPath(rp, p);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
