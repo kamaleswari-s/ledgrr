@@ -5,7 +5,7 @@ import '../config/api_keys.dart';
 class GroqService {
   static const _endpoint =
       'https://api.groq.com/openai/v1/chat/completions';
-  static const _model = 'llama-3.3-70b-versatile';
+    static const _model = 'openai/gpt-oss-120b';
 
   /// Generates one honest, plain-English sentence about the user's
   /// current financial state, using their real numbers. Throws on
