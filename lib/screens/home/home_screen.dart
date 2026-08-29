@@ -137,6 +137,7 @@ class _HomeScreenState extends State<HomeScreen>
           _currentStreak = streak;
           _isLoading = false;
         });
+        _notificationService.showBalanceNotification(_trueBalance);
       }
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

@@ -14,9 +14,6 @@ class NotificationService {
 
   bool _initialized = false;
 
-  // ─── DAILY LOGGING REMINDERS ──────────────────────────────────────────
-  // Expanded pool for variety — picking the same line every few days
-  // gets stale fast, especially for a daily habit-building nudge.
   static const List<String> _transactionReminders = [
     'Your wallet has been suspiciously quiet today.',
     'Psst. What did today actually cost you.',
@@ -66,11 +63,6 @@ class NotificationService {
       'route': 'ask',
     },
   };
-
-  // ─── EVENT WALLET REMINDER MESSAGE POOLS ─────────────────────────────
-  // Templates take {name} and, where relevant, an amount remaining.
-  // Kept separate by urgency tier so tone naturally escalates as the
-  // date approaches, without ever turning guilt-heavy.
 
   static const List<String> _eventFarOut = [
     '{name} is still a while out — a little saved now beats a scramble later.',
@@ -132,8 +124,6 @@ class NotificationService {
     final usesStreakMessage = currentStreak > 0;
     final pool =
         usesStreakMessage ? _streakReminders : _transactionReminders;
-    // Mix in the day-of-month too, not just weekday, so the same
-    // weekday doesn't always land on the same line every week.
     final message = pool[(today + now.day) % pool.length];
 
     var scheduledTime =
@@ -190,16 +180,6 @@ class NotificationService {
     }
   }
 
-  // ─── PRIORITY-BASED EVENT REMINDERS ───────────────────────────────────
-  // Call this once per Home load with the user's upcoming events.
-  // Frequency scales with both urgency (days left) and how important
-  // the user marked the event — a "Maybe" event stays quiet until
-  // it's genuinely close, a "Must happen" one gets nudged earlier
-  // and more often.
-  //
-  // Each event's `id` should be its Firestore document id, `date` a
-  // DateTime, `priority` one of 'Must happen' / 'Want to happen' /
-  // 'Maybe', and `budget`/`saved` the current numbers.
   Future<void> scheduleEventReminders(
       List<Map<String, dynamic>> events) async {
     if (!_initialized) await initialize();
@@ -215,7 +195,7 @@ class NotificationService {
       if (date == null) continue;
 
       final daysLeft = date.difference(DateTime.now()).inDays;
-      if (daysLeft < 0) continue; // already passed, reconciliation handles it
+      if (daysLeft < 0) continue;
 
       final priority = event['priority'] as String? ?? 'Want to happen';
       if (!_isNudgeDay(daysLeft, priority)) continue;
@@ -229,7 +209,7 @@ class NotificationService {
 
       var time = DateTime.now();
       time = DateTime(time.year, time.month, time.day, 18, 30);
-      if (time.isBefore(DateTime.now())) continue; // today's slot passed
+      if (time.isBefore(DateTime.now())) continue;
 
       await _plugin.zonedSchedule(
         notifId,
@@ -254,29 +234,23 @@ class NotificationService {
     }
   }
 
-  // Deterministic id per event so re-scheduling cancels the right
-  // previous notification instead of stacking duplicates.
   int _stableEventNotificationId(String eventId) =>
       3000 + (eventId.hashCode.abs() % 1000);
 
-  // Decides whether today is a nudge day for this event, based on
-  // urgency tier and how the user prioritized it.
   bool _isNudgeDay(int daysLeft, String priority) {
-    if (daysLeft <= 2) return true; // final stretch — every day, always
+    if (daysLeft <= 2) return true;
 
     if (daysLeft <= 7) {
       if (priority == 'Maybe') return daysLeft % 3 == 0;
-      return daysLeft % 2 == 0; // every couple of days
+      return daysLeft % 2 == 0;
     }
 
     if (daysLeft <= 14) {
       if (priority == 'Must happen') return daysLeft % 3 == 0;
-      if (priority == 'Maybe') return false; // too far out to bother yet
-      return daysLeft % 7 == 0; // roughly weekly
+      if (priority == 'Maybe') return false;
+      return daysLeft % 7 == 0;
     }
 
-    // More than 2 weeks out — only "Must happen" events get an early,
-    // gentle weekly nudge. Everything else waits until it's closer.
     if (priority == 'Must happen') return daysLeft % 7 == 0;
     return false;
   }
@@ -300,6 +274,37 @@ class NotificationService {
     return template
         .replaceAll('{name}', name)
         .replaceAll('{amount}', amountText);
+  }
+
+  static const int _balanceNotificationId = 999;
+
+  Future<void> showBalanceNotification(double balance) async {
+    if (!_initialized) await initialize();
+
+    final formatted = balance >= 100000
+        ? '₹${(balance / 100000).toStringAsFixed(1)}L'
+        : balance >= 1000
+            ? '₹${(balance / 1000).toStringAsFixed(1)}K'
+            : '₹${balance.toStringAsFixed(0)}';
+
+    await _plugin.show(
+      _balanceNotificationId,
+      'LEDGRR',
+      'Your True Balance is $formatted right now.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'balance_persistent',
+          'True Balance',
+          channelDescription:
+              'A persistent notification showing your live True Balance',
+          importance: Importance.low,
+          priority: Priority.low,
+          ongoing: true,
+          autoCancel: false,
+          showWhen: false,
+        ),
+      ),
+    );
   }
 
   Future<void> cancelAll() async {

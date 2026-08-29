@@ -19,6 +19,10 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
   final _uid = FirebaseAuth.instance.currentUser!.uid;
   final _transactionService = TransactionService();
 
+  // A jar nudges gently if it hasn't had a deposit in this many days
+  // and still hasn't reached its goal. Not guilt, just a quiet check-in.
+  static const int _nudgeThresholdDays = 45;
+
   Stream<QuerySnapshot> get _jarsStream => _db
       .collection('users')
       .doc(_uid)
@@ -32,6 +36,14 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
     if (amount >= 1000)
       return '₹${(amount / 1000).toStringAsFixed(1)}K';
     return '₹${amount.toStringAsFixed(0)}';
+  }
+
+  int? _daysSinceActivity(Map<String, dynamic> data) {
+    final lastActivity = data['lastActivityDate'] as Timestamp?;
+    final createdAt = data['createdAt'] as Timestamp?;
+    final reference = lastActivity ?? createdAt;
+    if (reference == null) return null;
+    return DateTime.now().difference(reference.toDate()).inDays;
   }
 
   @override
@@ -316,6 +328,12 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                       final progress = hasGoal
                           ? (current / goal).clamp(0.0, 1.0)
                           : 0.0;
+                      final isFullyFunded = hasGoal && current >= goal;
+
+                      final daysSince = _daysSinceActivity(data);
+                      final showNudge = !isFullyFunded &&
+                          daysSince != null &&
+                          daysSince >= _nudgeThresholdDays;
 
                       return Padding(
                         padding:
@@ -442,6 +460,38 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                             : palette.inkMuted),
                                   ),
                                 ],
+                                // Gentle nudge — never guilt-worded, just
+                                // a quiet observation the user can act on
+                                // or ignore entirely.
+                                if (showNudge) ...[
+                                  const SizedBox(height: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      color: palette.bg2,
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.schedule_rounded,
+                                            size: 13,
+                                            color: palette.inkMuted),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            '$name hasn\'t moved in a while. Still saving for it?',
+                                            style: GoogleFonts.syne(
+                                                fontSize: 11,
+                                                color:
+                                                    palette.inkMuted),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
@@ -547,6 +597,8 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                 0,
                             'currentAmount': 0.0,
                             'createdAt':
+                                FieldValue.serverTimestamp(),
+                            'lastActivityDate':
                                 FieldValue.serverTimestamp(),
                           });
                           if (context.mounted)
@@ -1122,6 +1174,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                   0;
                           batch.update(jarRef, {
                             'currentAmount': current + amount,
+                            'lastActivityDate': Timestamp.now(),
                           });
 
                           await batch.commit();
@@ -1370,6 +1423,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
 
                           batch.update(jarRef, {
                             'currentAmount': current - amount,
+                            'lastActivityDate': Timestamp.now(),
                           });
 
                           await batch.commit();

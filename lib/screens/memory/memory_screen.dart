@@ -9,7 +9,6 @@ import '../../services/transaction_service.dart';
 
 class MemoryScreen extends StatefulWidget {
   const MemoryScreen({super.key});
-
   @override
   State<MemoryScreen> createState() => _MemoryScreenState();
 }
@@ -63,58 +62,118 @@ class _MemoryScreenState extends State<MemoryScreen> {
   Future<void> _autoWriteTodayIfMissing() async {
     final today = DateTime.now();
     final dateKey = _dateKeyFor(today);
-
     final existing = await _db
         .collection('users')
         .doc(_uid)
         .collection('memory')
         .doc(dateKey)
         .get();
-
     if (existing.exists) return;
-
     await _generateAndSaveEntry(today);
   }
 
+  /// Looks at active Savings Jars and Event Wallets (goal set, not yet
+  /// reached) and returns a short reminder about whichever is closest
+  /// to being funded. Returns null if nothing qualifies, so the daily
+  /// sentence isn't forced to mention a goal that doesn't exist.
+  Future<String?> _goalReminder() async {
+    try {
+      String? bestName;
+      double bestProgress = -1;
+      double bestRemaining = 0;
+
+      final jarsSnap = await _db
+          .collection('users')
+          .doc(_uid)
+          .collection('piggybanks')
+          .get();
+      for (final doc in jarsSnap.docs) {
+        final data = doc.data();
+        final goal = (data['goalAmount'] as num?)?.toDouble() ?? 0;
+        final current = (data['currentAmount'] as num?)?.toDouble() ?? 0;
+        if (goal <= 0 || current >= goal) continue;
+        final progress = current / goal;
+        if (progress > bestProgress) {
+          bestProgress = progress;
+          bestName = data['name'] as String?;
+          bestRemaining = goal - current;
+        }
+      }
+
+      final eventsSnap = await _db
+          .collection('users')
+          .doc(_uid)
+          .collection('events')
+          .get();
+      for (final doc in eventsSnap.docs) {
+        final data = doc.data();
+        final budget = (data['budget'] as num?)?.toDouble() ?? 0;
+        final saved = (data['savedAmount'] as num?)?.toDouble() ?? 0;
+        if (budget <= 0 || saved >= budget) continue;
+        final progress = saved / budget;
+        if (progress > bestProgress) {
+          bestProgress = progress;
+          bestName = data['name'] as String?;
+          bestRemaining = budget - saved;
+        }
+      }
+
+      if (bestName == null || bestProgress < 0) return null;
+
+      final pct = (bestProgress * 100).round();
+      return 'Reminder: your $bestName is at $pct%, ₹${bestRemaining.toStringAsFixed(0)} to go.';
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Builds a sentence describing THIS SPECIFIC DAY, using only that
-  /// day's own transactions — not the whole month.
+  /// day's own transactions — not the whole month. Also appends a
+  /// gentle reminder about the closest active Jar or Event goal, so
+  /// Money Memory connects daily activity back to the bigger picture,
+  /// not just spent/received for that one day.
   Future<String> _generateDailySentence(DateTime date) async {
+    String sentence;
     try {
       final dayData = await _transactionService.getDailySummary(date);
       final income = dayData['income'] ?? 0.0;
       final expense = dayData['expense'] ?? 0.0;
 
       if (income == 0 && expense == 0) {
-        return 'No transactions logged today.';
-      }
+        sentence = 'No transactions logged today.';
+      } else {
+        final balance = await _transactionService.getTrueBalance();
+        final categorySpending =
+            await _transactionService.getCategorySpending(
+          date.year, date.month,
+        );
 
-      final balance = await _transactionService.getTrueBalance();
-      final categorySpending =
-          await _transactionService.getCategorySpending(
-        date.year, date.month,
-      );
-
-      if (expense > 0 && income == 0) {
-        final topCategory = categorySpending.isNotEmpty
-            ? categorySpending.entries
-                .reduce((a, b) => a.value > b.value ? a : b)
-                .key
-            : null;
-        if (topCategory != null) {
-          return 'Spent ₹${expense.toStringAsFixed(0)} today, mostly on $topCategory. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+        if (expense > 0 && income == 0) {
+          final topCategory = categorySpending.isNotEmpty
+              ? categorySpending.entries
+                  .reduce((a, b) => a.value > b.value ? a : b)
+                  .key
+              : null;
+          sentence = topCategory != null
+              ? 'Spent ₹${expense.toStringAsFixed(0)} today, mostly on $topCategory. True Balance stands at ₹${balance.toStringAsFixed(0)}.'
+              : 'Spent ₹${expense.toStringAsFixed(0)} today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+        } else if (income > 0 && expense == 0) {
+          sentence =
+              'Added ₹${income.toStringAsFixed(0)} in income today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+        } else {
+          final net = income - expense;
+          sentence = net >= 0
+              ? 'Earned ₹${income.toStringAsFixed(0)} and spent ₹${expense.toStringAsFixed(0)} today — net positive. True Balance stands at ₹${balance.toStringAsFixed(0)}.'
+              : 'Spent ₹${expense.toStringAsFixed(0)} against ₹${income.toStringAsFixed(0)} earned today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
         }
-        return 'Spent ₹${expense.toStringAsFixed(0)} today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
       }
 
-      if (income > 0 && expense == 0) {
-        return 'Added ₹${income.toStringAsFixed(0)} in income today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+      final reminder = await _goalReminder();
+      if (reminder != null) {
+        sentence = '$sentence $reminder';
       }
 
-      final net = income - expense;
-      if (net >= 0) {
-        return 'Earned ₹${income.toStringAsFixed(0)} and spent ₹${expense.toStringAsFixed(0)} today — net positive. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
-      }
-      return 'Spent ₹${expense.toStringAsFixed(0)} against ₹${income.toStringAsFixed(0)} earned today. True Balance stands at ₹${balance.toStringAsFixed(0)}.';
+      return sentence;
     } catch (e) {
       return 'Keep tracking your transactions and LEDGRR will write your financial story here.';
     }
@@ -122,11 +181,9 @@ class _MemoryScreenState extends State<MemoryScreen> {
 
   Future<void> _generateAndSaveEntry(DateTime date) async {
     if (mounted) setState(() => _isGenerating = true);
-
     try {
       final sentence = await _generateDailySentence(date);
       final dateKey = _dateKeyFor(date);
-
       await _db
           .collection('users')
           .doc(_uid)
@@ -164,7 +221,6 @@ class _MemoryScreenState extends State<MemoryScreen> {
   Widget build(BuildContext context) {
     final palette = context.watch<ThemeProvider>().palette;
     final today = DateTime.now();
-
     return Scaffold(
       backgroundColor: palette.bg,
       body: SafeArea(
@@ -228,9 +284,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 8),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
@@ -241,9 +295,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                     color: palette.inkMuted),
               ),
             ),
-
             const SizedBox(height: 16),
-
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: _db
@@ -259,7 +311,6 @@ class _MemoryScreenState extends State<MemoryScreen> {
                           color: palette.accent, strokeWidth: 2),
                     );
                   }
-
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(
                       child: Column(
@@ -284,9 +335,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
                       ),
                     );
                   }
-
                   final docs = snapshot.data!.docs;
-
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                     itemCount: docs.length,
@@ -302,7 +351,6 @@ class _MemoryScreenState extends State<MemoryScreen> {
                       final isToday = date.year == today.year &&
                           date.month == today.month &&
                           date.day == today.day;
-
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _MemoryCard(
@@ -341,7 +389,6 @@ class _MemoryCard extends StatefulWidget {
   final String Function(DateTime) formatDate;
   final String Function(DateTime) formatShortDate;
   final Future<void> Function(String, String) onSaveNote;
-
   const _MemoryCard({
     required this.date,
     required this.autoSentence,
@@ -353,7 +400,6 @@ class _MemoryCard extends StatefulWidget {
     required this.formatShortDate,
     required this.onSaveNote,
   });
-
   @override
   State<_MemoryCard> createState() => _MemoryCardState();
 }
@@ -362,23 +408,19 @@ class _MemoryCardState extends State<_MemoryCard> {
   bool _isEditing = false;
   bool _isSaving = false;
   late TextEditingController _controller;
-
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.note);
   }
-
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette;
-
     return Container(
       decoration: BoxDecoration(
         color: palette.card,
@@ -435,9 +477,7 @@ class _MemoryCardState extends State<_MemoryCard> {
               ],
             ),
           ),
-
           const SizedBox(height: 12),
-
           // Auto sentence
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -450,12 +490,9 @@ class _MemoryCardState extends State<_MemoryCard> {
                   height: 1.6),
             ),
           ),
-
           const SizedBox(height: 12),
-
           // Divider
           Divider(height: 1, color: palette.border),
-
           // Personal note section
           Padding(
             padding: const EdgeInsets.all(16),
@@ -486,9 +523,7 @@ class _MemoryCardState extends State<_MemoryCard> {
                       ),
                   ],
                 ),
-
                 const SizedBox(height: 8),
-
                 if (_isEditing) ...[
                   Container(
                     decoration: BoxDecoration(
