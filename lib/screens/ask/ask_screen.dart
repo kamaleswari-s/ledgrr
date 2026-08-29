@@ -54,6 +54,12 @@ class _AskScreenState extends State<AskScreen> {
     super.dispose();
   }
 
+  // Pulls fresh numbers from Firestore. Called on screen open AND
+  // right before every single message is sent — never relies on a
+  // stale snapshot from whenever the chat happened to be opened.
+  // This is what makes Ask Your Money genuinely real-time: log a
+  // transaction, ask a question thirty seconds later, get an answer
+  // built on the new number, not the old one.
   Future<void> _loadUserContext() async {
     try {
       final now = DateTime.now();
@@ -156,6 +162,11 @@ Answer their question using only this data, matched to the correct time frame. I
     });
 
     _scrollToBottom();
+
+    // Refresh context right before this message goes out, so every
+    // answer reflects whatever was logged up to this exact second —
+    // not whatever the numbers happened to be when the chat opened.
+    await _loadUserContext();
 
     try {
       final messages = [
