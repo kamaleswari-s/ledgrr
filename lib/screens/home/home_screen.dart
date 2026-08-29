@@ -14,6 +14,7 @@ import '../../services/receipt_scanner_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/sms_listener_service.dart';
 import '../../services/sms_parser.dart';
+import '../../widgets/feature_tip_overlay.dart';
 import '../onboarding/get_started_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../spendlist/spendlist_screen.dart';
@@ -54,6 +55,35 @@ class _HomeScreenState extends State<HomeScreen>
   String? _aiSentence;
   List<Map<String, dynamic>> _upcomingEvents = [];
   int _statsRefreshKey = 0;
+  bool _showTipOverlay = false;
+
+  static const List<FeatureTip> _homeFeatureTips = [
+    FeatureTip(
+      icon: 'add',
+      title: 'Add a transaction',
+      description: 'Tap here anytime to log an expense or income in two taps.',
+    ),
+    FeatureTip(
+      icon: 'camera',
+      title: 'Scan a receipt',
+      description: 'Snap a photo and LEDGRR reads the total for you automatically.',
+    ),
+    FeatureTip(
+      icon: 'ghost',
+      title: 'Ghost Money Detector',
+      description: 'Finds forgotten subscriptions and recurring charges you might have missed.',
+    ),
+    FeatureTip(
+      icon: 'dues',
+      title: 'Dues Tracker',
+      description: 'Track money owed to you and money you owe, all in one place.',
+    ),
+    FeatureTip(
+      icon: 'ask',
+      title: 'Ask Your Money',
+      description: 'Type any question about your spending and get an honest, real answer.',
+    ),
+  ];
 
   @override
   void initState() {
@@ -72,7 +102,15 @@ class _HomeScreenState extends State<HomeScreen>
     _smsListenerService.startListening(
       onTransactionDetected: _showSmsConfirmSheet,
     );
+    _checkFeatureTour();
     _controller.forward();
+  }
+
+  Future<void> _checkFeatureTour() async {
+    final shouldShow = await FeatureTipOverlay.shouldShow();
+    if (shouldShow && mounted) {
+      setState(() => _showTipOverlay = true);
+    }
   }
 
   Future<void> _loadData() async {
@@ -195,11 +233,6 @@ class _HomeScreenState extends State<HomeScreen>
         currentStreak: _currentStreak,
       );
 
-      // Priority-based Event Wallet reminders — frequency scales with
-      // both how close the event date is and how the user marked its
-      // importance (Must happen / Want to happen / Maybe). Uses the
-      // events already loaded by _loadUpcomingEvents, so this should
-      // run after that has populated _upcomingEvents.
       if (_upcomingEvents.isNotEmpty) {
         final eventsForReminders = _upcomingEvents.map((e) {
           return {
@@ -277,10 +310,6 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  // ─── TRUE BALANCE EXPLAINER ──────────────────────────────────────────────
-  // Addresses the "students confuse True Balance with their raw bank
-  // balance" feedback. Tapping the info icon on the True Balance card
-  // opens this plain-English explanation.
   void _showTrueBalanceInfo(BuildContext context, LedgrrPalette palette) {
     showModalBottomSheet(
       context: context,
@@ -324,11 +353,6 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ─── SMS-DETECTED TRANSACTION CONFIRM SHEET ─────────────────────────────
-  // Never logs anything silently. Always shows the parsed amount and
-  // merchant to the user first, and only writes to Firestore once they
-  // tap Confirm. Uses sheetContext throughout so the keyboard doesn't
-  // cover the fields, same fix as Spend List.
   void _showSmsConfirmSheet(ParsedTransaction parsed) {
     if (!mounted) return;
     final palette = Provider.of<ThemeProvider>(context, listen: false).palette;
@@ -778,888 +802,893 @@ class _HomeScreenState extends State<HomeScreen>
     final palette = context.watch<ThemeProvider>().palette;
     final notifCount = _upcomingEvents.length;
 
-    return Scaffold(
-      backgroundColor: palette.bg,
-      floatingActionButton: _AskFAB(palette: palette),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.endFloat,
-      body: IndexedStack(
-        index: _currentNavIndex,
-        children: [
-          // Tab 0 — Home
-          SafeArea(
-            child: FadeTransition(
-              opacity: _fadeIn,
-              child: CustomScrollView(
-                slivers: [
-                  // Top bar
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 34, height: 34,
-                            decoration: BoxDecoration(
-                              color: palette.ink,
-                              borderRadius: BorderRadius.circular(9),
-                            ),
-                            child: CustomPaint(
-                              painter: _RRPainter(
-                                leftColor: palette.bg2,
-                                rightColor: palette.accent,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'LEDG',
-                                  style: GoogleFonts.syne(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color: palette.ink,
-                                    letterSpacing: -0.5,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: palette.bg,
+          floatingActionButton: _AskFAB(palette: palette),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.endFloat,
+          body: IndexedStack(
+            index: _currentNavIndex,
+            children: [
+              // Tab 0 — Home
+              SafeArea(
+                child: FadeTransition(
+                  opacity: _fadeIn,
+                  child: CustomScrollView(
+                    slivers: [
+                      // Top bar
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 34, height: 34,
+                                decoration: BoxDecoration(
+                                  color: palette.ink,
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                                child: CustomPaint(
+                                  painter: _RRPainter(
+                                    leftColor: palette.bg2,
+                                    rightColor: palette.accent,
                                   ),
                                 ),
-                                TextSpan(
-                                  text: 'RR',
-                                  style: GoogleFonts.syne(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color: palette.accent,
-                                    letterSpacing: -0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Spacer(),
-                          // Add Transaction
-                          Material(
-                            color: palette.accent,
-                            borderRadius: BorderRadius.circular(12),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () =>
-                                  _showAddTransaction(context, palette),
-                              child: Container(
-                                width: 40, height: 40,
-                                child: Icon(Icons.add_rounded,
-                                    color: palette.accentFg, size: 22),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          // Scan receipt
-                          Material(
-                            color: palette.bg2,
-                            borderRadius: BorderRadius.circular(12),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () =>
-                                  _scanReceipt(context, palette),
-                              child: Container(
-                                width: 40, height: 40,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: palette.border),
-                                ),
-                                child: Icon(
-                                    Icons.camera_alt_outlined,
-                                    color: palette.ink,
-                                    size: 18),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          // Notifications with count badge
-                          Material(
-                            color: palette.bg2,
-                            borderRadius: BorderRadius.circular(12),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () =>
-                                  _showNotifications(context, palette),
-                              child: Container(
-                                width: 40, height: 40,
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: palette.border),
-                                ),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  alignment: Alignment.center,
+                              const SizedBox(width: 10),
+                              RichText(
+                                text: TextSpan(
                                   children: [
-                                    Icon(
-                                        Icons.notifications_outlined,
+                                    TextSpan(
+                                      text: 'LEDG',
+                                      style: GoogleFonts.syne(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: palette.ink,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: 'RR',
+                                      style: GoogleFonts.syne(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: palette.accent,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                              // Add Transaction
+                              Material(
+                                color: palette.accent,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () =>
+                                      _showAddTransaction(context, palette),
+                                  child: Container(
+                                    width: 40, height: 40,
+                                    child: Icon(Icons.add_rounded,
+                                        color: palette.accentFg, size: 22),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              // Scan receipt
+                              Material(
+                                color: palette.bg2,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () =>
+                                      _scanReceipt(context, palette),
+                                  child: Container(
+                                    width: 40, height: 40,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: palette.border),
+                                    ),
+                                    child: Icon(
+                                        Icons.camera_alt_outlined,
                                         color: palette.ink,
                                         size: 18),
-                                    if (notifCount > 0)
-                                      Positioned(
-                                        top: -4, right: -4,
-                                        child: Container(
-                                          padding:
-                                              const EdgeInsets.all(3),
-                                          constraints:
-                                              const BoxConstraints(
-                                                  minWidth: 16,
-                                                  minHeight: 16),
-                                          decoration: BoxDecoration(
-                                            color: palette.accent,
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                                color: palette.bg,
-                                                width: 1.5),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              notifCount > 9
-                                                  ? '9+'
-                                                  : '$notifCount',
-                                              style: GoogleFonts.syne(
-                                                fontSize: 9,
-                                                fontWeight:
-                                                    FontWeight.w800,
-                                                color:
-                                                    palette.accentFg,
-                                                height: 1,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              // Notifications with count badge
+                              Material(
+                                color: palette.bg2,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () =>
+                                      _showNotifications(context, palette),
+                                  child: Container(
+                                    width: 40, height: 40,
+                                    decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: palette.border),
+                                    ),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      alignment: Alignment.center,
+                                      children: [
+                                        Icon(
+                                            Icons.notifications_outlined,
+                                            color: palette.ink,
+                                            size: 18),
+                                        if (notifCount > 0)
+                                          Positioned(
+                                            top: -4, right: -4,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(3),
+                                              constraints:
+                                                  const BoxConstraints(
+                                                      minWidth: 16,
+                                                      minHeight: 16),
+                                              decoration: BoxDecoration(
+                                                color: palette.accent,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: palette.bg,
+                                                    width: 1.5),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  notifCount > 9
+                                                      ? '9+'
+                                                      : '$notifCount',
+                                                  style: GoogleFonts.syne(
+                                                    fontSize: 9,
+                                                    fontWeight:
+                                                        FontWeight.w800,
+                                                    color:
+                                                        palette.accentFg,
+                                                    height: 1,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                           ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Greeting
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$_greeting, $_userName',
+                                style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: palette.inkMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Here is your truth for today.',
+                                style: GoogleFonts.dmSerifDisplay(
+                                  fontSize: 20,
+                                  fontStyle: FontStyle.italic,
+                                  color: palette.ink,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Daily sentence card
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: palette.isDark
+                                  ? palette.bg2
+                                  : palette.ink,
+                              borderRadius: BorderRadius.circular(20),
+                              border: palette.isDark
+                                  ? Border.all(color: palette.border)
+                                  : null,
+                            ),
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: (_isStable
+                                                ? palette.accent
+                                                : palette.negative)
+                                            .withOpacity(0.2),
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                      child: Text(
+                                        _isStable ? 'Stable' : 'Attention',
+                                        style: GoogleFonts.syne(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: _isStable
+                                              ? palette.accent
+                                              : palette.negative,
                                         ),
                                       ),
+                                    ),
+                                    const Spacer(),
+                                    Text('Daily sentence',
+                                        style: GoogleFonts.syne(
+                                            fontSize: 10,
+                                            color: palette.isDark
+                                                ? palette.inkMuted
+                                                : Colors.white38)),
                                   ],
                                 ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Greeting
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '$_greeting, $_userName',
-                            style: GoogleFonts.syne(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: palette.inkMuted,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Here is your truth for today.',
-                            style: GoogleFonts.dmSerifDisplay(
-                              fontSize: 20,
-                              fontStyle: FontStyle.italic,
-                              color: palette.ink,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Daily sentence card
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: palette.isDark
-                              ? palette.bg2
-                              : palette.ink,
-                          borderRadius: BorderRadius.circular(20),
-                          border: palette.isDark
-                              ? Border.all(color: palette.border)
-                              : null,
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: (_isStable
-                                            ? palette.accent
-                                            : palette.negative)
-                                        .withOpacity(0.2),
-                                    borderRadius:
-                                        BorderRadius.circular(100),
+                                const SizedBox(height: 14),
+                                Text(
+                                  '"$_dailySentence"',
+                                  style: GoogleFonts.dmSerifDisplay(
+                                    fontSize: 17,
+                                    fontStyle: FontStyle.italic,
+                                    color: palette.isDark
+                                        ? palette.ink
+                                        : Colors.white,
+                                    height: 1.55,
                                   ),
-                                  child: Text(
-                                    _isStable ? 'Stable' : 'Attention',
+                                ),
+                                if (_currentStreak > 0) ...[
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    _currentStreak == 1
+                                        ? 'Showed up today.'
+                                        : '$_currentStreak days in a row.',
                                     style: GoogleFonts.syne(
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: _isStable
-                                          ? palette.accent
-                                          : palette.negative,
+                                      fontWeight: FontWeight.w500,
+                                      color: palette.isDark
+                                          ? palette.inkMuted
+                                          : Colors.white54,
                                     ),
                                   ),
-                                ),
-                                const Spacer(),
-                                Text('Daily sentence',
-                                    style: GoogleFonts.syne(
-                                        fontSize: 10,
-                                        color: palette.isDark
-                                            ? palette.inkMuted
-                                            : Colors.white38)),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: 14),
-                            Text(
-                              '"$_dailySentence"',
-                              style: GoogleFonts.dmSerifDisplay(
-                                fontSize: 17,
-                                fontStyle: FontStyle.italic,
-                                color: palette.isDark
-                                    ? palette.ink
-                                    : Colors.white,
-                                height: 1.55,
-                              ),
-                            ),
-                            if (_currentStreak > 0) ...[
-                              const SizedBox(height: 12),
-                              Text(
-                                _currentStreak == 1
-                                    ? 'Showed up today.'
-                                    : '$_currentStreak days in a row.',
-                                style: GoogleFonts.syne(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: palette.isDark
-                                      ? palette.inkMuted
-                                      : Colors.white54,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Negative balance warning banner — shows automatically
-                  // whenever True Balance goes below zero, disappears the
-                  // moment it isn't. No dismiss button by design, since
-                  // hiding it would defeat the purpose of a loud,
-                  // persistent warning.
-                  if (_trueBalance < 0)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: palette.negative,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.warning_amber_rounded,
-                                  color: Colors.white, size: 22),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text('You\'re in the red',
-                                        style: GoogleFonts.syne(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white)),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Your True Balance is ${_formatAmount(_trueBalance.abs())} negative. Settle a due or add income to fix this.',
-                                      style: GoogleFonts.syne(
-                                          fontSize: 12,
-                                          color: Colors.white
-                                              .withOpacity(0.9),
-                                          height: 1.4),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
-                    ),
 
-                  // Stat cards
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _StatCard(
-                              label: 'True Balance',
-                              value: _formatAmount(_trueBalance),
-                              sublabel: 'all time',
-                              iconType: 'balance',
-                              palette: palette,
-                              isPositive: _trueBalance >= 0,
-                              onInfoTap: () =>
-                                  _showTrueBalanceInfo(context, palette),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _StatCard(
-                              label: 'This Month',
-                              value: _formatAmount(_monthlyIncome),
-                              sublabel: 'income',
-                              iconType: 'memory',
-                              palette: palette,
-                              isPositive: true,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _StatCard(
-                              label: 'Spent',
-                              value: _formatAmount(_monthlyExpense),
-                              sublabel: 'this month',
-                              iconType: 'spendlist',
-                              palette: palette,
-                              isPositive: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Feature grid header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                      child: Text('Explore',
-                          style: GoogleFonts.syne(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: palette.ink)),
-                    ),
-                  ),
-
-                  // Feature grid — 2 per row
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _FeatureGridCard(
-                                  palette: palette,
-                                  icon: CustomPaint(
-                                    painter: _GhostHomePainter(
-                                        color: palette.accent),
-                                  ),
-                                  title: 'Ghost Money',
-                                  subtitle: 'Recurring patterns',
-                                  onTap: () =>
-                                      Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const GhostScreen()),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _FeatureGridCard(
-                                  palette: palette,
-                                  icon: Icon(
-                                      Icons.auto_stories_rounded,
-                                      color: palette.accent,
-                                      size: 22),
-                                  title: 'Money Memory',
-                                  subtitle: 'Daily journal',
-                                  onTap: () =>
-                                      Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const MemoryScreen()),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _FeatureGridCard(
-                                  palette: palette,
-                                  icon: CustomPaint(
-                                    painter: _JarHomePainter(
-                                        color: palette.accent),
-                                  ),
-                                  title: 'Savings Jars',
-                                  subtitle: 'Deposit, withdraw',
-                                  onTap: () =>
-                                      Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const PiggyBankScreen()),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _FeatureGridCard(
-                                  palette: palette,
-                                  icon: CustomPaint(
-                                    painter: _DuesHomePainter(
-                                        color: palette.accent),
-                                  ),
-                                  title: 'Dues Tracker',
-                                  subtitle: 'Settle up',
-                                  onTap: () =>
-                                      Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                        builder: (_) =>
-                                            const DuesScreen()),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Recent transactions header
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.fromLTRB(24, 28, 24, 0),
-                      child: Row(
-                        children: [
-                          Text('Recent transactions',
-                              style: GoogleFonts.syne(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: palette.ink)),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () =>
-                                Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      const HistoryScreen()),
-                            ),
-                            child: Text('See all',
-                                style: GoogleFonts.syne(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: palette.accent)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Transactions
-                  StreamBuilder(
-                    stream:
-                        _transactionService.getTransactionsStream(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return SliverToBoxAdapter(
+                      // Negative balance warning banner
+                      if (_trueBalance < 0)
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.all(40),
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                  color: palette.accent,
-                                  strokeWidth: 2),
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (!snapshot.hasData ||
-                          snapshot.data!.docs.isEmpty) {
-                        return SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                                24, 20, 24, 0),
+                            padding:
+                                const EdgeInsets.fromLTRB(24, 16, 24, 0),
                             child: Container(
-                              padding: const EdgeInsets.all(32),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: palette.card,
-                                borderRadius:
-                                    BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: palette.border),
+                                color: palette.negative,
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Column(
+                              child: Row(
                                 children: [
-                                  Icon(
-                                      Icons.receipt_long_outlined,
-                                      color: palette.inkMuted,
-                                      size: 40),
-                                  const SizedBox(height: 12),
-                                  Text('No transactions yet',
-                                      style: GoogleFonts.syne(
-                                          fontSize: 15,
-                                          fontWeight:
-                                              FontWeight.w600,
-                                          color: palette.ink)),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                      'Tap the + button to get started.',
-                                      style: GoogleFonts.syne(
-                                          fontSize: 13,
-                                          color: palette.inkMuted),
-                                      textAlign:
-                                          TextAlign.center),
+                                  const Icon(Icons.warning_amber_rounded,
+                                      color: Colors.white, size: 22),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('You\'re in the red',
+                                            style: GoogleFonts.syne(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.white)),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Your True Balance is ${_formatAmount(_trueBalance.abs())} negative. Settle a due or add income to fix this.',
+                                          style: GoogleFonts.syne(
+                                              fontSize: 12,
+                                              color: Colors.white
+                                                  .withOpacity(0.9),
+                                              height: 1.4),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
-                        );
-                      }
+                        ),
 
-                      final docs =
-                          snapshot.data!.docs.take(10).toList();
+                      // Stat cards
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: _StatCard(
+                                  label: 'True Balance',
+                                  value: _formatAmount(_trueBalance),
+                                  sublabel: 'all time',
+                                  iconType: 'balance',
+                                  palette: palette,
+                                  isPositive: _trueBalance >= 0,
+                                  onInfoTap: () =>
+                                      _showTrueBalanceInfo(context, palette),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _StatCard(
+                                  label: 'This Month',
+                                  value: _formatAmount(_monthlyIncome),
+                                  sublabel: 'income',
+                                  iconType: 'memory',
+                                  palette: palette,
+                                  isPositive: true,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _StatCard(
+                                  label: 'Spent',
+                                  value: _formatAmount(_monthlyExpense),
+                                  sublabel: 'this month',
+                                  iconType: 'spendlist',
+                                  palette: palette,
+                                  isPositive: false,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) {
-                            final doc = docs[i];
-                            final data = doc.data()
-                                as Map<String, dynamic>;
-                            final isIncome =
-                                data['type'] == 'income';
-                            final amount =
-                                (data['amount'] as num).toDouble();
-                            final date =
-                                (data['date'] as dynamic).toDate()
-                                    as DateTime;
+                      // Feature grid header
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                          child: Text('Explore',
+                              style: GoogleFonts.syne(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: palette.ink)),
+                        ),
+                      ),
 
-                            return Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                  24, 10, 24, 0),
-                              child: Dismissible(
-                                key: Key(doc.id),
-                                direction:
-                                    DismissDirection.endToStart,
-                                background: Container(
-                                  margin: const EdgeInsets.only(
-                                      left: 60),
+                      // Feature grid — 2 per row
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _FeatureGridCard(
+                                      palette: palette,
+                                      icon: CustomPaint(
+                                        painter: _GhostHomePainter(
+                                            color: palette.accent),
+                                      ),
+                                      title: 'Ghost Money',
+                                      subtitle: 'Recurring patterns',
+                                      onTap: () =>
+                                          Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const GhostScreen()),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _FeatureGridCard(
+                                      palette: palette,
+                                      icon: Icon(
+                                          Icons.auto_stories_rounded,
+                                          color: palette.accent,
+                                          size: 22),
+                                      title: 'Money Memory',
+                                      subtitle: 'Daily journal',
+                                      onTap: () =>
+                                          Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const MemoryScreen()),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _FeatureGridCard(
+                                      palette: palette,
+                                      icon: CustomPaint(
+                                        painter: _JarHomePainter(
+                                            color: palette.accent),
+                                      ),
+                                      title: 'Savings Jars',
+                                      subtitle: 'Deposit, withdraw',
+                                      onTap: () =>
+                                          Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const PiggyBankScreen()),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _FeatureGridCard(
+                                      palette: palette,
+                                      icon: CustomPaint(
+                                        painter: _DuesHomePainter(
+                                            color: palette.accent),
+                                      ),
+                                      title: 'Dues Tracker',
+                                      subtitle: 'Settle up',
+                                      onTap: () =>
+                                          Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const DuesScreen()),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Recent transactions header
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(24, 28, 24, 0),
+                          child: Row(
+                            children: [
+                              Text('Recent transactions',
+                                  style: GoogleFonts.syne(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: palette.ink)),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () =>
+                                    Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const HistoryScreen()),
+                                ),
+                                child: Text('See all',
+                                    style: GoogleFonts.syne(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: palette.accent)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Transactions
+                      StreamBuilder(
+                        stream:
+                            _transactionService.getTransactionsStream(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.all(40),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                      color: palette.accent,
+                                      strokeWidth: 2),
+                                ),
+                              ),
+                            );
+                          }
+
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                    24, 20, 24, 0),
+                                child: Container(
+                                  padding: const EdgeInsets.all(32),
                                   decoration: BoxDecoration(
-                                    color:
-                                        const Color(0xFFE53935),
+                                    color: palette.card,
                                     borderRadius:
                                         BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: palette.border),
                                   ),
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.only(
-                                      right: 20),
-                                  child: const Icon(
-                                      Icons
-                                          .delete_outline_rounded,
-                                      color: Colors.white,
-                                      size: 22),
-                                ),
-                                confirmDismiss: (_) async {
-                                  bool confirmed = false;
-                                  await showDialog(
-                                    context: context,
-                                    builder: (_) => AlertDialog(
-                                      backgroundColor: palette.card,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(
-                                                  20)),
-                                      title: Text(
-                                          'Delete transaction?',
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                          Icons.receipt_long_outlined,
+                                          color: palette.inkMuted,
+                                          size: 40),
+                                      const SizedBox(height: 12),
+                                      Text('No transactions yet',
                                           style: GoogleFonts.syne(
-                                              fontSize: 16,
+                                              fontSize: 15,
                                               fontWeight:
-                                                  FontWeight.w700,
+                                                  FontWeight.w600,
                                               color: palette.ink)),
-                                      content: Text(
-                                          'This cannot be undone.',
+                                      const SizedBox(height: 6),
+                                      Text(
+                                          'Tap the + button to get started.',
                                           style: GoogleFonts.syne(
                                               fontSize: 13,
-                                              color:
-                                                  palette.inkMuted)),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                          child: Text('Cancel',
-                                              style: GoogleFonts.syne(
-                                                  fontSize: 13,
-                                                  color: palette
-                                                      .inkMuted)),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            confirmed = true;
-                                            Navigator.pop(context);
-                                          },
-                                          child: Text('Delete',
-                                              style: GoogleFonts.syne(
-                                                  fontSize: 13,
-                                                  fontWeight:
-                                                      FontWeight.w700,
-                                                  color: const Color(
-                                                      0xFFE53935))),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirmed) {
-                                    await _transactionService
-                                        .deleteTransaction(doc.id);
-                                    _loadData();
-                                  }
-                                  return confirmed;
-                                },
-                                child: GestureDetector(
-                                  onTap: () =>
-                                      _showEditTransaction(
-                                          context, palette, doc),
-                                  child: Container(
-                                    padding:
-                                        const EdgeInsets.all(14),
-                                    decoration: BoxDecoration(
-                                      color: palette.card,
-                                      borderRadius:
-                                          BorderRadius.circular(16),
-                                      border: Border.all(
-                                          color: palette.border),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 42, height: 42,
-                                          decoration: BoxDecoration(
-                                            color: isIncome
-                                                ? palette.accent
-                                                    .withOpacity(
-                                                        0.12)
-                                                : palette.negative
-                                                    .withOpacity(
-                                                        0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(
-                                                    12),
-                                          ),
-                                          child: Icon(
-                                            isIncome
-                                                ? Icons
-                                                    .arrow_downward_rounded
-                                                : Icons
-                                                    .arrow_upward_rounded,
-                                            color: isIncome
-                                                ? palette.accent
-                                                : palette.negative,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment
-                                                    .start,
-                                            children: [
-                                              Text(
-                                                  data['title'] ??
-                                                      '',
-                                                  style: GoogleFonts
-                                                      .syne(
-                                                          fontSize:
-                                                              13,
-                                                          fontWeight:
-                                                              FontWeight
-                                                                  .w600,
-                                                          color: palette
-                                                              .ink)),
-                                              const SizedBox(
-                                                  height: 2),
-                                              Text(
-                                                '${data['category']} · ${date.day}/${date.month}/${date.year}',
-                                                style: GoogleFonts
-                                                    .syne(
-                                                        fontSize: 11,
-                                                        color: palette
-                                                            .inkMuted),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
-                                              style:
-                                                  GoogleFonts.syne(
-                                                fontSize: 14,
-                                                fontWeight:
-                                                    FontWeight.w700,
-                                                color: isIncome
-                                                    ? palette.accent
-                                                    : palette.negative,
-                                              ),
-                                            ),
-                                            Text('tap to edit',
-                                                style: GoogleFonts
-                                                    .syne(
-                                                        fontSize: 9,
-                                                        color: palette
-                                                            .inkMuted)),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                              color: palette.inkMuted),
+                                          textAlign:
+                                              TextAlign.center),
+                                    ],
                                   ),
                                 ),
                               ),
                             );
-                          },
-                          childCount: docs.length,
-                        ),
-                      );
-                    },
-                  ),
+                          }
 
-                  const SliverToBoxAdapter(
-                      child: SizedBox(height: 120)),
-                ],
+                          final docs =
+                              snapshot.data!.docs.take(10).toList();
+
+                          return SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, i) {
+                                final doc = docs[i];
+                                final data = doc.data()
+                                    as Map<String, dynamic>;
+                                final isIncome =
+                                    data['type'] == 'income';
+                                final amount =
+                                    (data['amount'] as num).toDouble();
+                                final date =
+                                    (data['date'] as dynamic).toDate()
+                                        as DateTime;
+
+                                return Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                      24, 10, 24, 0),
+                                  child: Dismissible(
+                                    key: Key(doc.id),
+                                    direction:
+                                        DismissDirection.endToStart,
+                                    background: Container(
+                                      margin: const EdgeInsets.only(
+                                          left: 60),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            const Color(0xFFE53935),
+                                        borderRadius:
+                                            BorderRadius.circular(16),
+                                      ),
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(
+                                          right: 20),
+                                      child: const Icon(
+                                          Icons
+                                              .delete_outline_rounded,
+                                          color: Colors.white,
+                                          size: 22),
+                                    ),
+                                    confirmDismiss: (_) async {
+                                      bool confirmed = false;
+                                      await showDialog(
+                                        context: context,
+                                        builder: (_) => AlertDialog(
+                                          backgroundColor: palette.card,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20)),
+                                          title: Text(
+                                              'Delete transaction?',
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 16,
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                  color: palette.ink)),
+                                          content: Text(
+                                              'This cannot be undone.',
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 13,
+                                                  color:
+                                                      palette.inkMuted)),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(context),
+                                              child: Text('Cancel',
+                                                  style: GoogleFonts.syne(
+                                                      fontSize: 13,
+                                                      color: palette
+                                                          .inkMuted)),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                confirmed = true;
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('Delete',
+                                                  style: GoogleFonts.syne(
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: const Color(
+                                                          0xFFE53935))),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmed) {
+                                        await _transactionService
+                                            .deleteTransaction(doc.id);
+                                        _loadData();
+                                      }
+                                      return confirmed;
+                                    },
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          _showEditTransaction(
+                                              context, palette, doc),
+                                      child: Container(
+                                        padding:
+                                            const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: palette.card,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
+                                          border: Border.all(
+                                              color: palette.border),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Container(
+                                              width: 42, height: 42,
+                                              decoration: BoxDecoration(
+                                                color: isIncome
+                                                    ? palette.accent
+                                                        .withOpacity(
+                                                            0.12)
+                                                    : palette.negative
+                                                        .withOpacity(
+                                                            0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        12),
+                                              ),
+                                              child: Icon(
+                                                isIncome
+                                                    ? Icons
+                                                        .arrow_downward_rounded
+                                                    : Icons
+                                                        .arrow_upward_rounded,
+                                                color: isIncome
+                                                    ? palette.accent
+                                                    : palette.negative,
+                                                size: 18,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start,
+                                                children: [
+                                                  Text(
+                                                      data['title'] ??
+                                                          '',
+                                                      style: GoogleFonts
+                                                          .syne(
+                                                              fontSize:
+                                                                  13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              color: palette
+                                                                  .ink)),
+                                                  const SizedBox(
+                                                      height: 2),
+                                                  Text(
+                                                    '${data['category']} · ${date.day}/${date.month}/${date.year}',
+                                                    style: GoogleFonts
+                                                        .syne(
+                                                            fontSize: 11,
+                                                            color: palette
+                                                                .inkMuted),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  '${isIncome ? '+' : '-'}${_formatAmount(amount)}',
+                                                  style:
+                                                      GoogleFonts.syne(
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.w700,
+                                                    color: isIncome
+                                                        ? palette.accent
+                                                        : palette.negative,
+                                                  ),
+                                                ),
+                                                Text('tap to edit',
+                                                    style: GoogleFonts
+                                                        .syne(
+                                                            fontSize: 9,
+                                                            color: palette
+                                                                .inkMuted)),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              childCount: docs.length,
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SliverToBoxAdapter(
+                          child: SizedBox(height: 120)),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Tab 1 — Calendar
+              const CalendarScreen(),
+
+              // Tab 2 — Spend List
+              const SpendListScreen(),
+
+              // Tab 3 — Statistics
+              StatisticsScreen(key: ValueKey(_statsRefreshKey)),
+
+              // Tab 4 — Learn Finance
+              const LearnScreen(),
+
+              // Tab 5 — Profile
+              const ProfileScreen(),
+            ],
+          ),
+
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: palette.card,
+              border: Border(top: BorderSide(color: palette.border)),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _NavItem(
+                      icon: Icons.home_rounded,
+                      label: 'Home',
+                      isActive: _currentNavIndex == 0,
+                      palette: palette,
+                      onTap: () {
+                        setState(() => _currentNavIndex = 0);
+                        _loadData();
+                      },
+                    ),
+                    _NavItem(
+                      icon: Icons.calendar_month_rounded,
+                      label: 'Calendar',
+                      isActive: _currentNavIndex == 1,
+                      palette: palette,
+                      onTap: () =>
+                          setState(() => _currentNavIndex = 1),
+                    ),
+                    _NavItem(
+                      icon: Icons.checklist_rounded,
+                      label: 'Spend List',
+                      isActive: _currentNavIndex == 2,
+                      palette: palette,
+                      onTap: () =>
+                          setState(() => _currentNavIndex = 2),
+                    ),
+                    _NavItem(
+                      icon: Icons.bar_chart_rounded,
+                      label: 'Statistics',
+                      isActive: _currentNavIndex == 3,
+                      palette: palette,
+                      onTap: () {
+                        setState(() {
+                          _currentNavIndex = 3;
+                          _statsRefreshKey++;
+                        });
+                      },
+                    ),
+                    _NavItem(
+                      icon: Icons.school_rounded,
+                      label: 'Learn',
+                      isActive: _currentNavIndex == 4,
+                      palette: palette,
+                      onTap: () =>
+                          setState(() => _currentNavIndex = 4),
+                    ),
+                    _NavItem(
+                      icon: Icons.person_outline_rounded,
+                      label: 'Profile',
+                      isActive: _currentNavIndex == 5,
+                      palette: palette,
+                      onTap: () =>
+                          setState(() => _currentNavIndex = 5),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-
-          // Tab 1 — Calendar
-          const CalendarScreen(),
-
-          // Tab 2 — Spend List
-          const SpendListScreen(),
-
-          // Tab 3 — Statistics
-          StatisticsScreen(key: ValueKey(_statsRefreshKey)),
-
-          // Tab 4 — Learn Finance
-          const LearnScreen(),
-
-          // Tab 5 — Profile
-          const ProfileScreen(),
-        ],
-      ),
-
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: palette.card,
-          border: Border(top: BorderSide(color: palette.border)),
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 8, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _NavItem(
-                  icon: Icons.home_rounded,
-                  label: 'Home',
-                  isActive: _currentNavIndex == 0,
-                  palette: palette,
-                  onTap: () {
-                    setState(() => _currentNavIndex = 0);
-                    _loadData();
-                  },
-                ),
-                _NavItem(
-                  icon: Icons.calendar_month_rounded,
-                  label: 'Calendar',
-                  isActive: _currentNavIndex == 1,
-                  palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 1),
-                ),
-                _NavItem(
-                  icon: Icons.checklist_rounded,
-                  label: 'Spend List',
-                  isActive: _currentNavIndex == 2,
-                  palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 2),
-                ),
-                _NavItem(
-                  icon: Icons.bar_chart_rounded,
-                  label: 'Statistics',
-                  isActive: _currentNavIndex == 3,
-                  palette: palette,
-                  onTap: () {
-                    setState(() {
-                      _currentNavIndex = 3;
-                      _statsRefreshKey++;
-                    });
-                  },
-                ),
-                _NavItem(
-                  icon: Icons.school_rounded,
-                  label: 'Learn',
-                  isActive: _currentNavIndex == 4,
-                  palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 4),
-                ),
-                _NavItem(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Profile',
-                  isActive: _currentNavIndex == 5,
-                  palette: palette,
-                  onTap: () =>
-                      setState(() => _currentNavIndex = 5),
-                ),
-              ],
-            ),
+        if (_showTipOverlay)
+          FeatureTipOverlay(
+            tips: _homeFeatureTips,
+            onFinished: () => setState(() => _showTipOverlay = false),
           ),
-        ),
-      ),
+      ],
     );
   }
 
