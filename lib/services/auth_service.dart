@@ -9,11 +9,12 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  Future<UserCredential?> signUp({
+    Future<UserCredential?> signUp({
     required String name,
     required String email,
     required String phone,
     required String password,
+    required bool hasDebitCard,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -25,6 +26,7 @@ class AuthService {
         'name': name,
         'email': email,
         'phone': phone,
+        'hasDebitCard': hasDebitCard,
         'createdAt': FieldValue.serverTimestamp(),
         'currency': '₹',
         'monthlyBudget': 0,

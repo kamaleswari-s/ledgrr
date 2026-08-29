@@ -24,6 +24,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
+  bool? _hasDebitCard;
   String? _errorMessage;
   PasswordStrength _passwordStrength = const PasswordStrength(
     level: PasswordLevel.empty,
@@ -69,7 +70,6 @@ class _AuthScreenState extends State<AuthScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-
     try {
       if (_isSignUp) {
         if (_nameController.text.trim().isEmpty) throw 'Please enter your name.';
@@ -81,11 +81,15 @@ class _AuthScreenState extends State<AuthScreen> {
         if (_passwordStrength.level == PasswordLevel.weak) {
           throw 'Your password is too weak. Make it stronger.';
         }
+        if (_hasDebitCard == null) {
+          throw 'Please answer whether you have a debit card.';
+        }
         await _authService.signUp(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           phone: _phoneController.text.trim(),
           password: _passwordController.text,
+          hasDebitCard: _hasDebitCard!,
         );
         // New user always goes to setup
         if (mounted) {
@@ -136,7 +140,6 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = LedgrrColors.mint;
-
     return Scaffold(
       backgroundColor: palette.bg,
       body: SafeArea(
@@ -201,7 +204,6 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               const SizedBox(height: 36),
-
               if (_errorMessage != null) ...[
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -227,7 +229,6 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 const SizedBox(height: 20),
               ],
-
               if (_isSignUp) ...[
                 _buildLabel('Full name', palette),
                 const SizedBox(height: 8),
@@ -238,7 +239,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     keyboardType: TextInputType.name),
                 const SizedBox(height: 16),
               ],
-
               _buildLabel('Email', palette),
               const SizedBox(height: 8),
               _buildField(
@@ -247,7 +247,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   palette: palette,
                   keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 16),
-
               if (_isSignUp) ...[
                 _buildLabel('Phone number', palette),
                 const SizedBox(height: 8),
@@ -262,7 +261,38 @@ class _AuthScreenState extends State<AuthScreen> {
                         fontSize: 11, color: palette.inkMuted)),
                 const SizedBox(height: 16),
               ],
-
+              if (_isSignUp) ...[
+                _buildLabel('Do you have a debit card?', palette),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _DebitCardOption(
+                        label: 'Yes',
+                        isSelected: _hasDebitCard == true,
+                        onTap: () => setState(() => _hasDebitCard = true),
+                        palette: palette,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _DebitCardOption(
+                        label: 'No',
+                        isSelected: _hasDebitCard == false,
+                        onTap: () => setState(() => _hasDebitCard = false),
+                        palette: palette,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'This helps us plan future payment features. We never see your card number.',
+                  style: GoogleFonts.syne(
+                      fontSize: 11, color: palette.inkMuted),
+                ),
+                const SizedBox(height: 16),
+              ],
               _buildLabel('Password', palette),
               const SizedBox(height: 8),
               _buildPasswordField(
@@ -275,7 +305,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     setState(() => _obscurePassword = !_obscurePassword),
                 palette: palette,
               ),
-
               if (_isSignUp && _passwordController.text.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 _PasswordStrengthMeter(
@@ -284,7 +313,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   palette: palette,
                 ),
               ],
-
               if (_isSignUp) ...[
                 const SizedBox(height: 16),
                 _buildLabel('Confirm password', palette),
@@ -330,7 +358,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ],
               ],
-
               if (!_isSignUp) ...[
                 const SizedBox(height: 12),
                 Align(
@@ -342,9 +369,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           color: palette.accent)),
                 ),
               ],
-
               const SizedBox(height: 32),
-
               Material(
                 color: _isLoading
                     ? palette.accent.withOpacity(0.7)
@@ -377,9 +402,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -402,7 +425,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ],
               ),
-
               if (_isSignUp) ...[
                 const SizedBox(height: 28),
                 Container(
@@ -431,7 +453,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
               ],
-
               const SizedBox(height: 32),
             ],
           ),
@@ -530,7 +551,6 @@ class _PasswordStrengthMeter extends StatelessWidget {
   final PasswordStrength strength;
   final Color strengthColor;
   final LedgrrPalette palette;
-
   const _PasswordStrengthMeter({
     required this.strength,
     required this.strengthColor,
@@ -585,10 +605,49 @@ class _PasswordStrengthMeter extends StatelessWidget {
   }
 }
 
+class _DebitCardOption extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final LedgrrPalette palette;
+
+  const _DebitCardOption({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.palette,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? palette.accent : palette.bg2,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+              color: isSelected ? palette.accent : palette.border),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.syne(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? palette.accentFg : palette.ink),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _RRPainter extends CustomPainter {
   final Color leftColor;
   final Color rightColor;
-
   const _RRPainter({required this.leftColor, required this.rightColor});
 
   @override
@@ -599,17 +658,14 @@ class _RRPainter extends CustomPainter {
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-
     final right = Paint()
       ..color = rightColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-
     final cx = size.width / 2;
     final cy = size.height / 2;
-
     final lp = Path();
     lp.moveTo(cx - 14, cy + 14);
     lp.lineTo(cx - 14, cy - 6);
@@ -618,7 +674,6 @@ class _RRPainter extends CustomPainter {
     lp.quadraticBezierTo(cx - 2, cy + 2, cx - 8, cy + 2);
     lp.lineTo(cx - 3, cy + 14);
     canvas.drawPath(lp, left);
-
     final rp = Path();
     rp.moveTo(cx + 14, cy + 14);
     rp.lineTo(cx + 14, cy - 6);
