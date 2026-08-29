@@ -94,7 +94,7 @@ class NotificationService {
     tz_data.initializeTimeZones();
 
     const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('ic_stat_notify');
     const initSettings =
         InitializationSettings(android: androidSettings);
 
