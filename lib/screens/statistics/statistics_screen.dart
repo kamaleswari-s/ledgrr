@@ -27,10 +27,13 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   List<Map<String, dynamic>> _monthlyData = [];
   int _totalTransactionCount = 0;
 
-  @override
+    @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadData();
   }
 
@@ -346,32 +349,54 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               ),
             ),
 
-            // Tab bar
+                        // Tab bar — manual pill toggle
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
               child: Container(
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: palette.bg2,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: palette.border),
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: palette.accent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  labelColor: palette.accentFg,
-                  unselectedLabelColor: palette.inkMuted,
-                  labelStyle: GoogleFonts.syne(
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                  unselectedLabelStyle: GoogleFonts.syne(
-                      fontSize: 13, fontWeight: FontWeight.w400),
-                  dividerColor: Colors.transparent,
-                  tabs: const [
-                    Tab(text: 'Overview'),
-                    Tab(text: 'Categories'),
-                  ],
+                child: Row(
+                  children: ['Overview', 'Categories']
+                      .asMap()
+                      .entries
+                      .map((entry) {
+                    final i = entry.key;
+                    final label = entry.value;
+                    final isSelected = _tabController.index == i;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() => _tabController.index = i);
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? palette.accent
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              label,
+                              style: GoogleFonts.syne(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? palette.accentFg
+                                      : palette.inkMuted),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ),
