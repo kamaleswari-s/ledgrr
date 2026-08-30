@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,6 @@ class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   static const String _seenOnboardingKey = 'hasSeenOnboarding';
 
-  late final AnimationController _burstController;
   late final AnimationController _logoController;
   late final AnimationController _textController;
   late final AnimationController _glowController;
@@ -29,11 +29,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-
-    _burstController = AnimationController(
-      duration: const Duration(milliseconds: 900),
-      vsync: this,
-    )..forward();
 
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -50,17 +45,16 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     )..repeat(reverse: true);
 
-    Future.delayed(const Duration(milliseconds: 200), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) _logoController.forward();
     });
-    Future.delayed(const Duration(milliseconds: 700), () {
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _textController.forward();
     });
   }
 
   @override
   void dispose() {
-    _burstController.dispose();
     _logoController.dispose();
     _textController.dispose();
     _glowController.dispose();
@@ -100,8 +94,6 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: splashBg,
       body: Stack(
         children: [
-          // Kept out of the center band entirely, so nothing ever
-          // drifts behind or across the logo.
           Positioned.fill(
             child: RupeeFall(
               color: splashAccent,
@@ -115,56 +107,62 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedBuilder(
-                    animation: Listenable.merge(
-                        [_burstController, _glowController]),
-                    builder: (context, child) {
-                      final scale = 1.0 + _burstController.value * 1.6;
-                      final burstOpacity = 1.0 - _burstController.value;
-                      final glowScale = 0.9 + _glowController.value * 0.2;
-                      final glowOpacity = 0.12 + _glowController.value * 0.08;
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Transform.scale(
-                            scale: glowScale,
-                            child: Container(
-                              width: 130, height: 130,
+                  // A real radiant glow — thin light rays spinning
+                  // slowly behind the logo, plus a soft breathing
+                  // core light. No box, no flat circle, no border.
+                                    SizedBox(
+                    width: 180, height: 180,
+                    child: AnimatedBuilder(
+                      animation: _glowController,
+                      builder: (context, child) {
+                        final glowStrength = 0.5 + _glowController.value * 0.5;
+                        return Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 170, height: 170,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: splashAccent.withOpacity(glowOpacity),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: splashAccent
+                                        .withOpacity(0.18 * glowStrength),
+                                    blurRadius: 70,
+                                    spreadRadius: 10,
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          Opacity(
-                            opacity: burstOpacity.clamp(0.0, 1.0),
-                            child: Transform.scale(
-                              scale: scale,
-                              child: Container(
-                                width: 84, height: 84,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                      color: splashAccent, width: 2),
-                                ),
+                            Container(
+                              width: 110, height: 110,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: splashAccent
+                                        .withOpacity(0.4 * glowStrength),
+                                    blurRadius: 45,
+                                    spreadRadius: 4,
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          child!,
-                        ],
-                      );
-                    },
-                    child: ScaleTransition(
-                      scale: CurvedAnimation(
-                          parent: _logoController, curve: Curves.elasticOut),
-                      child: Image.asset(
-                        'assets/images/ledgrr_logo.png',
-                        width: 84,
-                        height: 84,
+                            child!,
+                          ],
+                        );
+                      },
+                      child: ScaleTransition(
+                        scale: CurvedAnimation(
+                            parent: _logoController, curve: Curves.elasticOut),
+                        child: Image.asset(
+                          'assets/images/ledgrr_logo_transparent.png',
+                          width: 104,
+                          height: 104,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   FadeTransition(
                     opacity: _textController,
                     child: SlideTransition(
@@ -194,7 +192,7 @@ class _SplashScreenState extends State<SplashScreen>
                   FadeTransition(
                     opacity: _textController,
                     child: Text(
-                      'LEDGRR shows you what you can actually spend right now, not just your bank balance, and quietly catches the subscriptions you forgot about.',
+                      'One app for spending, saving, dues, goals, and everything in between, built specifically around how students actually manage money.',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.syne(
                           fontSize: 13,
@@ -224,4 +222,49 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
+}
+
+// Draws thin radiating light rays around a center point, like a
+// soft star glint — genuinely reads as "glow", not a flat circle.
+class _StarGlowPainter extends CustomPainter {
+  final Color color;
+  final double strength;
+
+  const _StarGlowPainter({required this.color, required this.strength});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final rayCount = 8;
+    final maxLength = size.width / 2;
+
+    for (int i = 0; i < rayCount; i++) {
+      final angle = (2 * pi / rayCount) * i;
+      final isLong = i % 2 == 0;
+      final length = isLong ? maxLength * strength : maxLength * 0.6 * strength;
+      final rayWidth = isLong ? 3.0 : 1.5;
+
+      final paint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.center,
+          end: Alignment.centerRight,
+          colors: [
+            color.withOpacity(0.5 * strength),
+            color.withOpacity(0.0),
+          ],
+        ).createShader(Rect.fromCircle(center: center, radius: length))
+        ..strokeWidth = rayWidth
+        ..strokeCap = StrokeCap.round;
+
+      final end = Offset(
+        center.dx + length * cos(angle),
+        center.dy + length * sin(angle),
+      );
+      canvas.drawLine(center, end, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StarGlowPainter old) =>
+      old.strength != strength;
 }
