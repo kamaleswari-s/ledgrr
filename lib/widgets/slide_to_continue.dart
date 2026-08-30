@@ -84,39 +84,45 @@ class _SlideToContinueState extends State<SlideToContinue>
           ),
           padding: const EdgeInsets.all(_trackPadding),
           child: Stack(
-            alignment: Alignment.centerLeft,
+            alignment: Alignment.center,
             children: [
-              Padding(
-                padding: EdgeInsets.only(left: _thumbSize + 12),
+              // Label sits centered across the whole track, always,
+              // regardless of where the thumb currently is.
+              Center(
                 child: Text(
                   widget.label,
                   style: GoogleFonts.syne(
-                      fontSize: 13, color: widget.labelColor),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: widget.labelColor),
                 ),
               ),
-              AnimatedBuilder(
-                animation: _hintController,
-                builder: (context, child) {
-                  final hintOffset = _dragX == 0 && !_confirmed
-                      ? _hintController.value * 8
-                      : 0.0;
-                  return Transform.translate(
-                    offset: Offset(_dragX + hintOffset, 0),
-                    child: child,
-                  );
-                },
-                child: GestureDetector(
-                  onHorizontalDragUpdate: _onDragUpdate,
-                  onHorizontalDragEnd: _onDragEnd,
-                  child: Container(
-                    width: _thumbSize,
-                    height: _thumbSize,
-                    decoration: BoxDecoration(
-                      color: widget.thumbColor,
-                      borderRadius: BorderRadius.circular(_thumbSize / 2),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: AnimatedBuilder(
+                  animation: _hintController,
+                  builder: (context, child) {
+                    final hintOffset = _dragX == 0 && !_confirmed
+                        ? _hintController.value * 8
+                        : 0.0;
+                    return Transform.translate(
+                      offset: Offset(_dragX + hintOffset, 0),
+                      child: child,
+                    );
+                  },
+                  child: GestureDetector(
+                    onHorizontalDragUpdate: _onDragUpdate,
+                    onHorizontalDragEnd: _onDragEnd,
+                    child: Container(
+                      width: _thumbSize,
+                      height: _thumbSize,
+                      decoration: BoxDecoration(
+                        color: widget.thumbColor,
+                        borderRadius: BorderRadius.circular(_thumbSize / 2),
+                      ),
+                      child: Icon(Icons.arrow_forward_rounded,
+                          color: widget.thumbIconColor, size: 20),
                     ),
-                    child: Icon(Icons.arrow_forward_rounded,
-                        color: widget.thumbIconColor, size: 20),
                   ),
                 ),
               ),

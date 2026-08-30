@@ -50,18 +50,43 @@ class _SetupScreenState extends State<SetupScreen> {
       _errorMessage = null;
     });
 
-    try {
+        try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Save opening balance as first income transaction
-      await _transactionService.addTransaction(
-        title: 'Opening Balance',
-        amount: balance,
-        category: 'other_income',
-        type: 'income',
-        date: DateTime.now(),
-        note: 'Starting balance set during setup',
-      );
+      // Guards against duplicate "Opening Balance" transactions if
+      // setup ever runs more than once on the same account — checks
+      // for an existing one first, and updates it instead of adding
+      // a second, which is what silently inflated True Balance
+      // before this fix.
+      final existingOpening = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('transactions')
+          .where('title', isEqualTo: 'Opening Balance')
+          .where('category', isEqualTo: 'other_income')
+          .limit(1)
+          .get();
+
+      if (existingOpening.docs.isNotEmpty) {
+        await _transactionService.updateTransaction(
+          transactionId: existingOpening.docs.first.id,
+          title: 'Opening Balance',
+          amount: balance,
+          category: 'other_income',
+          type: 'income',
+          date: DateTime.now(),
+          note: 'Starting balance set during setup',
+        );
+      } else {
+        await _transactionService.addTransaction(
+          title: 'Opening Balance',
+          amount: balance,
+          category: 'other_income',
+          type: 'income',
+          date: DateTime.now(),
+          note: 'Starting balance set during setup',
+        );
+      }
 
       // Save monthly income and budget to user profile
       await FirebaseFirestore.instance
