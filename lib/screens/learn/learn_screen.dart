@@ -8,12 +8,10 @@ import '../../providers/theme_provider.dart';
 import '../../services/spender_archetype_service.dart';
 
 // ─── DATA ──────────────────────────────────────────────────────────────────
-
 class LessonResource {
   final String title;
   final String author;
   final String note;
-
   const LessonResource({
     required this.title,
     required this.author,
@@ -31,7 +29,6 @@ class FinanceLesson {
   final String remember;
   final String ledgrrSees;
   final List<LessonResource> resources;
-
   const FinanceLesson({
     required this.id,
     required this.title,
@@ -176,8 +173,6 @@ const List<FinanceLesson> _allLessons = [
       ),
     ],
   ),
-
-  // ── FOUNDATION — NEW ────────────────────────────────────────────────────
   FinanceLesson(
     id: 'f8',
     level: 'Foundation',
@@ -307,7 +302,6 @@ const List<FinanceLesson> _allLessons = [
       ),
     ],
   ),
-
   // ── CLARITY ─────────────────────────────────────────────────────────────
   FinanceLesson(
     id: 'c1',
@@ -540,7 +534,6 @@ const List<FinanceLesson> _allLessons = [
         'Once your documents are sorted, LEDGRR helps you track the income and investments that actually depend on having them ready.',
     resources: [],
   ),
-
   // ── MASTERY ─────────────────────────────────────────────────────────────
   FinanceLesson(
     id: 'm1',
@@ -779,759 +772,1081 @@ const List<FinanceLesson> _allLessons = [
     level: 'Foundation',
     title: 'Recognizing your personal spending triggers',
     hook: 'You don\'t spend when you\'re hungry. You spend when you\'re something else.',
-    explanation: 'Most impulsive spending is a response to a feeling, not a genuine need — stress, boredom, loneliness, celebration. Naming your own trigger gives you a choice you didn\'t have before.',
-    realLife: 'Meher noticed she always ordered dessert delivery on anxious nights. Naming it gave her a pause before acting on it.',
-    remember: 'The trigger isn\'t the problem. Not noticing the trigger is.',
-    ledgrrSees: 'Check your LEDGRR transaction timestamps against how your week was going.',
+    explanation:
+        'Most impulsive spending is not actually about the item at all. It is a response to a feeling — stress after an exam, boredom on a slow evening, loneliness after a fight with a friend, or the urge to celebrate after something good happened. The purchase is a shortcut to changing how you feel, right now, in the next five minutes.\n\nThe problem is not that these feelings exist. Everyone feels them. The problem is when spending becomes the automatic response every single time, without you ever noticing the pattern forming underneath it.\n\nOnce you can actually name your own trigger, you get a choice you did not have before. You can recognize the feeling arriving and decide, on purpose, whether spending is really what you want to do about it — instead of finding yourself mid-checkout before you have even registered why.',
+    realLife:
+        'Meher noticed she always ordered dessert delivery on nights she felt anxious about an upcoming deadline. Once she named it — "I do this specifically when I am anxious, not when I am hungry" — she started noticing the urge arrive a few seconds before she acted on it. That small gap gave her a moment to choose something else, and sometimes she still chose the dessert, but now it was a decision instead of a reflex.',
+    remember:
+        'The trigger itself is not the problem. Not noticing the trigger is.',
+    ledgrrSees:
+        'Check your LEDGRR transaction timestamps against how your week was actually going. Spending spikes often line up with specific kinds of days, not random chance.',
   ),
   FinanceLesson(
     id: 'new_inconsistent_logging_cost',
     level: 'Foundation',
     title: 'Why inconsistent logging costs more than you think',
     hook: 'A number you don\'t check can\'t warn you.',
-    explanation: 'Small, forgotten transactions add up silently. Inconsistent logging also blinds every LEDGRR feature that depends on real data to protect you.',
-    realLife: 'Yusuf\'s real monthly total was ₹1,800 higher than his mental estimate, almost entirely small forgotten purchases.',
-    remember: 'Log it in the moment, not "later." Later rarely happens accurately.',
-    ledgrrSees: 'Your streak counter is a direct measure of how much you can trust your own True Balance right now.',
+    explanation:
+        'Logging transactions inconsistently feels harmless in the moment — surely you will remember the big stuff. But small, forgotten transactions are exactly the ones that add up silently: the ₹40 here, the ₹120 there, never individually big enough to remember, always adding up to something real by the time the month closes.\n\nThere is a second, quieter cost too. Every feature that makes LEDGRR genuinely useful — True Balance, Ghost Money Detector, spending pattern insights — depends entirely on real data to work correctly. Logging inconsistently does not just blur your own memory of the month. It blinds the exact tools built to protect you from the mistakes that inconsistent tracking causes in the first place.',
+    realLife:
+        'Yusuf logged his transactions "whenever he remembered," roughly every few days. When he finally checked his real monthly total, it was nearly ₹1,800 higher than his own mental estimate — almost entirely small purchases he had genuinely, honestly forgotten by the time he got around to logging them.',
+    remember:
+        'Log it in the moment, not "later." Later rarely happens accurately, no matter how good your intentions are.',
+    ledgrrSees:
+        'Your streak counter in LEDGRR is not really about guilt — it is a direct, honest measure of how much you can actually trust your own True Balance right now.',
   ),
   FinanceLesson(
     id: 'new_two_minute_log',
     level: 'Foundation',
     title: 'The two-minute log — making tracking too easy to skip',
     hook: 'The habit that survives is the one that takes the least effort.',
-    explanation: 'Logging fails when it feels like a chore. Reducing it to a genuine two-minute action, done the moment money moves, removes the excuse to skip it.',
-    realLife: 'Aisha stopped "batching" her logging for the weekend once she realized same-moment logging took seconds, while catching up took an hour.',
-    remember: 'The easier the habit, the more likely it survives a busy day.',
-    ledgrrSees: 'LEDGRR\'s Quick Add exists specifically to make same-moment logging effortless.',
+    explanation:
+        'Logging habits fail most often not because people do not care, but because the habit feels like a chore that can always be postponed. Reducing it down to a genuine two-minute action — done the exact moment money moves, not batched up for later — removes the mental excuse to skip it entirely.\n\nThe fewer steps and the less thought required, the more likely any habit survives a genuinely busy or exhausting day. A habit that requires remembering, opening an app, and carefully filling in details feels different from one that takes two taps and is simply done.',
+    realLife:
+        'Aisha used to "batch" her logging for the weekend, telling herself she would remember everything. Once she realized same-moment logging genuinely took only seconds each time, while catching up later took nearly an hour of guessing and reconstructing, she switched entirely to logging the instant a payment happened.',
+    remember:
+        'The easier a habit is, the more likely it survives an ordinary, busy day.',
+    ledgrrSees:
+        'LEDGRR\'s Quick Add exists specifically to make same-moment logging effortless — use it right when the payment happens, not when you finally get a free moment.',
   ),
   FinanceLesson(
     id: 'new_lose_by_not_knowing',
     level: 'Foundation',
     title: 'What you lose by not knowing your own numbers',
     hook: 'You can\'t fix a leak you can\'t see.',
-    explanation: 'Not knowing your real spending isn\'t neutral, it\'s an active cost. Every decision made without real numbers is a guess, and guesses are usually wrong in the expensive direction.',
-    realLife: 'Rehan assumed he had "enough" for a purchase. He didn\'t. Not knowing cost him an overdraft fee that accurate tracking would have prevented.',
-    remember: 'Not knowing is not neutral. It\'s a guess, and guesses cost money.',
-    ledgrrSees: 'Every logged transaction in LEDGRR replaces a guess with a fact.',
+    explanation:
+        'Not knowing your real spending is often treated as a neutral, harmless gap — but it is actually an active cost. Every financial decision made without real numbers in front of you is essentially a guess, and guesses about money tend to be wrong in the expensive direction, not the safe one.\n\nThe uncomfortable truth is that "I think I have enough" and "I actually have enough" are two completely different statements, and only one of them protects you from an overdraft, a bounced payment, or an awkward moment splitting a bill you cannot actually cover.',
+    realLife:
+        'Rehan assumed he had "enough" in his account for a purchase he had been planning. He genuinely did not. Not knowing his real number cost him an overdraft fee that a habit of accurate, current tracking would have prevented entirely, with zero extra effort beyond simply checking first.',
+    remember:
+        'Not knowing your numbers is never neutral. It is a guess, and guesses cost money.',
+    ledgrrSees:
+        'Every logged transaction in LEDGRR replaces a guess with a fact. The more consistently you log, the fewer expensive guesses you are making.',
   ),
   FinanceLesson(
     id: 'new_logging_as_trigger',
     level: 'Foundation',
     title: 'Turning logging into a trigger, not a task',
     hook: 'Attach the habit to something you already do, and it stops needing willpower.',
-    explanation: 'Habits stick best when tied to an existing routine — log the transaction right when you put your phone away after paying, not "sometime today."',
-    realLife: 'Devika tied logging to the moment she locked her phone after any UPI payment. It became automatic within two weeks.',
-    remember: 'Attach the new habit to an old one you already do without thinking.',
-    ledgrrSees: 'Try logging in LEDGRR the instant a payment completes, not after.',
+    explanation:
+        'New habits stick far more reliably when they are attached to an existing routine, rather than floating on their own as one more thing to remember. Logging a transaction right when you put your phone away after paying is a very different mental experience from telling yourself you will "log it sometime today."\n\nThis is a well-studied idea in habit formation — the existing action becomes the trigger for the new one, and eventually the two feel like a single motion rather than two separate steps requiring separate willpower.',
+    realLife:
+        'Devika tied her logging habit to the exact moment she locked her phone screen after completing any UPI payment. Within about two weeks, the sequence had become so automatic she genuinely could not complete a payment without also opening LEDGRR right after, without even consciously deciding to.',
+    remember:
+        'Attach a new habit to an old one you already do without thinking. That is the entire trick.',
+    ledgrrSees:
+        'Try logging in LEDGRR the instant a payment completes, using whatever moment already exists in your routine — locking your phone, closing the payment app, whatever comes naturally.',
   ),
   FinanceLesson(
     id: 'new_reconstruct_untracked_month',
     level: 'Foundation',
     title: 'Reconstructing a month you never tracked',
     hook: 'A missed month isn\'t lost. It just takes longer to see.',
-    explanation: 'If a month went completely untracked, pull your actual bank statement and log the major transactions retroactively. Imperfect data beats no data, and it stops the gap from repeating.',
-    realLife: 'Kabir rebuilt a skipped month using his bank app history in about twenty minutes, which was enough to spot two forgotten subscriptions he\'d otherwise have missed entirely.',
-    remember: 'A gap in your data is fixable. A gap you never fill just repeats itself.',
-    ledgrrSees: 'Back-date transactions in LEDGRR when reconstructing a missed period, so Statistics reflects reality, not a blank month.',
+    explanation:
+        'If an entire month went completely untracked, the instinct is often to give up on that period entirely and just start fresh going forward. But pulling your actual bank statement and logging the major transactions retroactively is genuinely worth the twenty minutes it takes.\n\nImperfect, reconstructed data beats no data at all, and more importantly, it stops the exact same gap from quietly repeating itself next month too, since you will have actually looked closely at what happened rather than simply moving on.',
+    realLife:
+        'Kabir rebuilt an entirely skipped month using his bank app\'s own transaction history, which took him about twenty minutes total. That single exercise was enough to spot two forgotten subscriptions he would otherwise have completely missed, since he had never sat down to actually review that period closely before.',
+    remember:
+        'A gap in your data is fixable with a bit of effort. A gap you never bother filling just quietly repeats itself.',
+    ledgrrSees:
+        'Back-date transactions in LEDGRR when reconstructing a missed period, so your Statistics screen reflects what actually happened, not a suspicious blank month.',
   ),
   FinanceLesson(
     id: 'new_debt_map',
     level: 'Clarity',
     title: 'The debt map — seeing everyone you owe in one place',
     hook: 'Debt spread across five people feels smaller than debt owed to one bank. It isn\'t.',
-    explanation: 'When money is owed to multiple friends separately, it\'s easy to underestimate the total because no single number ever appears in one place. Listing every debt together, with amounts, is the first step to actually managing it.',
-    realLife: 'Nikhil realized his "small" debts to four different friends added up to ₹4,200, far more than he\'d estimated when thinking about them one at a time.',
-    remember: 'Debt doesn\'t feel smaller because it\'s split across people. Add it up.',
-    ledgrrSees: 'Dues Tracker in LEDGRR already lists every debt in one place, use it as your actual debt map.',
+    explanation:
+        'When money is owed to several different friends separately, it becomes surprisingly easy to underestimate the real total, simply because no single number ever appears in one place at once. Each individual debt feels small and manageable on its own.\n\nListing every single debt together, with actual amounts attached, is the necessary first step to genuinely managing the situation rather than continuing to feel vaguely uneasy about scattered, half-remembered amounts owed to different people.',
+    realLife:
+        'Nikhil realized, once he actually sat down and added it all up, that his "small" individual debts to four different friends totaled ₹4,200 — a number far higher than he had estimated when thinking about each debt separately in his head.',
+    remember:
+        'Debt does not become smaller just because it is split across multiple people. Add it up honestly.',
+    ledgrrSees:
+        'Dues Tracker in LEDGRR already lists every single debt in one consolidated place — use it as your actual, honest debt map, not just a list of individual reminders.',
   ),
   FinanceLesson(
     id: 'new_juggling_costs_more',
     level: 'Clarity',
     title: 'Why juggling multiple debts costs more than one bigger one',
     hook: 'Five small debts create five separate chances to forget one.',
-    explanation: 'Multiple simultaneous debts increase the mental load and the odds of missing a repayment, straining more relationships at once than a single larger, tracked debt would.',
-    realLife: 'Sana was juggling debts to three friends and consistently paid back the wrong one first, straining a friendship over a mix-up that a single list would have prevented.',
-    remember: 'More lenders means more chances to forget one. Consolidate what you can.',
-    ledgrrSees: 'Review all open dues in LEDGRR together before deciding which to settle first.',
+    explanation:
+        'Having multiple simultaneous debts to different people increases both the mental load of remembering them all correctly and the real chance of missing a repayment entirely — straining more relationships at once than a single larger, clearly tracked debt ever would.\n\nEach additional lender adds an entirely separate thread to keep straight in your head, and human memory is genuinely not built to reliably track several independent running totals at the same time without some kind of external system helping.',
+    realLife:
+        'Sana was simultaneously juggling debts to three different friends and consistently paid back the wrong person first on two separate occasions, creating real, unnecessary friction and confusion in relationships that a single consolidated list would have prevented entirely.',
+    remember:
+        'More lenders means more chances to forget one. Consolidate what you genuinely can.',
+    ledgrrSees:
+        'Review all your open dues together in LEDGRR before deciding which one to settle first, rather than tackling them from scattered memory.',
   ),
   FinanceLesson(
     id: 'new_snowball_method',
     level: 'Clarity',
     title: 'The snowball method — paying off small debts first',
     hook: 'Momentum, not math, is what actually gets debt paid off.',
-    explanation: 'The snowball method means paying off your smallest debt first regardless of interest rate, then rolling that payment into the next smallest. The psychological win of closing a debt fast keeps motivation alive better than the mathematically "optimal" order.',
-    realLife: 'Priyank cleared his smallest ₹500 debt first and felt genuinely motivated to tackle the next one, rather than feeling overwhelmed trying to attack the biggest debt first.',
-    remember: 'A quick win keeps you going. Perfect math that discourages you isn\'t actually optimal.',
-    ledgrrSees: 'Settle your smallest open due in LEDGRR first and use that momentum for the next.',
+    explanation:
+        'The snowball method means deliberately paying off your smallest debt first, regardless of its interest rate, and then rolling that same payment amount into tackling the next smallest debt. The psychological win of genuinely closing out a debt quickly tends to keep motivation alive far more reliably than the mathematically "optimal" order of attacking the highest-interest debt first.\n\nPersonal finance is not purely a math problem — it is also a behavior problem, and a method that keeps you actually continuing beats a theoretically perfect method that you abandon halfway through out of discouragement.',
+    realLife:
+        'Priyank cleared his smallest ₹500 debt first and felt a genuine, immediate sense of progress that motivated him to keep going, rather than feeling overwhelmed trying to attack his largest debt head-on from the very start.',
+    remember:
+        'A quick, visible win keeps you going. Perfect math that quietly discourages you is not actually optimal in practice.',
+    ledgrrSees:
+        'Settle your smallest open due in LEDGRR first, and use that genuine momentum to carry you into the next one.',
   ),
   FinanceLesson(
     id: 'new_stop_new_debt_first',
     level: 'Clarity',
     title: 'Stopping new debt before old debt is settled',
     hook: 'You can\'t pay off debt while still adding to it.',
-    explanation: 'Borrowing from a new person while still owing an old one keeps the total debt growing even as individual pieces get settled. The first real step isn\'t repayment, it\'s a hard stop on taking on anything new.',
-    realLife: 'Farah kept borrowing small amounts from new friends while slowly repaying older debts, and her total owed never actually shrank despite feeling like she was "handling it."',
-    remember: 'Repayment only works if the total stops growing first.',
-    ledgrrSees: 'Check your total "I owe" figure in LEDGRR\'s Dues Tracker before agreeing to borrow again.',
+    explanation:
+        'Borrowing from a new person while still owing money to an older one keeps your total debt quietly growing even as you feel like you are making progress by settling individual pieces here and there. The genuine first step is not repayment at all — it is a firm, deliberate stop on taking on anything new until the existing situation is under control.\n\nWithout that stop, repayment efforts end up treading water, since new debt keeps arriving roughly as fast as old debt gets cleared.',
+    realLife:
+        'Farah kept borrowing small amounts from new friends even while slowly repaying older debts to others, and her total amount owed never actually shrank overall, despite genuinely feeling like she was "handling it" the whole time.',
+    remember:
+        'Real repayment progress only works if the total amount owed actually stops growing first.',
+    ledgrrSees:
+        'Check your total "I owe" figure in LEDGRR\'s Dues Tracker honestly before agreeing to borrow again from anyone new.',
   ),
   FinanceLesson(
     id: 'new_wont_happen_to_me',
     level: 'Foundation',
     title: 'The "it won\'t happen to me" math',
     hook: 'Nobody plans for an emergency. That\'s exactly why it\'s called one.',
-    explanation: 'Believing a crisis won\'t happen to you is a normal, common bias, but the math of emergencies doesn\'t care about feelings — a genuinely unplanned cost eventually hits nearly everyone, and preparation is cheap compared to being caught without it.',
-    realLife: 'Aakriti never thought she\'d need an emergency fund until a sudden medical bill made her realize the "unlikely" scenario was simply one she hadn\'t experienced yet.',
-    remember: 'An emergency fund isn\'t pessimism. It\'s just accepting the math.',
-    ledgrrSees: 'Start an Emergency Fund jar in LEDGRR even with a small first deposit.',
+    explanation:
+        'Believing a genuine crisis will not happen to you personally is an extremely normal, common bias — but the underlying math of emergencies does not actually care about how anyone feels about their own odds. A genuinely unplanned cost eventually reaches nearly everyone at some point, and preparing for it in advance is far cheaper than being caught completely without any buffer when it actually arrives.\n\nThe "unlikely" emergency scenario is not actually unlikely in aggregate — it is simply one that any specific person has not personally experienced yet.',
+    realLife:
+        'Aakriti never genuinely believed she would need an emergency fund until a sudden medical bill arrived and made her realize the "unlikely" scenario had simply been one she had not personally lived through before that point.',
+    remember:
+        'An emergency fund is not pessimism about your own life. It is simply accepting the math that applies to everyone.',
+    ledgrrSees:
+        'Start an Emergency Fund jar in LEDGRR even with a genuinely small first deposit — starting matters more than the initial size.',
   ),
   FinanceLesson(
     id: 'new_build_ef_without_deprivation',
     level: 'Clarity',
     title: 'Building your emergency fund without feeling deprived',
     hook: 'An emergency fund doesn\'t require sacrifice. It requires patience.',
-    explanation: 'Building an emergency fund feels daunting only if approached as a big lump sum. A small, steady, boring contribution over months achieves the same result without requiring you to change your lifestyle drastically.',
-    realLife: 'Rehaan saved just ₹300 a month toward his emergency fund and hit ₹10,000 in under three years, without ever feeling like he was sacrificing anything noticeable.',
-    remember: 'Small and steady beats big and sacrificial, because steady actually continues.',
-    ledgrrSees: 'Set a modest recurring deposit into your LEDGRR Emergency Fund jar rather than waiting for a big amount to start.',
+    explanation:
+        'Building an emergency fund only feels daunting when it is approached as one large, intimidating lump sum that has to appear all at once. A small, steady, genuinely boring contribution spread out over many months achieves exactly the same end result, without requiring any dramatic change to your actual day-to-day lifestyle.\n\nThe emotional resistance to saving usually comes from imagining the full target amount all at once, rather than the small, easily absorbed monthly piece that actually gets you there.',
+    realLife:
+        'Rehaan saved just ₹300 a month specifically toward his emergency fund and reached ₹10,000 in under three years, without ever feeling like he was meaningfully sacrificing anything noticeable along the way.',
+    remember:
+        'Small and steady genuinely beats big and sacrificial, because steady is the version that actually continues long enough to work.',
+    ledgrrSees:
+        'Set a modest, comfortable recurring deposit into your LEDGRR Emergency Fund jar, rather than waiting until you have a large amount to start with.',
   ),
   FinanceLesson(
     id: 'new_what_counts_as_emergency',
     level: 'Foundation',
     title: 'What actually counts as an emergency (and what doesn\'t)',
     hook: 'A sale is not an emergency. Neither is an opportunity.',
-    explanation: 'An emergency fund only works if its definition stays strict — genuine medical costs, sudden loss of income, essential urgent repairs. The moment "great deal" or "once in a lifetime opportunity" gets included, the fund stops being insurance and starts being just another spending account.',
-    realLife: 'Tanish nearly used his emergency fund for a "limited time" gadget sale, then realized that wasn\'t remotely what the fund was for, and it saved him from an actual emergency two months later.',
-    remember: 'If it\'s optional, it\'s not an emergency, no matter how urgent it feels.',
-    ledgrrSees: 'Before withdrawing from an Emergency Fund jar in LEDGRR, ask honestly if this fits the strict definition.',
+    explanation:
+        'An emergency fund only genuinely works as intended if its definition stays strict and consistent — real medical costs, a sudden loss of income, essential and urgent repairs. The moment "amazing deal" or "once in a lifetime opportunity" gets quietly allowed in as a valid reason to dip into it, the fund stops functioning as insurance and starts functioning as just another, slightly-harder-to-reach spending account.\n\nThe entire value of the fund depends on this boundary holding firm, even when something genuinely tempting comes along that does not actually qualify.',
+    realLife:
+        'Tanish nearly used his emergency fund for a "limited time only" gadget sale before catching himself and realizing that was not remotely what the fund actually existed for. Two months later, that same intact fund covered a genuine, unplanned emergency exactly as it was meant to.',
+    remember:
+        'If a purchase is genuinely optional, it is not an emergency — no matter how urgent it feels in the moment.',
+    ledgrrSees:
+        'Before withdrawing from an Emergency Fund jar in LEDGRR, honestly ask yourself whether this situation fits the strict definition, not the tempting one.',
   ),
   FinanceLesson(
     id: 'new_default_opt_out_trap',
     level: 'Foundation',
     title: 'The default opt-out trap',
     hook: 'The businesses behind free trials know memory fails. That\'s the whole model.',
-    explanation: 'Free trials are designed to auto-convert to paid unless you actively cancel, because the business knows most people forget. Understanding this default is the first step to beating it.',
-    realLife: 'Ronit signed up for three "free for 7 days" trials, fully intending to cancel each. He forgot every time, and all three silently became recurring charges.',
-    remember: 'The default is designed to work against your memory. Set your own reminder instead.',
-    ledgrrSees: 'Log the exact trial end date as a note in LEDGRR the moment you start one.',
+    explanation:
+        'Free trials are deliberately designed to automatically convert into paid subscriptions unless you take active steps to cancel, precisely because the business behind them knows that most people will simply forget to do so in time. Understanding this default setting is the necessary first step toward actually beating it.\n\nThis is not an accidental design flaw on the company\'s part — it is the entire, intentional business model behind a huge portion of the subscription economy.',
+    realLife:
+        'Ronit signed up for three separate "free for 7 days" trials over a period of a few months, genuinely intending to cancel each one before it converted. He forgot every single time, and all three quietly became ongoing recurring charges without him noticing for months.',
+    remember:
+        'The default setting is specifically designed to work against your memory. Set your own explicit reminder instead of relying on remembering.',
+    ledgrrSees:
+        'Log the exact trial end date as a note in LEDGRR the very moment you start any free trial, so you have an external reminder instead of relying on memory alone.',
   ),
   FinanceLesson(
     id: 'new_why_ignore_same_alert',
     level: 'Foundation',
     title: 'Why you keep ignoring the same alert',
-    hook: 'Seeing a warning and acting on it are two different skills.',
-    explanation: 'A repeated Ghost Money alert that keeps getting dismissed usually means the noticing part is working fine, but the deciding part never happens. The fix isn\'t a better alert, it\'s committing to a real decision the moment you see it.',
-    realLife: 'Devika\'s Ghost Money Detector flagged the same subscription three months running. Each time she noticed, felt mildly annoyed, and moved on without deciding anything.',
-    remember: 'Noticing an alert isn\'t the same as acting on it.',
-    ledgrrSees: 'Treat every Ghost Money flag in LEDGRR as requiring one of two actions: cancel it, or consciously keep it.',
+    hook: 'Seeing a warning and acting on it are two completely different skills.',
+    explanation:
+        'A Ghost Money alert that keeps getting repeatedly dismissed usually means the noticing part of the system is working perfectly fine — the real gap is that the deciding part never actually happens afterward. The genuine fix here is not a smarter or louder alert, it is committing to an actual decision the very moment you see the alert appear.\n\nDismissing something is a passive action that requires almost no effort, which is exactly why it becomes a comfortable, repeated habit that quietly avoids the real decision entirely.',
+    realLife:
+        'Devika\'s Ghost Money Detector flagged the exact same forgotten subscription three separate months in a row. Each time, she noticed it, felt a small flash of mild annoyance, and simply moved on without actually deciding anything concrete about it.',
+    remember:
+        'Noticing an alert is genuinely not the same thing as acting on it.',
+    ledgrrSees:
+        'Treat every single Ghost Money flag in LEDGRR as requiring one of exactly two actions: cancel the charge, or consciously and deliberately decide to keep it.',
   ),
   FinanceLesson(
     id: 'new_3strike_rule',
     level: 'Foundation',
     title: 'The 3-strike rule for dismissed alerts',
     hook: 'If you\'ve dismissed the same alert three times, dismissing isn\'t working.',
-    explanation: 'A personal rule: if the same recurring charge gets flagged and dismissed three separate times, the next time it appears, the only allowed action is to cancel it or explicitly decide to keep it for good. No more quiet dismissing.',
-    realLife: 'Omkar set himself this exact rule and finally cancelled a subscription on its third flag, after two months of passive dismissing that changed nothing.',
-    remember: 'Three dismissals is a pattern, not a coincidence. Force a real decision on the third.',
-    ledgrrSees: 'Notice how many times the same Ghost Money alert has repeated in LEDGRR before dismissing it again.',
+    explanation:
+        'A useful personal rule: if the exact same recurring charge gets flagged and then dismissed on three separate, distinct occasions, the next time it appears, the only permitted action becomes either cancelling it outright or explicitly deciding to keep it for good. No more quiet, repeated dismissing without a real decision attached.\n\nThis rule works because it converts an indefinitely repeatable passive habit into a hard, one-time forced decision point that cannot simply be postponed again.',
+    realLife:
+        'Omkar deliberately set himself this exact rule and finally cancelled a genuinely unused subscription on its third flag, after two full months of passively dismissing it without any real change in behavior at all.',
+    remember:
+        'Three dismissals in a row is a genuine pattern, not a coincidence. Force yourself into a real decision on the third one.',
+    ledgrrSees:
+        'Notice how many times the same Ghost Money alert has already repeated in LEDGRR before automatically dismissing it again without thinking.',
   ),
   FinanceLesson(
     id: 'new_autopay_not_autopilot',
     level: 'Foundation',
     title: 'Auto-pay is not the same as auto-pilot',
     hook: 'Automatic payment doesn\'t mean automatic awareness.',
-    explanation: 'Setting a payment to auto-deduct is convenient, but it also removes the natural moment where you\'d normally notice the charge. Auto-pay needs a separate, deliberate check-in habit to replace that lost awareness.',
-    realLife: 'Simar had five auto-pay subscriptions and genuinely couldn\'t list them from memory when asked, because none of them ever required her attention to happen.',
-    remember: 'Automating a payment means you must automate the review of it too.',
-    ledgrrSees: 'Use LEDGRR\'s Ghost Money Detector as the review step that auto-pay itself skips.',
+    explanation:
+        'Setting a payment to auto-deduct is genuinely convenient, but it also quietly removes the one natural moment where you would normally have noticed the charge happening at all. Auto-pay genuinely needs its own separate, deliberate check-in habit built specifically to replace that lost moment of awareness — otherwise the payment simply becomes invisible.\n\nThe convenience of automation and the awareness of manual payment are two entirely separate things, and losing the second one is a real, if easily overlooked, cost of gaining the first.',
+    realLife:
+        'Simar had five separate auto-pay subscriptions running and genuinely could not list even half of them from memory when directly asked, simply because none of them had ever required her active attention to actually happen each month.',
+    remember:
+        'Automating a payment means you must also deliberately automate the review of it, or it disappears from your awareness entirely.',
+    ledgrrSees:
+        'Use LEDGRR\'s Ghost Money Detector specifically as the review step that auto-pay itself quietly skips over on its own.',
   ),
   FinanceLesson(
     id: 'new_awareness_to_cancellation',
     level: 'Foundation',
     title: 'Turning awareness into an actual cancellation',
     hook: 'Knowing about the leak and fixing the leak are separated by exactly one action.',
-    explanation: 'The gap between "I should cancel this" and actually cancelling is usually just the mild friction of opening an app and finding the cancel button. Naming that this is the only remaining step often makes it easier to just do it immediately.',
-    realLife: 'Yamini knew about an unused subscription for months before realizing cancelling it would take less than two minutes, once she actually opened the app to check.',
-    remember: 'The cancel button is rarely as far away as it feels.',
-    ledgrrSees: 'When LEDGRR flags a Ghost Money hit, treat the same session as the moment to cancel, not just notice.',
+    explanation:
+        'The genuine gap between thinking "I really should cancel this" and actually cancelling it is usually just the mild, ordinary friction of opening an app and locating the correct cancel button. Naming clearly that this really is the only remaining step often makes it noticeably easier to just go ahead and do it immediately, right in the same moment.\n\nThe imagined difficulty of cancelling is almost always larger in someone\'s head than the genuine, small effort actually required in reality.',
+    realLife:
+        'Yamini knew about a specific unused subscription for several months before finally realizing that cancelling it would take well under two minutes, once she actually opened the relevant app to check exactly what was involved.',
+    remember:
+        'The cancel button is very rarely as far away, or as complicated, as it feels from the outside.',
+    ledgrrSees:
+        'When LEDGRR flags a Ghost Money hit, treat that exact same session as the moment to actually cancel it, not just as a moment to quietly notice it again.',
   ),
   FinanceLesson(
     id: 'new_forgotten_trial',
     level: 'Foundation',
     title: 'The forgotten trial — how free trials become permanent bills',
     hook: 'Nobody signs up for a subscription. They sign up for a free trial and forget to cancel it.',
-    explanation: 'Nearly every silent recurring charge started as a free trial someone fully intended to cancel. The businesses behind these trials know memory fails, which is why the default is to auto-charge unless you opt out.',
-    realLife: 'Tanish forgot to cancel three separate trials over a few months. Eight months later, all three were still silently charging him.',
-    remember: 'The moment you start a free trial, set an actual reminder, not just "I\'ll remember."',
-    ledgrrSees: 'Log the trial end date in LEDGRR so Ghost Money Detector has a head start if you forget.',
+    explanation:
+        'Nearly every silent recurring charge that quietly drains an account started life as a completely free trial that someone genuinely intended to cancel before it converted. The businesses behind these trials know perfectly well that memory fails people reliably, which is exactly why the default setting is to auto-charge unless you take the active step of opting out.\n\nThis pattern repeats itself across streaming services, software tools, and countless apps, precisely because it works reliably from the business\'s perspective.',
+    realLife:
+        'Tanish signed up for three separate free trials over a period of several months, each time genuinely intending to cancel before the trial period ended. Eight months later, all three had quietly become permanent, ongoing charges without him noticing until he finally reviewed his statement closely.',
+    remember:
+        'The moment you start any free trial, set an actual, real reminder — not just a vague mental note to "remember."',
+    ledgrrSees:
+        'Log the exact trial end date as a note directly in LEDGRR, so Ghost Money Detector has a genuine head start on catching it later if you do happen to forget.',
   ),
   FinanceLesson(
     id: 'new_recurring_audit',
     level: 'Foundation',
     title: 'Auditing your recurring payments in 15 minutes',
     hook: 'Once a quarter, spend 15 minutes finding out what you\'re actually paying for.',
-    explanation: 'List every subscription and recurring charge next to how often you actually used each one recently. Anything unused in 30 days gets cancelled, no exceptions.',
-    realLife: 'Priyanka\'s quarterly 15-minute audit has found at least one thing worth cancelling every single time, proving the leak never fully stops on its own.',
-    remember: 'This isn\'t a one-time fix. New forgotten subscriptions keep appearing.',
-    ledgrrSees: 'Set a recurring reminder to review Ghost Money Detector every three months, whether or not it\'s flagging anything.',
+    explanation:
+        'A recurring payment audit is genuinely simple in practice: once every three months, list out every subscription and recurring charge you can currently identify, next to an honest note of how recently you actually used each one. Anything genuinely unused within the last 30 days gets cancelled outright, with no exceptions made for "maybe I will use it again someday."\n\nThis single, repeated habit, done consistently over time, catches nearly every silent financial leak well before it has a chance to become a long-term, unnoticed drain on your money.',
+    realLife:
+        'Priyanka started a genuine quarterly 15-minute audit habit after being genuinely shocked by her own forgotten subscriptions on one particular occasion. Every single audit since that first one has found at least one more thing genuinely worth cancelling, proving that the underlying leak never fully stops appearing on its own without ongoing attention.',
+    remember:
+        'This is not a one-time fix you complete and forget about. New forgotten subscriptions keep quietly appearing over time regardless.',
+    ledgrrSees:
+        'Set a genuine recurring reminder tied to your LEDGRR streak to review Ghost Money Detector every three months, whether or not it currently appears to be flagging anything.',
   ),
   FinanceLesson(
     id: 'new_your_new_networth_story',
     level: 'Mastery',
     title: 'Your new net worth story, post-ghost',
     hook: 'The money that used to leak is now money you get to direct on purpose.',
-    explanation: 'Once a recurring leak is closed, that freed-up amount deserves an explicit destination, otherwise it just gets quietly absorbed back into ordinary spending with nothing to show for it.',
-    realLife: 'After cancelling a forgotten ₹499 subscription, Aarav redirected that exact amount into his SIP the same day, rather than letting it dissolve into unplanned spending.',
-    remember: 'Freed money needs a job the moment it\'s freed, or it disappears the same way it arrived.',
-    ledgrrSees: 'When you cancel a Ghost Money hit in LEDGRR, immediately redirect that amount into a Jar or SIP category.',
+    explanation:
+        'Once a recurring financial leak is genuinely closed, that freed-up amount deserves an explicit, deliberate destination — otherwise it simply gets quietly absorbed back into ordinary, undirected spending with absolutely nothing to show for the effort of catching it in the first place.\n\nThe moment of cancelling a leak is genuinely the perfect moment to make a second decision immediately: exactly where should this freed money now go instead. Skipping that second decision is how a real win quietly disappears into nothing.',
+    realLife:
+        'After cancelling a forgotten ₹499 monthly subscription, Aarav redirected that exact freed amount into his SIP the very same day, rather than letting it dissolve gradually into unplanned, unremarkable spending over the following weeks.',
+    remember:
+        'Freed money needs a job assigned the moment it is freed, or it disappears the exact same quiet way it originally arrived.',
+    ledgrrSees:
+        'When you cancel a Ghost Money hit in LEDGRR, immediately redirect that exact amount into a Jar or an investment category the same day.',
   ),
   FinanceLesson(
     id: 'new_redirect_saved_money',
     level: 'Mastery',
     title: 'Redirecting saved money instead of letting it disappear',
     hook: 'Money saved by accident is still money that can be saved on purpose.',
-    explanation: 'When a leak stops, the natural tendency is for the freed amount to just quietly get spent elsewhere. Actively redirecting it into a specific goal turns a one-time fix into ongoing progress.',
-    realLife: 'Meher cancelled two unused subscriptions and set up an automatic transfer of the exact combined amount into her Trip Fund the same week.',
-    remember: 'A stopped leak is only a win if the freed money goes somewhere deliberate.',
-    ledgrrSees: 'Create or top up a Jar in LEDGRR the same day you cancel a Ghost Money hit.',
+    explanation:
+        'When a recurring leak genuinely stops, the natural human tendency is for the freed monthly amount to simply get quietly spent elsewhere without anyone consciously deciding that should happen. Actively and deliberately redirecting that freed amount into a specific named goal turns what was a one-time accidental fix into ongoing, compounding progress.\n\nThe difference between "I saved money this month" and "I am now saving this money every month going forward" is entirely the presence or absence of this one deliberate redirect decision.',
+    realLife:
+        'Meher cancelled two genuinely unused subscriptions in the same week and immediately set up an automatic transfer of the exact combined freed amount into her Trip Fund jar, all within the same session.',
+    remember:
+        'A stopped leak is only a genuine long-term win if the freed money goes somewhere deliberate and specific.',
+    ledgrrSees:
+        'Create or top up a Jar in LEDGRR the very same day you cancel a Ghost Money hit, rather than leaving the freed amount undirected.',
   ),
   FinanceLesson(
     id: 'new_ghost_to_growth',
     level: 'Mastery',
     title: 'From ghost money to growth money',
     hook: 'The same rupee that was leaking can be the rupee that compounds.',
-    explanation: 'Money that once silently drained your account can, once redirected into a SIP or savings goal, become the exact amount doing the opposite job, growing instead of disappearing.',
-    realLife: 'Kartik\'s freed ₹300 monthly subscription cost became his new monthly SIP amount, meaning the exact same rupee flow now built wealth instead of losing it.',
-    remember: 'The amount doesn\'t change. Only its direction does.',
-    ledgrrSees: 'Log your redirected Ghost Money savings as a recurring investment category in LEDGRR.',
+    explanation:
+        'Money that once silently drained an account through a forgotten recurring charge can, once redirected into a SIP or a genuine savings goal, become the exact same amount doing the completely opposite job — growing steadily over time instead of quietly disappearing every single month.\n\nThe underlying cash flow does not actually change at all. What changes entirely is the direction that same flow of money is now pointed in, which over years makes an enormous practical difference to the eventual outcome.',
+    realLife:
+        'Kartik\'s freed ₹300 monthly subscription cost became his new monthly SIP contribution amount, meaning the exact same rupee flow that used to vanish every month now steadily built real, growing wealth instead.',
+    remember:
+        'The actual amount rarely needs to change. Only its direction genuinely does.',
+    ledgrrSees:
+        'Log your redirected Ghost Money savings as a recurring investment category in LEDGRR so the shift in direction is genuinely visible over time.',
   ),
   FinanceLesson(
     id: 'new_vigilant_after_winning',
     level: 'Mastery',
     title: 'Staying vigilant after you\'ve already won once',
     hook: 'Fixing one leak doesn\'t mean there won\'t be a second.',
-    explanation: 'Success at catching one recurring charge can create a false sense that the problem is solved for good. New trials and subscriptions keep appearing over time, so the same vigilance needs to continue, not stop.',
-    realLife: 'Sanya felt proud after cancelling a forgotten subscription, then let her guard down for months until a new, different one quietly started.',
-    remember: 'One fixed leak doesn\'t mean the pipe is done leaking forever.',
-    ledgrrSees: 'Keep checking Ghost Money Detector in LEDGRR regularly, even after a past win.',
+    explanation:
+        'Genuine success at catching and fixing one recurring charge can create a subtle, false sense that the entire problem has now been permanently solved for good. In reality, new trials, new subscriptions, and new recurring charges keep quietly appearing over time regardless of past wins, so the same underlying vigilance genuinely needs to continue rather than relax.\n\nOne successful catch proves the system works. It does not prove the underlying problem has been eliminated for the future.',
+    realLife:
+        'Sanya felt genuinely proud after successfully cancelling a forgotten subscription, then let her guard down for several months afterward, until an entirely new and different subscription had quietly started up without her noticing at all.',
+    remember:
+        'Fixing one leak does not mean the pipe itself is done leaking forever.',
+    ledgrrSees:
+        'Keep checking Ghost Money Detector in LEDGRR on a regular, ongoing basis, even well after a past successful catch.',
   ),
   FinanceLesson(
     id: 'new_old_ghosts_return',
     level: 'Mastery',
     title: 'Why old ghosts sometimes come back',
     hook: 'Cancelling a subscription doesn\'t vaccinate you against re-subscribing later.',
-    explanation: 'A cancelled subscription can quietly return if you re-sign-up for a "limited offer" months later without remembering the original reason you cancelled it in the first place.',
-    realLife: 'Rohan cancelled a streaming service, then re-subscribed for a "free month" promo half a year later and forgot to cancel again, recreating the exact same leak.',
-    remember: 'A ghost you\'ve dealt with once can still come back if you\'re not paying attention the second time.',
-    ledgrrSees: 'Check LEDGRR\'s transaction history for previously-cancelled charges that may have quietly restarted.',
+    explanation:
+        'A previously cancelled subscription can genuinely and quietly return if you re-sign-up for a "limited time offer" or promotional deal months later, without consciously remembering the original reason you had cancelled it in the first place.\n\nThis specific pattern is easy to overlook precisely because the second subscription genuinely feels like a fresh, new decision, rather than a repeat of exactly the same mistake made once before.',
+    realLife:
+        'Rohan cancelled a streaming service entirely, then re-subscribed several months later for a tempting "free month" promotional offer and simply forgot to cancel it again afterward, recreating the exact identical financial leak he had already solved once before.',
+    remember:
+        'A ghost you have already dealt with once can genuinely still come back if you are not paying close attention the second time around.',
+    ledgrrSees:
+        'Check LEDGRR\'s transaction history periodically for any previously-cancelled charges that may have quietly restarted without you noticing.',
   ),
   FinanceLesson(
     id: 'new_fixed_leak_funded_goal',
     level: 'Mastery',
     title: 'Turning a fixed leak into a funded goal',
     hook: 'Every leak you close is a goal waiting to be named.',
-    explanation: 'Rather than treating a fixed subscription leak as just "one less bad thing," treat it as freed-up money looking for a specific, positive purpose, an emergency fund, a trip, an investment.',
-    realLife: 'Farhan named his freed-up ₹250 monthly leak specifically as his "concert fund," giving the saved money a clear identity instead of letting it blend into general spending.',
-    remember: 'Give freed money a name and a purpose. Unnamed money gets spent.',
-    ledgrrSees: 'Create a specific Jar or Event Wallet in LEDGRR named after what your freed Ghost Money is now funding.',
+    explanation:
+        'Rather than treating a fixed subscription leak as simply "one less bad thing happening now," it is genuinely more powerful to treat it as freed-up money actively looking for a specific, positive, named purpose — an emergency fund, a trip, an investment, anything concrete rather than nothing at all.\n\nNaming the destination transforms a purely negative fix (stopping a bad thing) into a positive, forward-looking action (building a good thing), which tends to feel far more motivating and sustainable over time.',
+    realLife:
+        'Farhan named his freed-up ₹250 monthly leak specifically as his "concert fund," giving the newly saved money a clear, tangible identity instead of letting it simply blend anonymously back into his general, undirected spending.',
+    remember:
+        'Give freed money an actual name and a specific purpose. Unnamed money tends to quietly get spent.',
+    ledgrrSees:
+        'Create a specific Jar or Event Wallet in LEDGRR, named directly after whatever your freshly-freed Ghost Money is now genuinely funding.',
   ),
   FinanceLesson(
     id: 'new_other_dangerous_category',
     level: 'Foundation',
     title: 'Why "Other" is the most dangerous category in your budget',
     hook: '"Other" isn\'t a category. It\'s a category you haven\'t looked at yet.',
-    explanation: 'A bloated "Other" category means a meaningful chunk of your spending is genuinely invisible to you. The spending already happened either way, the only difference is whether you can see the pattern.',
-    realLife: 'Om noticed "Other" was consistently his third-largest category, and found it was almost entirely food delivery he\'d been too lazy to categorize properly.',
-    remember: 'If "Other" is bigger than any named category, that\'s the story you\'re missing.',
-    ledgrrSees: 'Check your category breakdown in LEDGRR Statistics for an oversized "Other" slice.',
+    explanation:
+        'A genuinely bloated "Other" category quietly means a meaningful portion of your overall spending has become effectively invisible to you, even though the spending itself has already, definitely happened either way. The only real difference between a healthy category system and a bloated "Other" bucket is whether you can actually see the underlying pattern or not.\n\nAn oversized "Other" category is rarely a sign that your spending is unusually chaotic — it is far more often simply a sign that your labeling habit has quietly fallen behind your actual spending habit.',
+    realLife:
+        'Om noticed his "Other" category was consistently his third-largest expense category every single month, and upon finally investigating closely, found it was almost entirely food delivery he had simply been too rushed or too lazy to properly categorize at the time.',
+    remember:
+        'If "Other" is genuinely bigger than any of your named categories, that is precisely the real story you are currently missing.',
+    ledgrrSees:
+        'Check your category breakdown directly in LEDGRR Statistics specifically for an unusually oversized "Other" slice.',
   ),
   FinanceLesson(
     id: 'new_15min_recategorization',
     level: 'Foundation',
     title: 'The 15-minute recategorization habit',
     hook: 'Fixing bad labels takes less time than living with them for a year.',
-    explanation: 'Once a month, spend 15 minutes reviewing anything logged under "Other" and assign it a real category. This single habit prevents your biggest blind spot from growing indefinitely.',
-    realLife: 'Ishaan\'s monthly 15-minute recategorization session consistently revealed that most of his "Other" spend was actually one specific habit he\'d never named properly.',
-    remember: 'A recurring 15-minute habit beats a once-a-year overwhelming cleanup.',
-    ledgrrSees: 'Review and edit uncategorized or "Other" transactions in LEDGRR monthly.',
+    explanation:
+        'Setting aside 15 minutes once a month specifically to review anything logged under "Other" and properly reassign it a real, specific category is a genuinely small habit that prevents your single biggest blind spot from quietly growing indefinitely, month after month.\n\nThe recurring nature of this habit matters more than any single cleanup session, since new uncategorized transactions keep arriving every single month regardless of how thoroughly you cleaned up the last one.',
+    realLife:
+        'Ishaan\'s monthly 15-minute recategorization session consistently revealed that most of his "Other" spending was actually one single specific habit he had genuinely never bothered naming properly before, month after month.',
+    remember:
+        'A small, recurring 15-minute habit genuinely beats one overwhelming once-a-year cleanup attempt.',
+    ledgrrSees:
+        'Review and properly edit any uncategorized or "Other" transactions inside LEDGRR on a genuine monthly basis.',
   ),
   FinanceLesson(
     id: 'new_biggest_unlabeled_category',
     level: 'Foundation',
     title: 'What your biggest unlabeled category is really telling you',
     hook: 'The things you don\'t bother labeling are often the things you don\'t want to look at closely.',
-    explanation: 'People often leave a category vague specifically when the spending feels a little uncomfortable to name directly. Being honest about what "Other" actually contains is often more revealing than any other category.',
-    realLife: 'Zara realized her large "Other" category was almost entirely late-night impulse purchases she\'d been subconsciously avoiding naming directly.',
-    remember: 'Vague labels often hide the spending you most need to see clearly.',
-    ledgrrSees: 'Be specific when categorizing in LEDGRR, even when the honest label feels uncomfortable.',
+    explanation:
+        'People often leave a spending category deliberately vague specifically at the exact moments when the underlying spending feels a little uncomfortable to name directly and honestly. Being genuinely honest about what "Other" actually, specifically contains is frequently more revealing than reviewing any of your properly named categories.\n\nVague labeling is rarely a purely random accident — it often quietly protects the labeler from having to consciously confront a pattern they already suspect exists.',
+    realLife:
+        'Zara eventually realized her unusually large "Other" category was almost entirely made up of late-night impulse purchases that she had been subconsciously avoiding naming directly and specifically for months.',
+    remember:
+        'Vague labels often quietly hide exactly the spending you most genuinely need to see clearly.',
+    ledgrrSees:
+        'Be genuinely specific when categorizing transactions in LEDGRR, even in moments when the honest, accurate label feels a little uncomfortable to select.',
   ),
   FinanceLesson(
     id: 'new_categories_matching_life',
     level: 'Foundation',
     title: 'Building categories that actually match your life',
     hook: 'Generic categories fit nobody perfectly. Custom ones fit you.',
-    explanation: 'Default expense categories are built for an average user, not you specifically. Renaming or adding categories that reflect your actual recurring spending patterns makes tracking meaningfully more useful.',
-    realLife: 'Riya added a specific "hostel mess extras" category since it was a recurring pattern the default categories didn\'t capture well, immediately making her spending clearer.',
-    remember: 'A category system that doesn\'t match your real life will always feel slightly wrong.',
-    ledgrrSees: 'Use LEDGRR\'s category options thoughtfully, picking or creating ones that genuinely reflect your spending.',
+    explanation:
+        'Default expense categories in any app are necessarily built for an imagined average user, not specifically for your own real, particular life and habits. Renaming existing categories or thoughtfully adding new ones that genuinely reflect your actual recurring spending patterns makes the entire habit of tracking meaningfully more useful and accurate over time.\n\nA category system that does not genuinely match your real life will always feel slightly, persistently wrong, even if you cannot immediately articulate exactly why it feels that way.',
+    realLife:
+        'Riya added a specific "hostel mess extras" category since it represented a genuinely recurring pattern that none of the default categories had captured well, which immediately and noticeably made her overall spending picture clearer.',
+    remember:
+        'A category system that does not genuinely match your real life will always feel a little bit wrong, no matter how you use it.',
+    ledgrrSees:
+        'Use LEDGRR\'s category options thoughtfully, deliberately picking or creating ones that genuinely reflect your own actual, specific spending patterns.',
   ),
-  FinanceLesson(
+    FinanceLesson(
     id: 'new_cost_of_vague_labels',
     level: 'Foundation',
     title: 'The cost of vague labels',
     hook: 'A vague label costs you the insight the data could have given you.',
-    explanation: 'Logging a transaction as "misc" or "stuff" technically tracks the money, but throws away the useful information about where it actually went, defeating much of the point of tracking at all.',
-    realLife: 'Dev logged transactions vaguely for months, only to realize at review time that the vague labels told him almost nothing useful about his habits.',
-    remember: 'Tracking money without labeling it specifically is only half the job.',
-    ledgrrSees: 'Take the extra few seconds in LEDGRR to pick the accurate category, not the fastest one.',
+    explanation:
+        'Logging a transaction under a vague label like "misc" or "stuff" technically does track the money leaving your account, but it genuinely throws away almost all the useful information about exactly where that money actually went, which defeats a large part of the entire point of tracking in the first place.\n\nThe extra few seconds it takes to pick an accurate, specific category is a small, one-time cost that pays off every single time you later look back at your Statistics and want the numbers to actually mean something.',
+    realLife:
+        'Dev logged his transactions vaguely for several months in a row, only to realize at his first real review session that the vague labels told him almost nothing genuinely useful about his own actual spending habits, despite the money itself having been tracked accurately the entire time.',
+    remember:
+        'Tracking money without also labeling it specifically and accurately is genuinely only half of the actual job.',
+    ledgrrSees:
+        'Take the extra few seconds inside LEDGRR to pick the genuinely accurate category, not simply whichever one happens to be fastest to tap.',
   ),
   FinanceLesson(
     id: 'new_i_dont_know_where_it_went',
     level: 'Foundation',
     title: 'Turning "I don\'t know where it went" into an answer',
     hook: 'That feeling is fixable. It just requires looking, not guessing.',
-    explanation: 'The uneasy feeling of not knowing where money went is almost always solvable by actually reviewing labeled data, rather than continuing to guess or feel vaguely anxious about it.',
-    realLife: 'Nisha finally sat down and reviewed her actual categorized spending instead of just worrying about it, and found a clear, fixable answer within ten minutes.',
-    remember: 'The anxious feeling of not knowing is usually solved faster than expected, once you actually look.',
-    ledgrrSees: 'Open LEDGRR Statistics the next time you feel that "where did it all go" feeling, instead of just wondering.',
+    explanation:
+        'The genuinely uneasy, nagging feeling of not knowing exactly where your money went is almost always solvable simply by actually sitting down and reviewing your labeled data properly, rather than continuing to quietly guess or feel vaguely anxious about it indefinitely.\n\nThe anxiety itself often persists far longer than the actual investigation would take, purely because most people avoid opening the numbers up and looking directly, rather than because the answer is genuinely hard to find once you do.',
+    realLife:
+        'Nisha finally sat down one evening and properly reviewed her actual categorized spending instead of continuing to simply worry vaguely about it, and found a clear, genuinely fixable answer within about ten minutes of actually looking.',
+    remember:
+        'The anxious feeling of not knowing is usually resolved far faster than expected, the moment you actually sit down and look.',
+    ledgrrSees:
+        'Open LEDGRR Statistics the very next time you notice that specific "where did it all go" feeling arriving, instead of continuing to simply wonder about it.',
   ),
   FinanceLesson(
     id: 'new_24hr_rule',
     level: 'Clarity',
     title: 'The 24-hour rule for impulse purchases',
     hook: 'If you still want it tomorrow, buy it tomorrow.',
-    explanation: 'For any non-essential purchase above a threshold you set, wait 24 hours before buying. This separates genuine desire from a passing emotional spike, since only one survives a full day.',
-    realLife: 'Simran committed to waiting 24 hours on anything over ₹500, and found she genuinely didn\'t want most of those items the next day.',
-    remember: 'Urgency is manufactured. Genuine desire survives a day.',
-    ledgrrSees: 'Before logging an impulse buy in LEDGRR, ask if you\'d have logged it yesterday too.',
+    explanation:
+        'For any genuinely non-essential purchase above a personal threshold amount you decide on in advance, deliberately waiting a full 24 hours before actually buying it creates a clean separation between a passing emotional spike and a genuine, lasting desire, since only real desire reliably survives an entire day intact.\n\nThe waiting period itself costs nothing except a small amount of patience, while genuinely protecting against the large majority of purchases that would otherwise have been quietly regretted within a day or two.',
+    realLife:
+        'Simran committed firmly to waiting a full 24 hours on anything priced over ₹500, and found that she genuinely no longer wanted most of those specific items by the very next day, once the initial emotional urgency had naturally faded.',
+    remember:
+        'Urgency around a purchase is very often manufactured. Genuine desire reliably survives a full day intact.',
+    ledgrrSees:
+        'Before logging a clear impulse buy in LEDGRR, honestly ask yourself whether you would genuinely have wanted to log this exact same purchase yesterday too.',
   ),
   FinanceLesson(
     id: 'new_replace_reward',
     level: 'Clarity',
     title: 'Replacing the reward, not the spending',
     hook: 'You don\'t need to stop rewarding yourself. You need a reward that doesn\'t cost money every time.',
-    explanation: 'Comfort spending is often a genuine reward system where the reward happens to cost money. Finding a non-spending reward with the same emotional payoff removes the cost without removing the comfort.',
-    realLife: 'Yamini replaced her post-stress food delivery order with a specific call to her best friend, finding the relief nearly identical, minus the recurring cost.',
-    remember: 'The craving is for relief, not specifically for spending.',
-    ledgrrSees: 'Notice which categories spike right after a hard day in LEDGRR, that\'s your current reward system.',
+    explanation:
+        'Comfort spending is very often a genuine, functioning reward system where the actual reward simply happens to cost money each time it is triggered. Deliberately finding a non-spending reward that delivers a similarly genuine emotional payoff removes the ongoing cost entirely, without removing the underlying comfort or relief you were genuinely seeking.\n\nThe goal is never to eliminate the reward itself, since the underlying need for comfort or relief is completely real and valid — the goal is simply to find a version of that same reward that does not quietly drain money every single time it happens.',
+    realLife:
+        'Yamini deliberately replaced her habitual post-stress food delivery order with a specific phone call to her best friend instead, and found the genuine emotional relief nearly identical in practice, minus the recurring financial cost that used to come with it.',
+    remember:
+        'The underlying craving is genuinely for relief, not specifically for the act of spending money itself.',
+    ledgrrSees:
+        'Notice which specific spending categories tend to spike right after a genuinely hard day in your LEDGRR history — that pattern is your current, real reward system in action.',
   ),
   FinanceLesson(
     id: 'new_what_buying_comfort',
     level: 'Clarity',
     title: 'What you\'re actually buying when you buy comfort',
     hook: 'Nobody actually wants the dessert. They want the five minutes where nothing else matters.',
-    explanation: 'Naming the real thing you\'re seeking underneath a comfort purchase — distraction, control, a small win — makes it possible to look for that thing directly, instead of routing every version of it through spending.',
-    realLife: 'Rajat realized his late-night shopping was really about wanting control on chaotic days, and found free ways to create that same feeling instead.',
-    remember: 'Ask what you\'re really buying. It\'s rarely the item in your cart.',
-    ledgrrSees: 'When reviewing a comfort purchase in LEDGRR, write one honest word for what you were actually seeking.',
+    explanation:
+        'Deliberately naming the real underlying thing you are actually seeking beneath a comfort purchase — distraction, a sense of control, a small quick win, a moment of pure focus — makes it genuinely possible to go looking for that specific thing directly, rather than continuing to route every single version of that need through spending money.\n\nMost comfort purchases are standing in for something else entirely that has very little to do with the actual item being purchased.',
+    realLife:
+        'Rajat eventually realized his habitual late-night shopping sessions were really, underneath everything, about wanting to feel a sense of control during otherwise chaotic days, and found several genuinely free alternative ways to create that exact same feeling for himself instead.',
+    remember:
+        'Ask yourself honestly what you are actually buying underneath the purchase. It is very rarely the literal item sitting in your cart.',
+    ledgrrSees:
+        'When reviewing a comfort purchase logged in LEDGRR, try writing one single honest word describing what you were actually genuinely seeking in that moment.',
   ),
   FinanceLesson(
     id: 'new_friday_spike',
     level: 'Foundation',
     title: 'The Friday spike — why weekends cost more than you plan for',
     hook: 'Your budget assumes every day costs the same. Weekends disagree.',
-    explanation: 'Weekend spending often silently dominates a monthly budget without being explicitly planned for, since Friday-to-Sunday plans tend to be decided socially and spontaneously rather than budgeted in advance.',
-    realLife: 'Ibrahim discovered his weekends alone accounted for over half his monthly spend, despite being only two of seven days each week.',
-    remember: 'If weekends aren\'t explicitly planned for, they\'ll quietly eat the rest of your budget.',
-    ledgrrSees: 'Check your LEDGRR transaction dates for a Friday-to-Sunday clustering pattern.',
+    explanation:
+        'Weekend spending very often silently dominates an entire monthly budget without ever being explicitly, deliberately planned for in advance, largely because Friday-to-Sunday plans tend to get decided socially and spontaneously in the moment, rather than being budgeted for ahead of time the way weekday spending often is.\n\nA budget built around an assumption of roughly equal daily spending will consistently and predictably fail to account for this very common, very real weekend concentration effect.',
+    realLife:
+        'Ibrahim discovered, once he actually looked closely at his own numbers, that his weekends alone accounted for well over half of his entire monthly spending, despite representing only two out of every seven days each week.',
+    remember:
+        'If weekends are not explicitly, deliberately planned for in advance, they will very quietly eat the rest of your entire monthly budget.',
+    ledgrrSees:
+        'Check your LEDGRR transaction dates specifically for a noticeable Friday-to-Sunday clustering pattern across a typical month.',
   ),
   FinanceLesson(
     id: 'new_plan_fun_not_overspend',
     level: 'Clarity',
     title: 'Planning fun without planning to overspend',
     hook: 'The goal isn\'t less fun. It\'s fun that doesn\'t derail the rest of your month.',
-    explanation: 'Deciding roughly how much to spend socially before the weekend starts, rather than reacting to plans as they come, keeps enjoyment intact while protecting the budget.',
-    realLife: 'Kavya started setting a rough weekend spending number every Friday morning, and found she enjoyed her weekends just as much while staying within her month.',
-    remember: 'A little planning before the fun starts protects the fun itself.',
-    ledgrrSees: 'Set a rough weekend spending limit for yourself and track it against LEDGRR\'s weekend transactions.',
+    explanation:
+        'Deciding roughly how much you are comfortable spending socially before the weekend even begins, rather than simply reacting to plans as they arrive one by one, genuinely keeps the actual enjoyment fully intact while still protecting the rest of your monthly budget from unplanned damage.\n\nA small amount of upfront planning does not meaningfully reduce spontaneity or fun — it simply removes the anxious uncertainty of not knowing what a weekend actually cost until well after the fact.',
+    realLife:
+        'Kavya started setting a rough, loose weekend spending number for herself every single Friday morning, and found she genuinely enjoyed her weekends just as much as before, while consistently staying comfortably within her overall monthly budget.',
+    remember:
+        'A small amount of planning done before the fun actually starts genuinely protects the fun itself, rather than limiting it.',
+    ledgrrSees:
+        'Set yourself a rough personal weekend spending limit and track it directly against your actual LEDGRR weekend transactions as the days unfold.',
   ),
   FinanceLesson(
     id: 'new_weekday_discipline_weekend_blind',
     level: 'Clarity',
     title: 'Weekday discipline, weekend blindness',
     hook: 'Discipline that only shows up five days a week isn\'t discipline for the whole budget.',
-    explanation: 'It\'s common to feel financially disciplined based on weekday behavior alone, while weekend spending quietly runs on a completely different, unmonitored set of habits.',
-    realLife: 'Aryan felt proud of his careful weekday spending, not realizing his weekends alone were undoing most of that careful discipline.',
-    remember: 'Discipline only counts if it covers the whole week, not just the convenient part.',
-    ledgrrSees: 'Compare your LEDGRR weekday versus weekend spending totals honestly.',
+    explanation:
+        'It is genuinely quite common to feel financially disciplined based purely on careful weekday behavior alone, while weekend spending quietly runs on an entirely separate, completely unmonitored set of habits that never actually gets the same level of honest scrutiny.\n\nA feeling of overall discipline built on only five out of seven days is fundamentally incomplete, since the remaining two days can easily undo a substantial portion of the careful progress made during the rest of the week.',
+    realLife:
+        'Aryan genuinely felt proud of his careful, disciplined weekday spending habits, without initially realizing that his weekends alone were quietly undoing most of that same careful discipline every single week.',
+    remember:
+        'Discipline only genuinely counts toward your overall budget if it actually covers the whole week, not just the more convenient part of it.',
+    ledgrrSees:
+        'Honestly compare your LEDGRR weekday spending totals against your weekend totals to see the real, complete picture.',
   ),
   FinanceLesson(
     id: 'new_treat_yourself_cost',
     level: 'Clarity',
     title: 'The cost of "treating yourself" every week',
     hook: 'A weekly treat is still a monthly habit with a monthly price tag.',
-    explanation: 'A small weekly "treat" feels harmless in the moment, but multiplied by four or five weekends a month, it becomes a real, recurring line item worth actually seeing as one number.',
-    realLife: 'Meher\'s "small" ₹400 weekly treat added up to ₹1,600–₹2,000 a month, a number that surprised her once she saw it totaled.',
-    remember: 'Multiply your "small" weekly habit by four before deciding it\'s small.',
-    ledgrrSees: 'Total your recurring weekend treat category in LEDGRR Statistics across a full month.',
+    explanation:
+        'A small weekly "treat" genuinely feels harmless and insignificant in any single moment, but once multiplied out across four or five weekends in a typical month, it quietly becomes a real, recurring line item that is genuinely worth seeing as one single combined number rather than several separate small ones.\n\nThe psychological trick here is that each individual instance feels too small to matter, while the honest monthly total often tells a genuinely different, more significant story.',
+    realLife:
+        'Meher\'s seemingly "small" ₹400 weekly treat quietly added up to somewhere between ₹1,600 and ₹2,000 every single month once properly totaled — a number that genuinely surprised her once she actually sat down and calculated it honestly.',
+    remember:
+        'Multiply your "small" weekly habit by four before deciding, with real confidence, that it is genuinely small.',
+    ledgrrSees:
+        'Total your recurring weekend treat category directly inside LEDGRR Statistics across one full month to see the real, honest number.',
   ),
   FinanceLesson(
     id: 'new_weekend_cap',
     level: 'Clarity',
     title: 'Setting a weekend cap that still feels like fun',
     hook: 'A limit isn\'t the enemy of fun. An unplanned overspend is.',
-    explanation: 'Setting a specific weekend spending cap, decided in advance, doesn\'t reduce enjoyment, it just prevents the guilt and damage-control that comes from unplanned overspending discovered afterward.',
-    realLife: 'Farah set a ₹1,000 weekend cap and found she could still fully enjoy her plans, just with an awareness that made the following week less stressful.',
-    remember: 'A planned limit protects fun. An unplanned overspend just delays the stress.',
-    ledgrrSees: 'Set a personal weekend cap and check it against your live LEDGRR weekend total as you go.',
+    explanation:
+        'Setting a specific weekend spending cap decided calmly in advance genuinely does not reduce your actual enjoyment of the weekend itself — it simply prevents the guilt and stressful damage-control that typically follows an unplanned overspend only discovered well after the fact, once the fun has already ended.\n\nA cap set in advance changes the entire emotional experience of spending from anxious and reactive to calm and intentional, even when the total amount spent ends up being roughly similar either way.',
+    realLife:
+        'Farah set herself a firm ₹1,000 weekend cap and found she could still genuinely, fully enjoy her usual plans, but now carried an underlying awareness throughout that made the following week noticeably less stressful than usual.',
+    remember:
+        'A planned limit genuinely protects your fun. An unplanned overspend simply delays the resulting stress to later.',
+    ledgrrSees:
+        'Set yourself a personal weekend cap and check it directly against your live, running LEDGRR weekend total as the weekend actually unfolds.',
   ),
   FinanceLesson(
     id: 'new_midmonth_cliff',
     level: 'Foundation',
     title: 'The mid-month cliff — why week one decides your whole month',
     hook: 'By the 10th, you already know how the 30th is going to feel.',
-    explanation: 'Front-loaded spending is really a first-week problem with month-long consequences. The fix is specifically protecting the first week from absorbing spending meant for the whole month.',
-    realLife: 'Rehan consistently spent nearly half his allowance in the first five days. Capping his first-week spending specifically removed the anxious back half of his month entirely.',
-    remember: 'Watch your first week like it\'s the whole month in miniature.',
-    ledgrrSees: 'Check your transaction dates in LEDGRR Statistics for early-month clustering.',
+    explanation:
+        'Heavily front-loaded spending is genuinely, at its core, a first-week problem that simply carries month-long consequences forward with it. The most effective fix is therefore specifically protecting that critical first week from absorbing spending that was actually meant to be spread out across the entire month.\n\nOnce the first week consumes a disproportionate share of the monthly budget, the remaining three weeks are mathematically forced into an uncomfortable, anxious scramble that could have been entirely avoided with slightly better early pacing.',
+    realLife:
+        'Rehan consistently spent nearly half of his entire monthly allowance within just the first five days, every single month. Deliberately capping his specific first-week spending removed the genuinely anxious, tight second half of his month almost entirely.',
+    remember:
+        'Watch your first week of any month closely, as if it were the whole month playing out in miniature.',
+    ledgrrSees:
+        'Check your transaction dates directly inside LEDGRR Statistics for any noticeable early-month spending clustering pattern.',
   ),
   FinanceLesson(
     id: 'new_envelope_method',
     level: 'Foundation',
     title: 'The envelope method — giving every rupee a job before you spend it',
     hook: 'Money without a job assigned to it gets spent on whatever shows up first.',
-    explanation: 'Mentally dividing income into named pots the moment it arrives creates a natural pause before spending from the wrong one.',
-    realLife: 'Farah split her allowance into named categories the day it arrived, and noticed herself hesitating before overspending from the wrong envelope.',
-    remember: 'Money without an assigned job is the easiest money to misspend.',
-    ledgrrSees: 'Use LEDGRR\'s categories as your envelopes, with a rough monthly limit per category.',
+    explanation:
+        'Mentally dividing your income into clearly named pots the very moment it actually arrives creates a genuine, natural pause before spending from the wrong one, since each rupee now has a specific, assigned job rather than simply sitting undesignated in one large, undifferentiated pool.\n\nThis classic budgeting method works precisely because it forces a small moment of conscious awareness at the point of spending, rather than only revealing the consequences much later when the month\'s totals are finally reviewed.',
+    realLife:
+        'Farah started splitting her allowance into clearly named categories on the very day it arrived each month, and noticed herself genuinely hesitating before overspending from the wrong specific envelope, simply because the boundary now actually existed in her mind.',
+    remember:
+        'Money without an assigned job is genuinely the easiest kind of money to accidentally misspend.',
+    ledgrrSees:
+        'Use LEDGRR\'s categories as your own personal envelopes, setting a rough monthly limit for each one as your actual guide.',
   ),
   FinanceLesson(
     id: 'new_weekly_reset',
     level: 'Foundation',
     title: 'The weekly reset — pacing spending instead of front-loading it',
     hook: 'A monthly budget with no weekly checkpoints is just a number you\'ll ignore until it\'s too late.',
-    explanation: 'Breaking a monthly budget into weekly chunks creates frequent checkpoints, so a bad week gets caught and corrected in time, instead of discovered as a bad month after the fact.',
-    realLife: 'Ibrahim split his budget into four weekly targets and caught an overspending week early enough to adjust the next one.',
-    remember: 'A monthly number is too slow to help you. A weekly number is fast enough.',
-    ledgrrSees: 'Check your LEDGRR Spent total every few days instead of waiting for the month to close.',
+    explanation:
+        'Deliberately breaking a single monthly budget down into four smaller weekly chunks creates genuinely frequent checkpoints along the way, so that a single bad week gets caught and corrected early enough to actually matter, rather than only being discovered as part of an already-bad month once it is far too late to meaningfully fix.\n\nA purely monthly number is simply too slow and too distant to meaningfully influence behavior in the moment. A weekly number is fast enough to actually still change what happens next.',
+    realLife:
+        'Ibrahim split his overall monthly budget into four distinct weekly targets and, as a direct result, caught a genuinely overspending week early enough to meaningfully adjust his following week\'s spending in response.',
+    remember:
+        'A purely monthly number is too slow to genuinely help you in the moment. A weekly number is fast enough to actually matter.',
+    ledgrrSees:
+        'Check your running LEDGRR "Spent" total every few days throughout the month, rather than only waiting patiently for the month to fully close.',
   ),
-  FinanceLesson(
+    FinanceLesson(
     id: 'new_fair_share_split',
     level: 'Foundation',
     title: 'Splitting bills without resentment — the fair-share method',
     hook: 'Splitting evenly isn\'t always splitting fairly.',
-    explanation: 'Splitting a bill based on what each person actually consumed takes thirty extra seconds and prevents the slow resentment that equal-splitting habits build over time.',
-    realLife: 'Nihal\'s group switched to itemized splitting, and the quiet resentment he\'d been carrying for months disappeared entirely.',
-    remember: 'A thirty-second calculation now prevents months of silent resentment later.',
-    ledgrrSees: 'Log your actual share of a group bill in LEDGRR, not the even split.',
+    explanation:
+        'Splitting a shared bill based on what each individual person actually ordered or consumed takes only about thirty extra seconds of simple arithmetic, and it genuinely prevents the slow, quiet resentment that purely equal-splitting habits tend to build up gradually over many repeated occasions.\n\nEqual splitting feels simpler in the moment, but when one person consistently orders less than everyone else, the small unfairness compounds silently over time into a genuine, if rarely voiced, source of friction.',
+    realLife:
+        'Nihal\'s regular friend group eventually switched over to itemized, actual-consumption splitting, and the quiet resentment he realized he had been carrying for several months simply disappeared entirely once the system genuinely felt fair to everyone involved.',
+    remember:
+        'A thirty-second calculation done in the moment genuinely prevents months of accumulated, silent resentment later on.',
+    ledgrrSees:
+        'Log your own actual, specific share of any group bill in LEDGRR, rather than automatically logging the simple even split.',
   ),
   FinanceLesson(
     id: 'new_saying_no_plan',
     level: 'Foundation',
     title: 'Saying no to a plan you can\'t afford',
     hook: 'Every yes to a plan you can\'t afford is a no to something else that mattered more.',
-    explanation: 'A clear, simple no to an expensive plan costs nothing socially in most cases, while agreeing and privately scrambling costs both money and stress.',
-    realLife: 'Lavanya started simply saying "I\'m skipping this one" without over-explaining, and nobody reacted the way she\'d feared.',
-    remember: 'A clear no costs you nothing. A yes you can\'t afford costs you money and stress.',
-    ledgrrSees: 'Check your True Balance in LEDGRR before agreeing to an expensive plan.',
+    explanation:
+        'A clear, simple, direct no to an expensive plan genuinely costs nothing socially in the vast majority of real situations, while quietly agreeing to attend and then privately scrambling financially afterward costs both real money and real, lasting stress.\n\nMost people significantly overestimate how much a simple, honest decline will actually bother their friends, when in reality most friends genuinely do not think about it nearly as much or as long as the person declining fears they will.',
+    realLife:
+        'Lavanya started simply saying "I am going to skip this one" without offering any lengthy explanation or justification, and found that nobody actually reacted anywhere near as negatively as she had originally, anxiously feared they might.',
+    remember:
+        'A clear no costs you genuinely nothing lasting. A yes you truly cannot afford costs you both real money and real stress.',
+    ledgrrSees:
+        'Check your actual True Balance directly inside LEDGRR before agreeing to any noticeably expensive upcoming plan.',
   ),
   FinanceLesson(
     id: 'new_cost_keeping_up',
     level: 'Clarity',
     title: 'The cost of keeping up with your friend group',
     hook: 'Your friends\' spending habits are not your budget.',
-    explanation: 'Spending to match a friend group\'s pace rarely feels like a choice, but everyone in that group may have very different real incomes behind the scenes.',
-    realLife: 'Rudra strained to match his friend group\'s restaurant habits, not realizing two of them had part-time jobs funding that exact lifestyle.',
-    remember: 'You\'re never actually competing with your friends\' spending, only your own real numbers.',
-    ledgrrSees: 'Track your social spending as its own category in LEDGRR to see its real size honestly.',
+    explanation:
+        'Spending money specifically to match the pace and habits of a friend group very rarely feels like a genuinely conscious, deliberate choice in the moment, but the uncomfortable reality is that everyone within that same group may be operating on very different real incomes entirely, invisible from the outside.\n\nComparing your own spending directly to your friends\' visible spending is comparing yourself to a number you genuinely do not have full access to, since you rarely know their actual complete financial picture behind the scenes.',
+    realLife:
+        'Rudra had been quietly straining financially to match his friend group\'s regular restaurant habits, without initially realizing that two of them had part-time jobs specifically funding that exact shared lifestyle, which he did not have himself.',
+    remember:
+        'You are never actually competing directly against your friends\' spending — only against your own real, personal numbers.',
+    ledgrrSees:
+        'Track your social spending as its own distinct category in LEDGRR so you can see its genuine, honest size clearly over time.',
   ),
   FinanceLesson(
     id: 'new_enjoy_going_out',
     level: 'Clarity',
     title: 'How to enjoy going out without derailing your month',
     hook: 'The goal isn\'t to stop going out. It\'s to go out on purpose.',
-    explanation: 'Deciding roughly how much social spending fits your month before the month begins lets you say yes to plans without the quiet dread of wondering afterward what it cost you.',
-    realLife: 'Vidya set a loose monthly social budget upfront and found she enjoyed her outings more, precisely because she wasn\'t privately worrying about the cost each time.',
-    remember: 'Deciding your social budget in advance turns going out from a risk into a plan.',
-    ledgrrSees: 'Set a rough monthly social spending target and track it honestly in LEDGRR\'s categories.',
+    explanation:
+        'Deciding roughly how much social spending genuinely fits comfortably within your overall month before that month even begins lets you say yes to spontaneous plans without the quiet, nagging dread of wondering afterward exactly what each outing actually cost you.\n\nThe anxiety around social spending very often comes not from the spending itself, but from the complete absence of any prior plan to compare it against once the bill actually arrives.',
+    realLife:
+        'Vidya set herself a loose, rough monthly social spending target at the very start of the month and found she genuinely enjoyed her various outings noticeably more, specifically because she was no longer privately worrying about the true cost every single time.',
+    remember:
+        'Deciding your rough social budget in advance genuinely turns going out from an anxious risk into a comfortable, pre-approved plan.',
+    ledgrrSees:
+        'Set yourself a rough monthly social spending target and honestly track it against LEDGRR\'s actual categorized spending data.',
   ),
   FinanceLesson(
     id: 'new_untracked_income_disappears',
     level: 'Clarity',
     title: 'Why untracked income disappears faster than tracked income',
     hook: 'Money you didn\'t plan for is money you don\'t notice leaving either.',
-    explanation: 'Irregular income that isn\'t logged separately tends to blend invisibly into regular spending, disappearing without ever being consciously allocated toward anything.',
-    realLife: 'Kiara\'s freelance payments quietly vanished into daily spending until she started logging them as a distinct category and could finally see where they actually went.',
-    remember: 'Untracked money isn\'t saved by accident. It\'s spent by default.',
-    ledgrrSees: 'Log any side income in LEDGRR under its own category, separate from your primary income.',
+    explanation:
+        'Irregular income that never gets logged as its own separate, distinct category tends to blend invisibly into regular, everyday spending, effectively disappearing without ever having been consciously and deliberately allocated toward anything specific in particular.\n\nMoney that arrives unexpectedly seems to carry an unspoken permission to be spent just as unexpectedly, purely because it was never given a proper name or destination the moment it actually arrived.',
+    realLife:
+        'Kiara\'s occasional freelance payments used to quietly vanish into her everyday daily spending until she deliberately started logging them as their own distinct category, and could finally, clearly see exactly where that money had actually been going all along.',
+    remember:
+        'Untracked money is genuinely not saved by pure accident. It is simply spent by quiet, unnoticed default.',
+    ledgrrSees:
+        'Log any side income you receive in LEDGRR under its own distinct category, kept clearly separate from your regular primary income.',
   ),
   FinanceLesson(
     id: 'new_side_income_own_home',
     level: 'Clarity',
     title: 'Giving your side income its own home',
     hook: 'Money without a category becomes money without a purpose.',
-    explanation: 'Side income that gets its own dedicated tracking category is far easier to plan around, tax correctly, and eventually direct toward specific goals than income that\'s mixed in with everything else.',
-    realLife: 'Ayaan started logging his freelance income separately, which made tax season and budgeting both dramatically simpler than the year before.',
-    remember: 'Give irregular income its own home from day one, not after a year of mixing it up.',
-    ledgrrSees: 'Create a dedicated side-income category in LEDGRR and log every payment there.',
+    explanation:
+        'Side income that is deliberately given its own dedicated tracking category is genuinely far easier to plan realistically around, calculate taxes correctly on, and eventually direct purposefully toward specific goals, compared to income that simply gets mixed in indistinguishably with everything else you earn.\n\nThe small upfront effort of separating this income properly from the very beginning pays off substantially later, particularly at moments like tax season or when applying for any kind of loan.',
+    realLife:
+        'Ayaan began logging his freelance income entirely separately from day one, which made both tax season and his regular monthly budgeting dramatically simpler compared to the previous year, when everything had been mixed together indistinguishably.',
+    remember:
+        'Give any irregular income its own dedicated home right from the very first payment, not after an entire year of mixing it in.',
+    ledgrrSees:
+        'Create a dedicated side-income category inside LEDGRR and consistently log every single payment specifically there, separate from everything else.',
   ),
   FinanceLesson(
     id: 'new_extra_money_real_budget',
     level: 'Clarity',
     title: 'What "extra money" actually means for your real budget',
     hook: '"Extra" money is still real money. Your budget should know it exists.',
-    explanation: 'Treating side income as separate from "real" income often means it never gets factored into an honest picture of total resources, even though it\'s genuinely available money.',
-    realLife: 'Priyanka realized her side tutoring income, once properly counted, meant her real total income was significantly higher than she\'d been mentally budgeting around.',
-    remember: 'If the money is real, your budget should count it as real.',
-    ledgrrSees: 'Include logged side income in LEDGRR\'s Monthly Summary, not just your primary income figure.',
+    explanation:
+        'Mentally treating side income as somehow entirely separate from your "real" primary income often means that money never actually gets properly factored into an honest, complete picture of your total available financial resources, even though it is genuinely real, spendable money either way.\n\nThe label "extra" tends to psychologically excuse that income from serious budgeting consideration, even when it represents a genuinely significant and reliable portion of overall monthly resources.',
+    realLife:
+        'Priyanka eventually realized that her regular side tutoring income, once properly and honestly counted alongside everything else, meant her real total monthly income was significantly higher than what she had been mentally budgeting around for months.',
+    remember:
+        'If the money is genuinely real and spendable, your budget should honestly count it as real too, not as a separate bonus.',
+    ledgrrSees:
+        'Make sure logged side income is properly included in LEDGRR\'s Monthly Summary total, not treated separately from your primary income figure.',
   ),
   FinanceLesson(
     id: 'new_panic_save_pattern',
     level: 'Clarity',
     title: 'The panic-save pattern — and why it barely works',
     hook: 'Saving under panic rarely saves enough, and it never feels good.',
-    explanation: 'Waiting until a deadline is nearly here to start saving means cramming months of saving into days, which is both stressful and usually mathematically insufficient to hit the goal.',
-    realLife: 'Yash tried to save his entire trip fund in the final week before the deadline and fell dramatically short, despite the same total being easily achievable spread across the months prior.',
-    remember: 'A panic-save at the deadline almost never matches what steady saving from the start would have achieved.',
-    ledgrrSees: 'Set your Event Wallet goal in LEDGRR the day you learn the date, not the week before.',
+    explanation:
+        'Waiting until a savings deadline is genuinely nearly upon you before starting to save in earnest means compressing what should have been months of steady saving into just a handful of stressful, rushed days, which is both genuinely uncomfortable and usually mathematically insufficient to actually reach the intended goal amount in time.\n\nThe math of a goal does not actually care how motivated or panicked someone feels close to the deadline — it only cares whether enough total time and enough total money were realistically available across the whole period.',
+    realLife:
+        'Yash attempted to save his entire trip fund amount within the final week before his deadline and fell dramatically, noticeably short, despite that exact same total amount being genuinely, easily achievable if spread out evenly across the several months that had actually been available beforehand.',
+    remember:
+        'A last-minute panic-save at the deadline almost never actually matches what steady, early saving would genuinely have achieved.',
+    ledgrrSees:
+        'Set your Event Wallet goal inside LEDGRR the very same day you first learn the actual deadline date, not during the final week beforehand.',
   ),
   FinanceLesson(
     id: 'new_starting_before_ready',
     level: 'Clarity',
     title: 'Starting before you feel ready',
     hook: 'Waiting to feel ready to save is how most saving never starts.',
-    explanation: 'Feeling fully prepared to start saving rarely arrives on its own. Starting with a small, imperfect amount now beats waiting for a "better" moment that keeps getting pushed back.',
-    realLife: 'Simran kept waiting for a "better time" to start saving for her goal, and only actually started once she gave up waiting and just began with a small amount immediately.',
-    remember: 'The right time to start is rarely a feeling. It\'s a decision.',
-    ledgrrSees: 'Open LEDGRR and start an Event Wallet today, even with a small first deposit.',
+    explanation:
+        'The feeling of being genuinely, fully prepared and ready to start saving very rarely simply arrives on its own accord, no matter how long someone waits for it. Starting with a small, admittedly imperfect amount right now genuinely beats continuing to wait indefinitely for some imagined "better" future moment that keeps quietly getting pushed further back.\n\nReadiness is very often a feeling that only actually shows up after starting, not reliably before it, which is exactly why waiting for it first tends to delay things indefinitely.',
+    realLife:
+        'Simran kept waiting patiently for a genuinely "better time" to start saving toward her specific goal, and only actually started once she finally gave up on that waiting entirely and simply began immediately with a small, imperfect amount instead.',
+    remember:
+        'The right time to actually start saving is very rarely a feeling that arrives on its own. It is simply a decision you make.',
+    ledgrrSees:
+        'Open LEDGRR right now and start an Event Wallet today, even if it begins with a genuinely small first deposit.',
   ),
   FinanceLesson(
     id: 'new_procrastination_cost_rupees',
     level: 'Clarity',
     title: 'What procrastination actually costs, in rupees',
     hook: 'Delay isn\'t free. It just hides its price until later.',
-    explanation: 'Delaying saving toward a goal means compressing the same total into fewer days, which mathematically requires larger, harder amounts later, a real cost of waiting that\'s easy to underestimate.',
-    realLife: 'Karan calculated that starting his savings goal a month later meant needing to save nearly double per week for the remaining time, a cost he hadn\'t considered before delaying.',
-    remember: 'Delay doesn\'t remove the cost. It just concentrates it into less time.',
-    ledgrrSees: 'Check how your required daily saving amount changes in LEDGRR\'s Event Wallet as a deadline approaches.',
+    explanation:
+        'Delaying the start of saving toward any specific goal means the exact same total target amount must now be compressed into fewer remaining days, which mathematically requires noticeably larger, harder weekly or monthly amounts later on — a genuine, real cost of waiting that is very easy to significantly underestimate at the time the delay actually happens.\n\nThe total goal amount never actually shrinks simply because you started later. Only the available time to reach it does, which directly increases the required pace.',
+    realLife:
+        'Karan calculated precisely that starting his specific savings goal just one month later than planned meant he would need to save nearly double the amount per week for the remaining available time — a genuinely real cost he had not properly considered before choosing to delay.',
+    remember:
+        'Delaying a savings goal does not actually remove its underlying cost. It simply concentrates that same cost into less remaining time.',
+    ledgrrSees:
+        'Check how your required daily saving amount visibly changes inside LEDGRR\'s Event Wallet as an approaching deadline draws genuinely closer.',
   ),
   FinanceLesson(
     id: 'new_ill_save_later_to_now',
     level: 'Clarity',
     title: 'Turning "I\'ll save later" into "I\'m saving now"',
     hook: '"Later" is a plan with no actual date attached.',
-    explanation: '"I\'ll save later" almost never converts into an actual action, because "later" has no specific trigger. Naming today\'s date as the start removes the ambiguity that lets procrastination continue indefinitely.',
-    realLife: 'Divya had said "I\'ll start saving soon" for months until she simply committed to starting that specific day instead of an undefined future one.',
-    remember: '"Later" isn\'t a plan. A specific date is.',
-    ledgrrSees: 'Start your LEDGRR savings goal today, with today\'s actual date, not a vague future one.',
+    explanation:
+        'The phrase "I will save later" almost never actually converts into a genuine, real action, precisely because "later" has no specific, concrete trigger attached to it that would ever actually prompt the behavior to begin. Naming today\'s exact, specific date as the genuine start removes all of that lingering ambiguity that otherwise lets procrastination continue quietly, indefinitely.\n\nA vague future intention and a concrete, dated commitment are psychologically very different things, even when the underlying goal itself is identical.',
+    realLife:
+        'Divya had been telling herself "I will start saving soon" for several months running, until she finally simply committed to genuinely starting on one specific, named day, rather than continuing to reference some vague, undefined point in the future.',
+    remember:
+        '"Later" is genuinely not a real plan on its own. A specific, named date actually is.',
+    ledgrrSees:
+        'Start your LEDGRR savings goal today, using today\'s actual real date as the genuine start, rather than some vague future placeholder.',
   ),
-  FinanceLesson(
+    FinanceLesson(
     id: 'new_beat_own_deadline',
     level: 'Clarity',
     title: 'Beating your own deadline on purpose',
     hook: 'Setting an earlier personal deadline builds in room for real life to happen.',
-    explanation: 'Deliberately targeting completion a week or two before the real deadline creates a buffer for unexpected disruptions, so a bad week doesn\'t derail the entire goal.',
-    realLife: 'Farhan set his personal savings deadline five days earlier than the real one, which meant an unexpected expense mid-month didn\'t actually threaten his goal.',
-    remember: 'A buffer built in on purpose is better than a crisis discovered by accident.',
-    ledgrrSees: 'Set your LEDGRR Event Wallet date a few days earlier than the real deadline for a built-in buffer.',
+    explanation:
+        'Deliberately targeting completion a week or two ahead of the actual real deadline creates a genuine, real buffer for unexpected disruptions along the way, so that one single bad week does not end up derailing the entire goal at the very last moment.\n\nReal life rarely proceeds in a perfectly straight line, and a savings plan with zero built-in slack is genuinely fragile against even one ordinary, unremarkable disruption.',
+    realLife:
+        'Farhan deliberately set his own personal savings deadline five full days earlier than the actual real one, which meant that an unexpected mid-month expense did not genuinely threaten his overall goal at all, since the buffer absorbed it comfortably.',
+    remember:
+        'A buffer built in on purpose is genuinely far better than a crisis discovered entirely by accident.',
+    ledgrrSees:
+        'Set your LEDGRR Event Wallet target date a few days earlier than the actual real deadline, deliberately building in a genuine buffer.',
   ),
   FinanceLesson(
     id: 'new_consistency_over_intensity',
     level: 'Clarity',
     title: 'Why consistency beats intensity in saving',
     hook: 'A small amount every month beats a large amount some months.',
-    explanation: 'Irregular, intense saving bursts are harder to sustain and easier to abandon than smaller, boring, consistent contributions that quietly compound over time regardless of motivation levels.',
-    realLife: 'Ananya\'s occasional large deposits added up to less over a year than a friend\'s smaller but perfectly consistent monthly amount, despite Ananya\'s total effort feeling bigger.',
-    remember: 'Consistency compounds. Intensity burns out.',
-    ledgrrSees: 'Compare your LEDGRR jar deposit dates for gaps, aim for regular smaller deposits instead of rare large ones.',
+    explanation:
+        'Irregular, intense bursts of saving are genuinely harder to sustain over time and far easier to abandon partway through, compared to smaller, admittedly more boring, consistent contributions that quietly compound over time regardless of any single month\'s motivation levels.\n\nConsistency wins primarily because it does not actually depend on feeling motivated in any particular week — it simply continues running in the background either way.',
+    realLife:
+        'Ananya\'s occasional large, irregular deposits added up to noticeably less over a full year than a friend\'s smaller but perfectly consistent monthly amount, despite Ananya\'s total personal effort genuinely feeling larger throughout the year.',
+    remember:
+        'Consistency genuinely compounds over time. Intensity tends to burn out fairly quickly.',
+    ledgrrSees:
+        'Compare your LEDGRR jar deposit dates for any noticeable gaps, and aim instead for smaller, regular deposits rather than occasional large, irregular ones.',
   ),
   FinanceLesson(
     id: 'new_two_week_rule',
     level: 'Clarity',
     title: 'The two-week rule — bridging the gap between burst deposits',
     hook: 'If two weeks pass with no deposit, that\'s the signal to act, not wait for motivation.',
-    explanation: 'Setting a personal rule that no more than two weeks should pass between jar deposits keeps burst-saving from turning into long, unpredictable gaps.',
-    realLife: 'Rohit noticed his jar deposits sometimes had gaps of over a month, and setting a strict two-week personal rule closed that gap significantly.',
-    remember: 'A rule that catches gaps early is more reliable than waiting to feel motivated again.',
-    ledgrrSees: 'Check the dates of your last few LEDGRR jar deposits, if it\'s been over two weeks, that\'s your cue.',
+    explanation:
+        'Setting yourself a personal rule that no more than two weeks should genuinely pass between successive jar deposits keeps naturally irregular, burst-style saving from quietly turning into long, entirely unpredictable gaps with no deposits at all for extended stretches.\n\nA simple time-based rule like this catches a developing gap early, before it has a chance to become an entire missed month or longer.',
+    realLife:
+        'Rohit noticed that his own jar deposits sometimes had genuine gaps of well over a month between them, and setting himself a strict personal two-week rule closed that specific gap significantly going forward.',
+    remember:
+        'A rule that reliably catches gaps early is genuinely more dependable than simply waiting to feel motivated again on your own.',
+    ledgrrSees:
+        'Check the actual dates of your last few LEDGRR jar deposits — if it has genuinely been over two weeks, treat that as your specific cue to act.',
+  ),
+  FinanceLesson(
+    id: 'new_burst_to_standing_order',
+    level: 'Clarity',
+    title: 'Turning burst motivation into a standing order',
+    hook: 'Motivation is unreliable. A standing order isn\'t.',
+    explanation:
+        'Sprinter-style saving genuinely relies on a fresh burst of motivation showing up again and again over time, which is an inherently fragile system to depend on long-term. Setting up an automatic, recurring transfer instead converts that unreliable motivation into a purely mechanical habit that continues running whether or not you actually feel like saving in any given week.\n\nThe entire point of automation here is removing the requirement for ongoing willpower or motivation from the equation altogether, replacing it with a system that simply runs on its own regardless.',
+    realLife:
+        'Ishaan used to save in large, genuinely irregular bursts whenever he happened to feel especially motivated, then would go completely silent for weeks at a time afterward. Setting up a small, automatic weekly transfer meant saving kept happening consistently even during his least motivated stretches.',
+    remember:
+        'Do not rely on remembering to save on your own. Build a system where it genuinely happens automatically, without you.',
+    ledgrrSees:
+        'Set a recurring reminder or standing transfer for the same day your allowance lands, so a LEDGRR jar deposit happens automatically, before spending gets first claim on the money.',
   ),
   FinanceLesson(
     id: 'new_one_goal_trap',
     level: 'Clarity',
     title: 'The one-goal trap — why single-focus savers stall after success',
     hook: 'Hitting your one goal is a win. Having nothing after it is the trap.',
-    explanation: 'Focusing intensely on a single savings goal works well until it\'s achieved, at which point the entire saving habit can vanish overnight with nothing to redirect it toward.',
-    realLife: 'Farhan fully funded his laptop goal and then had no active saving habit for two months afterward, with nothing to show for the momentum he\'d built.',
-    remember: 'A finished goal is a launchpad, not a finish line.',
-    ledgrrSees: 'The moment a Jar or Event Wallet hits 100% in LEDGRR, open it again and start the next one.',
+    explanation:
+        'Focusing intensely on a single savings goal genuinely works well right up until the moment it is actually achieved, at which point the entire underlying saving habit can vanish essentially overnight, with absolutely nothing lined up to redirect that same momentum toward afterward.\n\nThe genuine skill being built here is not really "achieving this one particular goal" — it is actually "the ongoing habit of saving itself," and stopping entirely right after one success suggests that deeper skill was never fully separated from the specific target in the first place.',
+    realLife:
+        'Farhan fully funded his laptop savings goal and then had genuinely no active saving habit at all for the following two months afterward, with nothing meaningful to show for the strong momentum he had clearly built up beforehand.',
+    remember:
+        'A finished savings goal is genuinely a launchpad for the next one, not a finish line to stop entirely at.',
+    ledgrrSees:
+        'The moment a Jar or Event Wallet hits 100% inside LEDGRR, open it again immediately and start planning the very next one.',
   ),
   FinanceLesson(
     id: 'new_second_habit_before_needed',
     level: 'Clarity',
     title: 'Building a second habit before you need one',
     hook: 'Decide your next goal before the current one finishes, not after.',
-    explanation: 'Naming a rough next goal while the current one is still in progress removes the awkward gap where motivation has nowhere to go once the first goal completes.',
-    realLife: 'Ishita named a vague next goal while still funding her first one, which meant there was no empty gap once the first goal was actually reached.',
-    remember: 'Line up the next goal before the current one ends, not after.',
-    ledgrrSees: 'While funding a current LEDGRR goal, jot down what your next one might be.',
+    explanation:
+        'Naming even a rough, tentative next goal while your current one is still genuinely in progress removes the awkward, empty gap where motivation would otherwise have nowhere left to go once that first goal actually completes successfully.\n\nThis is essentially a small piece of forward planning that costs almost nothing in the present moment, while genuinely protecting your future momentum from stalling out entirely once the current goal wraps up.',
+    realLife:
+        'Ishita named a genuinely rough, unfinished next goal for herself while still actively funding her first one, which meant there was no empty, aimless gap at all once that first goal was actually reached successfully.',
+    remember:
+        'Line up your next savings goal before the current one actually ends, not sometime afterward once the momentum has already faded.',
+    ledgrrSees:
+        'While actively funding a current LEDGRR goal, take a moment to jot down what your genuine next one might realistically be.',
   ),
   FinanceLesson(
     id: 'new_ill_think_later_rarely_happens',
     level: 'Clarity',
     title: 'Why "I\'ll think of the next goal later" rarely happens',
     hook: 'Later, without a plan, usually means never.',
-    explanation: 'Deferring the decision of a next goal to "later" almost always means it doesn\'t happen, because there\'s no specific trigger prompting the decision to actually get made.',
-    realLife: 'Om told himself he\'d think of a new goal "later" after finishing his first one, and six months passed with no new goal and no saving habit.',
-    remember: '"Later" needs a specific trigger, or it just becomes never.',
-    ledgrrSees: 'Set the trigger yourself: decide your next LEDGRR goal the same day the current one completes.',
+    explanation:
+        'Deliberately deferring the decision of choosing a next goal to some vague "later" almost always genuinely means that decision simply never actually gets made at all, precisely because there is no specific trigger or moment ever prompting the actual decision to finally happen.\n\nThis pattern mirrors the earlier lesson about "I will save later" — the underlying issue is always the same lack of a concrete, specific trigger attached to the vague future intention.',
+    realLife:
+        'Om told himself he would genuinely think of a new savings goal "later" once his current one finished, and a full six months quietly passed afterward with no new goal chosen and effectively no active saving habit remaining at all.',
+    remember:
+        '"Later" genuinely needs a specific, concrete trigger attached to it, or it simply, quietly becomes never.',
+    ledgrrSees:
+        'Set the trigger for yourself directly: decide your genuine next LEDGRR goal on the exact same day your current one actually completes.',
   ),
   FinanceLesson(
     id: 'new_diversify_saving',
     level: 'Clarity',
     title: 'Diversifying your saving, not just your goals',
     hook: 'One goal at a time is fine. One habit at a time is the real risk.',
-    explanation: 'The habit of saving itself matters more than any single goal. Building the underlying habit, rather than just chasing one target, means the habit survives even after that specific target is reached.',
-    realLife: 'Kavya realized her actual strength wasn\'t the laptop goal itself, but the habit of regular saving, which she then intentionally kept going toward a different target.',
-    remember: 'You\'re not just saving for one thing. You\'re building the habit of saving.',
-    ledgrrSees: 'Keep at least one active goal in LEDGRR at all times, so the saving habit itself never lapses.',
+    explanation:
+        'The actual underlying habit of saving itself genuinely matters more in the long run than any single specific goal attached to it at any given moment. Deliberately building and protecting the broader habit, rather than exclusively chasing one particular target, means that habit genuinely survives intact even well after that specific target has already been reached.\n\nThinking of yourself as "someone who saves regularly" is a fundamentally more durable identity than thinking of yourself purely as "someone saving for this one specific thing."',
+    realLife:
+        'Kavya eventually realized her genuine underlying strength was never really the laptop goal itself specifically — it was actually the broader habit of regular saving, which she then deliberately and consciously kept going afterward, redirected toward an entirely different target.',
+    remember:
+        'You are genuinely not just saving for one specific thing at a time. You are actively building the broader habit of saving itself.',
+    ledgrrSees:
+        'Keep at least one active goal open inside LEDGRR at all times, so the underlying saving habit itself genuinely never lapses entirely.',
   ),
   FinanceLesson(
     id: 'new_onetime_to_habitual',
     level: 'Clarity',
     title: 'From one-time saver to habitual saver',
     hook: 'The shift from saving once to saving always is the real upgrade.',
-    explanation: 'Successfully funding one goal proves the mechanics work. The next step is treating saving as an ongoing identity, not a one-time project tied to a single target.',
-    realLife: 'After funding his emergency fund, Vikram consciously decided to keep saving as an ongoing habit rather than treating the project as "done."',
-    remember: 'One completed goal proves you can save. The habit is what makes it last.',
-    ledgrrSees: 'After completing a LEDGRR goal, immediately fund a new one, however small, to keep the habit alive.',
+    explanation:
+        'Successfully funding one single savings goal genuinely proves that the underlying mechanics of your saving approach actually work in practice. The genuine next step forward is treating saving itself as an ongoing personal identity, rather than continuing to treat it as a one-time project tied narrowly to just a single target.\n\nThis shift in framing — from "I completed a savings project" to "I am someone who saves" — tends to be the real, lasting difference between people who save consistently for years and people who save successfully just once.',
+    realLife:
+        'After successfully funding his emergency fund, Vikram made a genuinely conscious, deliberate decision to keep saving as an ongoing habit going forward, rather than treating that specific project as fully "done" and complete.',
+    remember:
+        'One completed savings goal genuinely proves you can save. The ongoing habit is what actually makes it last for years.',
+    ledgrrSees:
+        'After completing any LEDGRR goal, immediately start funding a new one, however genuinely small, specifically to keep the underlying habit alive.',
   ),
   FinanceLesson(
     id: 'new_gap_between_goals',
     level: 'Clarity',
     title: 'What happens to your money in the gap between goals',
     hook: 'The days between one goal ending and the next starting are the riskiest days.',
-    explanation: 'Money that would have gone toward a savings goal, once that goal is complete, often just gets absorbed into regular spending during the gap before a new goal is set.',
-    realLife: 'Farhan\'s "extra" money quietly disappeared into regular spending in the two months between finishing one goal and starting his next.',
-    remember: 'The gap between goals is exactly when your saving money is most at risk of vanishing.',
-    ledgrrSees: 'Minimize the gap in LEDGRR by starting your next Jar or Event the same day the previous one completes.',
+    explanation:
+        'Money that would previously have gone toward an active savings goal, once that specific goal is actually complete, very often simply gets quietly absorbed back into ordinary regular spending during the empty gap before any new goal has actually been chosen and set.\n\nThis particular gap period is genuinely one of the highest-risk moments for an otherwise healthy saving habit, precisely because there is no active target currently pulling that money in any specific direction.',
+    realLife:
+        'Farhan\'s newly "extra" money quietly disappeared back into his regular, undirected spending during the roughly two months between finishing one savings goal and eventually starting his next one.',
+    remember:
+        'The empty gap between one goal ending and the next one starting is exactly when your saving money is most genuinely at risk of quietly vanishing.',
+    ledgrrSees:
+        'Minimize this gap inside LEDGRR by starting your next Jar or Event Wallet on the exact same day your previous one actually completes.',
   ),
-  FinanceLesson(
+    FinanceLesson(
     id: 'new_prioritizing_goals',
     level: 'Mastery',
     title: 'Prioritizing goals when you can\'t fund them all at once',
     hook: 'Funding five goals a little each often means funding none of them well.',
-    explanation: 'When multiple goals compete for the same limited money, ranking them by genuine priority and funding the top ones first usually beats spreading thin contributions evenly across all of them.',
-    realLife: 'Ananya was splitting small amounts across four goals and making slow progress on all of them, until she ranked them and focused most of her saving on the top two first.',
-    remember: 'Spreading thin often means finishing nothing. Ranking usually finishes something.',
-    ledgrrSees: 'Review your active LEDGRR Jars and Events, and decide which genuinely matters most right now.',
+    explanation:
+        'When multiple genuine savings goals are competing for the exact same limited pool of available money, ranking them honestly by real priority and then funding the top ones first usually beats spreading thin, roughly equal contributions evenly across all of them simultaneously.\n\nSpreading resources too thin across many goals at once often means every single one progresses so slowly that none of them ever actually feels close to completion, which quietly drains motivation across the board rather than protecting it.',
+    realLife:
+        'Ananya had been splitting small amounts across four separate goals at once and was genuinely making slow, barely visible progress on all of them, until she deliberately ranked them by real priority and focused most of her saving specifically on the top two first.',
+    remember:
+        'Spreading your saving too thin often genuinely means finishing nothing at all. Ranking honestly usually finishes something real.',
+    ledgrrSees:
+        'Review your active LEDGRR Jars and Events honestly, and decide which one genuinely matters most to fund right now.',
   ),
   FinanceLesson(
     id: 'new_spreading_too_thin',
     level: 'Mastery',
     title: 'The danger of spreading yourself across too many goals',
     hook: 'Five half-funded goals feel like progress. They usually aren\'t.',
-    explanation: 'Having many simultaneous goals can feel productive, but if none of them are actually close to completion, the psychological reward of finishing anything keeps getting delayed indefinitely.',
-    realLife: 'Kabir had six active goals, all sitting around 20% funded, and realized he hadn\'t actually completed a single one in months.',
-    remember: 'Completing one goal beats partially funding six.',
-    ledgrrSees: 'Check how many active, unfinished Jars and Events you have open in LEDGRR right now.',
+    explanation:
+        'Having many simultaneous active goals can genuinely feel productive and ambitious in the moment, but if none of them are actually getting meaningfully close to completion, the real psychological reward of finishing anything at all keeps getting pushed further and further back indefinitely.\n\nThe feeling of "working on many things" is not the same as the feeling of "actually finishing things," and only the second one genuinely reinforces a lasting saving habit over time.',
+    realLife:
+        'Kabir had six separate active goals running simultaneously, all sitting at roughly 20% funded, and eventually realized he genuinely had not actually completed a single one of them in several months.',
+    remember:
+        'Completing one single goal genuinely beats partially funding six goals at once.',
+    ledgrrSees:
+        'Check honestly how many active, unfinished Jars and Events you currently have open inside LEDGRR right now.',
   ),
   FinanceLesson(
     id: 'new_sequencing_goals',
     level: 'Mastery',
     title: 'Sequencing goals — what to fund first and why',
     hook: 'The order you fund goals in matters as much as the goals themselves.',
-    explanation: 'A sensible sequence usually funds urgent, safety-related goals first, like an emergency fund, before moving to lifestyle goals like trips or gadgets, since the safety net protects everything funded after it.',
-    realLife: 'Rohan reordered his goals to fund his emergency fund before his trip fund, reasoning that an unexpected expense would otherwise force him to raid the trip fund anyway.',
-    remember: 'Fund safety goals before lifestyle goals, so an emergency doesn\'t undo your other progress.',
-    ledgrrSees: 'Consider which LEDGRR goal genuinely needs to be funded first for real financial safety.',
+    explanation:
+        'A genuinely sensible sequence for funding multiple goals usually funds urgent, safety-related goals first — like a proper emergency fund — before moving on to more lifestyle-oriented goals such as trips or gadgets, since that underlying safety net genuinely protects everything funded after it from being wiped out by an unexpected setback.\n\nFunding a fun, lifestyle goal before a genuine safety net exists means any unexpected emergency will likely force you to raid that fun goal anyway, effectively undoing the progress and adding real stress on top of it.',
+    realLife:
+        'Rohan deliberately reordered his personal goals to fund his emergency fund before his trip fund, reasoning correctly that an unexpected expense would otherwise have forced him to raid the trip fund regardless, undoing that progress entirely.',
+    remember:
+        'Fund genuine safety goals before lifestyle goals, so that an emergency does not quietly undo your other progress elsewhere.',
+    ledgrrSees:
+        'Honestly consider which specific LEDGRR goal genuinely needs to be funded first for real, meaningful financial safety.',
   ),
   FinanceLesson(
     id: 'new_consolidate_goals',
     level: 'Mastery',
     title: 'When to consolidate goals instead of adding new ones',
     hook: 'Sometimes the answer isn\'t a new goal, it\'s fewer, bigger ones.',
-    explanation: 'Having too many small, overlapping goals can be simplified by consolidating similar ones into a single larger target, reducing complexity without reducing actual progress.',
-    realLife: 'Meera had three small separate "gadget" goals that were really the same underlying desire, and consolidating them into one clearer goal made tracking dramatically simpler.',
-    remember: 'More goals isn\'t always better organization. Sometimes it\'s just more clutter.',
-    ledgrrSees: 'Review your LEDGRR goals for overlap that could be merged into one clearer target.',
+    explanation:
+        'Having too many small, genuinely overlapping goals running at once can often be simplified considerably by consolidating similar ones into a single, larger, clearer target, which reduces overall complexity without actually reducing any real underlying progress.\n\nMore separate goals is not automatically better organization — past a certain point, it simply becomes more clutter to mentally track, without adding any genuine additional clarity or benefit.',
+    realLife:
+        'Meera had three separate, genuinely small "gadget" goals running that were really, underneath everything, the same underlying desire split apart unnecessarily, and consolidating them into one single, clearer goal made her overall tracking dramatically simpler.',
+    remember:
+        'More goals is not automatically better organization. Sometimes it is genuinely just more clutter to manage.',
+    ledgrrSees:
+        'Review your existing LEDGRR goals honestly for any genuine overlap that could reasonably be merged into one clearer target.',
   ),
   FinanceLesson(
     id: 'new_boring_investing',
     level: 'Mastery',
     title: 'Why boring investing beats exciting investing',
     hook: 'The best investors in the world are the ones you\'ve never heard of.',
-    explanation: 'People who pick a reasonable, low-cost investment and leave it alone for decades consistently outperform people who chase excitement, since chasing excitement means buying high after a rally and selling low after a crash.',
-    realLife: 'Aakash chased "hot" stocks for two years and underperformed a friend who simply put the same amount into one plain index fund and left it alone.',
-    remember: 'If your investing feels exciting, you\'re probably doing it wrong.',
-    ledgrrSees: 'If you\'re already a Steady Saver in LEDGRR, protect that consistency from the temptation to chase something exciting.',
+    explanation:
+        'People who deliberately pick a reasonable, low-cost investment and then genuinely leave it alone for many years or decades consistently, statistically outperform people who actively chase excitement in their investing, since chasing excitement typically means buying in after a rally has already happened and selling in a panic after a crash has already occurred.\n\nGenuinely successful long-term investing tends to feel almost boring on a day-to-day basis, precisely because the real strategy is simply to keep doing the same steady thing consistently, without any dramatic changes along the way.',
+    realLife:
+        'Aakash actively chased "hot" individual stocks for roughly two years and genuinely underperformed a friend who had simply put the exact same total amount into one plain index fund and left it completely alone the entire time.',
+    remember:
+        'If your investing feels genuinely exciting on a regular basis, you are very likely doing it wrong somewhere.',
+    ledgrrSees:
+        'If you are already showing as a Steady Saver inside LEDGRR, deliberately protect that hard-won consistency from the tempting urge to chase something more exciting.',
   ),
   FinanceLesson(
     id: 'new_stepup_sip',
     level: 'Mastery',
     title: 'The step-up SIP — increasing your amount as your income grows',
     hook: 'The SIP you started at 20 shouldn\'t be the same size at 25.',
-    explanation: 'A step-up SIP means deliberately increasing your monthly investment amount every time your income rises, so your investing grows in proportion to your life instead of quietly shrinking in relative importance.',
-    realLife: 'Divya kept her SIP flat for three years despite her income tripling. Stepping it up with each raise kept her investing genuinely proportional to her growth.',
-    remember: 'Every time your income increases, ask whether your SIP needs to increase too.',
-    ledgrrSees: 'Compare your monthly income trend in LEDGRR Statistics against your savings category, if one rises and the other stays flat, that\'s your signal.',
+    explanation:
+        'A step-up SIP means deliberately, consciously increasing your monthly investment amount every single time your overall income genuinely rises, so that your investing consistently grows in proportion to your actual life circumstances instead of quietly shrinking in relative importance over time as your income grows around it.\n\nKeeping a SIP amount perfectly flat for years, even as income rises substantially, effectively means investing represents a steadily shrinking share of your overall financial life, even though the absolute number on paper never technically changes.',
+    realLife:
+        'Divya kept her SIP contribution amount completely flat for three full years despite her actual income roughly tripling over that same period. Deliberately stepping it up alongside each raise kept her investing genuinely proportional to her real growth as it happened.',
+    remember:
+        'Every single time your income genuinely increases, deliberately ask yourself whether your SIP amount needs to increase alongside it.',
+    ledgrrSees:
+        'Compare your monthly income trend inside LEDGRR Statistics against your savings category over time — if one is rising while the other stays completely flat, that mismatch is your genuine signal to act.',
   ),
   FinanceLesson(
     id: 'new_break_restrict_splurge',
     level: 'Clarity',
     title: 'Breaking the restrict-then-splurge cycle',
     hook: 'Extreme restriction and extreme spending are the same habit wearing two different outfits.',
-    explanation: 'A common pattern of heavy spending followed by guilt-driven strict saving, then burnout, then spending again, is one unstable cycle. The fix is a sustainable middle ground instead of extreme swings.',
-    realLife: 'Tanya\'s three-week save, one-week splurge cycle stopped once she built a moderate, sustainable weekly budget instead of an extreme monthly one.',
-    remember: 'A budget you can\'t sustain isn\'t discipline, it\'s delayed spending with extra guilt attached.',
-    ledgrrSees: 'Look for a sawtooth pattern in your LEDGRR monthly totals, high, low, high, low, that\'s this exact cycle.',
+    explanation:
+        'A genuinely common pattern of heavy, unrestrained spending followed by guilt-driven, extremely strict saving, which then eventually leads to burnout and a return to heavy spending again, is actually one single unstable cycle rather than two separate, unrelated problems. The real, lasting fix is finding a genuinely sustainable middle ground, rather than continuing to swing repeatedly between these two extremes.\n\nBoth extremes in this cycle are ultimately driven by the same underlying instability — neither one is genuinely more "disciplined" than the other, despite how the restrictive phase might feel in the moment.',
+    realLife:
+        'Tanya\'s repeating three-week-save, one-week-splurge cycle genuinely stopped only once she deliberately built herself a moderate, realistically sustainable weekly budget, replacing the extreme, all-or-nothing monthly approach she had been using before.',
+    remember:
+        'A budget you genuinely cannot sustain is not actually discipline — it is simply delayed spending with extra guilt attached on top.',
+    ledgrrSees:
+        'Look for a genuine sawtooth pattern in your LEDGRR monthly totals — high, low, high, low — since that specific shape is exactly this unstable cycle showing up clearly in your own real data.',
   ),
   FinanceLesson(
     id: 'new_why_extreme_budgets_break',
     level: 'Clarity',
     title: 'Why extreme budgets always break',
     hook: 'A budget with no room to breathe eventually gets abandoned entirely.',
-    explanation: 'Budgets that demand near-total restriction rarely survive real life\'s small unplanned moments, and one broken rule often leads to abandoning the whole plan rather than adjusting it.',
-    realLife: 'Ibrahim set an extremely tight budget that broke on day four, and rather than adjusting it slightly, he abandoned budgeting entirely for the rest of the month.',
-    remember: 'A realistic budget you can actually follow beats a perfect one you abandon in a week.',
-    ledgrrSees: 'If your LEDGRR spending consistently blows past a self-set limit immediately, the limit itself may be unrealistic.',
+    explanation:
+        'Budgets that genuinely demand near-total restriction with essentially zero flexibility very rarely survive real life\'s ordinary, small unplanned moments intact, and breaking just one single rule within such a rigid budget very often leads directly to abandoning the entire plan altogether, rather than simply adjusting it slightly and continuing forward.\n\nA rigid, all-or-nothing structure genuinely offers no reasonable path back once even a small mistake happens, which makes total abandonment feel like the only remaining option in the moment.',
+    realLife:
+        'Ibrahim set himself a genuinely extremely tight budget that broke down completely on just day four, and rather than simply adjusting it slightly and continuing on, he ended up abandoning budgeting entirely for the remainder of that specific month.',
+    remember:
+        'A realistic budget you can genuinely actually follow beats a theoretically perfect one that you end up abandoning within a week.',
+    ledgrrSees:
+        'If your LEDGRR spending consistently blows straight past a self-imposed limit almost immediately every time, the limit itself may genuinely be unrealistic rather than your discipline being the actual problem.',
   ),
   FinanceLesson(
     id: 'new_sawtooth_pattern',
     level: 'Clarity',
     title: 'The sawtooth pattern — spotting your own cycle',
     hook: 'Your own Statistics chart can show you a cycle you didn\'t know you had.',
-    explanation: 'A visible high-low-high-low pattern across months in spending or saving totals is the direct fingerprint of an unstable restrict-and-splurge cycle, worth naming once you actually see it.',
-    realLife: 'Tanya only recognized her own cycle once she looked at several months of totals side by side and saw the unmistakable zigzag pattern.',
-    remember: 'A pattern you can see is a pattern you can finally address.',
-    ledgrrSees: 'Compare several months of totals in LEDGRR Statistics side by side to check for this zigzag shape.',
+    explanation:
+        'A genuinely visible high-low-high-low pattern appearing across several consecutive months of spending or saving totals is the direct, honest fingerprint of an unstable restrict-and-splurge cycle, and it is genuinely worth explicitly naming once you actually notice it clearly laid out in your own real data.\n\nMany people experience this exact cycle for months or even years without ever consciously recognizing it as a repeating pattern, simply because they never actually looked at several months\' totals laid out side by side at once.',
+    realLife:
+        'Tanya only genuinely recognized her own repeating cycle once she deliberately looked at several months of her own totals laid out directly side by side, and finally saw the unmistakable zigzag shape that had been quietly forming the entire time.',
+    remember:
+        'A pattern you can genuinely see clearly is a pattern you can finally, actually address directly.',
+    ledgrrSees:
+        'Compare several consecutive months of totals inside LEDGRR Statistics side by side to check honestly for this specific zigzag shape appearing.',
   ),
   FinanceLesson(
     id: 'new_sustainable_beats_aggressive',
     level: 'Clarity',
     title: 'Sustainable beats aggressive, every time',
     hook: 'The plan that survives contact with real life wins, even if it looks less impressive on paper.',
-    explanation: 'An aggressive plan that fails halfway through delivers less than a modest plan that\'s actually followed consistently for the full period.',
-    realLife: 'Sana\'s "aggressive" savings plan collapsed by week two, while a friend\'s more modest but consistent plan ultimately saved more over the same months.',
-    remember: 'A plan you\'ll actually finish beats a better plan you\'ll abandon.',
-    ledgrrSees: 'Set LEDGRR goals sized to what you can genuinely sustain, not just what sounds impressive.',
+    explanation:
+        'An aggressive, ambitious plan that genuinely fails and collapses partway through ultimately delivers noticeably less real progress than a more modest plan that is actually followed through consistently for the entire intended period.\n\nA plan\'s theoretical maximum potential on paper genuinely means very little if it never actually survives long enough in practice to be completed as originally intended.',
+    realLife:
+        'Sana\'s genuinely "aggressive" savings plan collapsed entirely by roughly week two, while a friend\'s noticeably more modest but perfectly consistent plan ultimately ended up saving more overall across the exact same total number of months.',
+    remember:
+        'A plan you will genuinely actually finish beats a theoretically better plan that you end up abandoning halfway through.',
+    ledgrrSees:
+        'Set your LEDGRR goals sized specifically to what you can genuinely, realistically sustain over time, not simply to whatever sounds most impressive on paper.',
   ),
   FinanceLesson(
     id: 'new_guilt_not_strategy',
     level: 'Clarity',
     title: 'Guilt is not a financial strategy',
     hook: 'Feeling bad about a spend doesn\'t undo it, and it rarely prevents the next one either.',
-    explanation: 'Guilt after overspending often triggers the restrictive half of the cycle rather than a genuinely useful decision, perpetuating the same unstable pattern instead of breaking it.',
-    realLife: 'Rajat noticed his guilt after overspending always led straight into an extreme restrictive phase, rather than a calm, useful adjustment.',
-    remember: 'Replace guilt with a specific, calm adjustment. Guilt alone changes nothing.',
-    ledgrrSees: 'After an overspend logged in LEDGRR, decide one specific adjustment instead of just feeling bad about it.',
+    explanation:
+        'Feeling genuine guilt after overspending very often directly triggers the extremely restrictive half of the unstable cycle, rather than actually leading to any genuinely useful, calm decision, which ends up perpetuating exactly the same unstable pattern rather than actually breaking it for good.\n\nGuilt is an emotional reaction, not an actual plan, and mistaking one for the other tends to keep the entire underlying cycle running indefinitely rather than resolving it.',
+    realLife:
+        'Rajat noticed clearly that his own genuine guilt after overspending always led him directly straight into an extreme restrictive phase afterward, rather than leading to any calm, genuinely useful adjustment to his ongoing approach.',
+    remember:
+        'Replace guilt with one specific, calm adjustment instead. Guilt on its own genuinely changes absolutely nothing by itself.',
+    ledgrrSees:
+        'After logging an overspend inside LEDGRR, deliberately decide on one specific, concrete adjustment instead of simply feeling bad about it and moving on.',
   ),
   FinanceLesson(
     id: 'new_budget_you_wont_rebel_against',
     level: 'Clarity',
     title: 'Setting a budget you won\'t want to rebel against',
     hook: 'A budget that feels like punishment invites rebellion. A fair one doesn\'t.',
-    explanation: 'A budget that includes reasonable room for fun and flexibility is far less likely to trigger the urge to break it entirely, compared to one that feels purely restrictive.',
-    realLife: 'Farah\'s new budget deliberately included a reasonable "fun" allowance, and she found she no longer felt the urge to abandon it the way her stricter old budget had triggered.',
-    remember: 'A budget with room to breathe is a budget you\'ll actually keep.',
-    ledgrrSees: 'Build a realistic "fun" category into your LEDGRR budget rather than trying to eliminate it entirely.',
+    explanation:
+        'A budget that genuinely includes reasonable, deliberate room for fun and flexibility is far less likely to trigger the strong urge to abandon it entirely, compared to one that feels purely restrictive and punishing from the very start with no room to breathe.\n\nBuilding in a modest, honest allowance for enjoyment is not a weakness in a budget — it is genuinely what makes that same budget realistic enough to actually survive contact with an ordinary, real life over the long term.',
+    realLife:
+        'Farah\'s new, redesigned budget deliberately included a reasonable "fun" allowance built directly into it, and she found she genuinely no longer felt the same strong urge to abandon it entirely, unlike her previous, stricter budget which had repeatedly triggered exactly that reaction.',
+    remember:
+        'A budget with genuine room to breathe is a budget you will actually, realistically keep following over time.',
+    ledgrrSees:
+        'Build a realistic "fun" category directly into your LEDGRR budget, rather than attempting to eliminate that kind of spending entirely.',
   ),
 ];
-
+// Looks up a lesson by ID, skipping quietly if it doesn't exist,
+// instead of crashing. Protects against any future mismatch between
+// an archetype's recommended lessonIds and this lesson list.
+List<FinanceLesson> _lessonsById(List<String> ids) {
+  final result = <FinanceLesson>[];
+  for (final id in ids) {
+    final matches = _allLessons.where((l) => l.id == id);
+    if (matches.isNotEmpty) result.add(matches.first);
+  }
+  return result;
+}
 
 // ─── SCREEN ────────────────────────────────────────────────────────────────
-
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
-
   @override
   State<LearnScreen> createState() => _LearnScreenState();
 }
@@ -1545,7 +1860,6 @@ class _LearnScreenState extends State<LearnScreen>
   final _archetypeService = SpenderArchetypeService();
   ArchetypeResult? _archetype;
   bool _isLoading = true;
-
   final List<String> _levels = ['Foundation', 'Clarity', 'Mastery'];
 
   @override
@@ -1583,9 +1897,9 @@ class _LearnScreenState extends State<LearnScreen>
   }
 
   Future<void> _loadArchetype() async {
-  final result = await _archetypeService.computeArchetype();
-  if (mounted) setState(() => _archetype = result);
-}
+    final result = await _archetypeService.computeArchetype();
+    if (mounted) setState(() => _archetype = result);
+  }
 
   Future<void> _markRead(String lessonId) async {
     if (_readLessons.contains(lessonId)) return;
@@ -1609,6 +1923,8 @@ class _LearnScreenState extends State<LearnScreen>
     final palette = context.watch<ThemeProvider>().palette;
     final total = _allLessons.length;
     final read = _readLessons.length;
+    final recommended =
+        _archetype != null ? _lessonsById(_archetype!.lessonIds) : <FinanceLesson>[];
 
     return Scaffold(
       backgroundColor: palette.bg,
@@ -1673,10 +1989,8 @@ class _LearnScreenState extends State<LearnScreen>
                 ],
               ),
             ),
-
             const SizedBox(height: 8),
-
-                        Padding(
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
                 'Plain English. Real examples. Lessons that stick.',
@@ -1686,13 +2000,8 @@ class _LearnScreenState extends State<LearnScreen>
                     color: palette.inkMuted),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Personalized archetype banner — only shows once enough
-            // real transaction data exists to detect a genuine pattern.
-            // Recomputed fresh every time this screen loads, never
-            // waits for a month to pass.
+            // Personalized archetype banner
             if (_archetype != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
@@ -1752,7 +2061,105 @@ class _LearnScreenState extends State<LearnScreen>
                   ),
                 ),
               ),
-
+            // Recommended for you
+            if (recommended.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Recommended for you',
+                        style: GoogleFonts.syne(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: palette.ink)),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 118,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: recommended.length,
+                        itemBuilder: (context, i) {
+                          final lesson = recommended[i];
+                          final isRead = _readLessons.contains(lesson.id);
+                          return Padding(
+                            padding: EdgeInsets.only(
+                                right: i < recommended.length - 1 ? 10 : 0),
+                            child: GestureDetector(
+                              onTap: () {
+                                _markRead(lesson.id);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => _LessonScreen(
+                                      lesson: lesson,
+                                      palette: palette,
+                                      onRead: () => _markRead(lesson.id),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 210,
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: palette.card,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: isRead
+                                        ? palette.accent.withOpacity(0.3)
+                                        : palette.border,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: palette.accent
+                                                .withOpacity(0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                          ),
+                                          child: Text(lesson.level,
+                                              style: GoogleFonts.syne(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: palette.accent)),
+                                        ),
+                                        if (isRead) ...[
+                                          const Spacer(),
+                                          Icon(Icons.check_circle_rounded,
+                                              size: 14, color: palette.accent),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Expanded(
+                                      child: Text(lesson.title,
+                                          style: GoogleFonts.syne(
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: palette.ink,
+                                              height: 1.35),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             // Tab bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1784,9 +2191,7 @@ class _LearnScreenState extends State<LearnScreen>
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
-
             // Lesson lists
             Expanded(
               child: _isLoading
@@ -1797,9 +2202,6 @@ class _LearnScreenState extends State<LearnScreen>
                       controller: _tabController,
                       children: _levels.map((level) {
                         final lessons = _lessonsForLevel(level);
-                        final levelRead =
-                            lessons.where((l) => _readLessons.contains(l.id)).length;
-
                         return ListView.builder(
                           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                           itemCount: lessons.length + 1,
@@ -1833,10 +2235,8 @@ class _LearnScreenState extends State<LearnScreen>
                                 ),
                               );
                             }
-
                             final lesson = lessons[i];
                             final isRead = _readLessons.contains(lesson.id);
-
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 10),
                               child: Material(
@@ -1933,12 +2333,10 @@ class _LearnScreenState extends State<LearnScreen>
 }
 
 // ─── LESSON SCREEN ─────────────────────────────────────────────────────────
-
 class _LessonScreen extends StatelessWidget {
   final FinanceLesson lesson;
   final LedgrrPalette palette;
   final VoidCallback onRead;
-
   const _LessonScreen({
     required this.lesson,
     required this.palette,
@@ -1952,7 +2350,6 @@ class _LessonScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Top bar
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 24, 0),
               child: Row(
@@ -1989,8 +2386,6 @@ class _LessonScreen extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
@@ -2005,8 +2400,6 @@ class _LessonScreen extends StatelessWidget {
                             letterSpacing: -0.5,
                             height: 1.3)),
                     const SizedBox(height: 12),
-
-                    // Hook
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -2026,9 +2419,7 @@ class _LessonScreen extends StatelessWidget {
                             height: 1.5),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     _sectionLabel('The concept', palette),
                     const SizedBox(height: 10),
                     Text(lesson.explanation,
@@ -2036,9 +2427,7 @@ class _LessonScreen extends StatelessWidget {
                             fontSize: 14,
                             color: palette.ink,
                             height: 1.75)),
-
                     const SizedBox(height: 24),
-
                     _sectionLabel('Real life example', palette),
                     const SizedBox(height: 10),
                     Container(
@@ -2056,9 +2445,7 @@ class _LessonScreen extends StatelessWidget {
                               height: 1.7,
                               fontStyle: FontStyle.italic)),
                     ),
-
                     const SizedBox(height: 24),
-
                     _sectionLabel('Remember this', palette),
                     const SizedBox(height: 10),
                     Container(
@@ -2087,9 +2474,7 @@ class _LessonScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     _sectionLabel('What LEDGRR shows you', palette),
                     const SizedBox(height: 10),
                     Container(
@@ -2128,7 +2513,6 @@ class _LessonScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     if (lesson.resources.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       _sectionLabel('Go deeper', palette),
@@ -2179,10 +2563,7 @@ class _LessonScreen extends StatelessWidget {
                             ),
                           )),
                     ],
-
                     const SizedBox(height: 32),
-
-                    // Done button
                     Material(
                       color: palette.accent,
                       borderRadius: BorderRadius.circular(16),
