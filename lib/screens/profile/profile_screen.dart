@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -358,6 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       hint: '0',
                       palette: palette,
                       keyboardType: TextInputType.number,
+                      isNumeric: true,
                       helpText:
                           'Used as a reference for insights. Your actual balance is always calculated from your logged transactions.',
                     ),
@@ -368,6 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       hint: '0',
                       palette: palette,
                       keyboardType: TextInputType.number,
+                      isNumeric: true,
                       helpText:
                           'A soft guide for monthly spending. Log your actual transactions and LEDGRR will tell you where you stand.',
                     ),
@@ -564,6 +567,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required LedgrrPalette palette,
     TextInputType keyboardType = TextInputType.text,
     String? helpText,
+    bool isNumeric = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -584,6 +588,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            enableSuggestions: !isNumeric,
+            autocorrect: !isNumeric,
+            inputFormatters: isNumeric
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
+                : null,
             style: GoogleFonts.syne(
               fontSize: 15,
               color: palette.ink,

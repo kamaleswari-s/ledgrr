@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,7 +11,6 @@ import '../home/home_screen.dart';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({super.key});
-
   @override
   State<SetupScreen> createState() => _SetupScreenState();
 }
@@ -18,13 +18,11 @@ class SetupScreen extends StatefulWidget {
 class _SetupScreenState extends State<SetupScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
   final _balanceController = TextEditingController();
   final _incomeController = TextEditingController();
   final _budgetController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-
   final _transactionService = TransactionService();
 
   @override
@@ -39,18 +37,15 @@ class _SetupScreenState extends State<SetupScreen> {
     final balance = double.tryParse(_balanceController.text.trim()) ?? 0;
     final income = double.tryParse(_incomeController.text.trim()) ?? 0;
     final budget = double.tryParse(_budgetController.text.trim()) ?? 0;
-
     if (balance == 0) {
       setState(() => _errorMessage = 'Please enter your current balance.');
       return;
     }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
-
-        try {
+    try {
       final uid = FirebaseAuth.instance.currentUser!.uid;
 
       // Guards against duplicate "Opening Balance" transactions if
@@ -97,7 +92,6 @@ class _SetupScreenState extends State<SetupScreen> {
         'monthlyBudget': budget,
         'setupComplete': true,
       });
-
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -126,7 +120,6 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<ThemeProvider>().palette;
-
     return Scaffold(
       backgroundColor: palette.bg,
       body: SafeArea(
@@ -152,7 +145,6 @@ class _SetupScreenState extends State<SetupScreen> {
                 }),
               ),
             ),
-
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -174,7 +166,6 @@ class _SetupScreenState extends State<SetupScreen> {
                       helpText: 'Bank balance + cash in hand + UPI wallets (PhonePe, Paytm, GPay). Do not include FDs or money people owe you.',
                     ),
                   ),
-
                   // Page 2 — Monthly income
                   _SetupPage(
                     palette: palette,
@@ -191,7 +182,6 @@ class _SetupScreenState extends State<SetupScreen> {
                       isOptional: true,
                     ),
                   ),
-
                   // Page 3 — Monthly budget
                   _SetupPage(
                     palette: palette,
@@ -244,7 +234,6 @@ class _SetupScreenState extends State<SetupScreen> {
                 ],
               ),
             ),
-
             // Error message
             if (_errorMessage != null)
               Padding(
@@ -274,7 +263,6 @@ class _SetupScreenState extends State<SetupScreen> {
                   ),
                 ),
               ),
-
             // Bottom button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
@@ -318,7 +306,6 @@ class _SetupScreenState extends State<SetupScreen> {
 }
 
 // ─── SETUP PAGE ────────────────────────────────────────────────────────────
-
 class _SetupPage extends StatelessWidget {
   final LedgrrPalette palette;
   final String stepNumber;
@@ -326,7 +313,6 @@ class _SetupPage extends StatelessWidget {
   final String subtitle;
   final String hint;
   final Widget child;
-
   const _SetupPage({
     required this.palette,
     required this.stepNumber,
@@ -335,7 +321,6 @@ class _SetupPage extends StatelessWidget {
     required this.hint,
     required this.child,
   });
-
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -363,9 +348,7 @@ class _SetupPage extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 24),
-
           Text(
             title,
             style: GoogleFonts.syne(
@@ -376,9 +359,7 @@ class _SetupPage extends StatelessWidget {
               height: 1.15,
             ),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             subtitle,
             style: GoogleFonts.syne(
@@ -388,13 +369,9 @@ class _SetupPage extends StatelessWidget {
               height: 1.65,
             ),
           ),
-
           const SizedBox(height: 32),
-
           child,
-
           const SizedBox(height: 16),
-
           // Hint box
           Container(
             padding: const EdgeInsets.all(14),
@@ -429,7 +406,6 @@ class _SetupPage extends StatelessWidget {
 }
 
 // ─── AMOUNT FIELD ──────────────────────────────────────────────────────────
-
 class _AmountField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -437,7 +413,6 @@ class _AmountField extends StatelessWidget {
   final LedgrrPalette palette;
   final String helpText;
   final bool isOptional;
-
   const _AmountField({
     required this.controller,
     required this.hint,
@@ -446,7 +421,6 @@ class _AmountField extends StatelessWidget {
     required this.helpText,
     this.isOptional = false,
   });
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -507,6 +481,17 @@ class _AmountField extends StatelessWidget {
                   controller: controller,
                   keyboardType: const TextInputType.numberWithOptions(
                       decimal: true),
+                  // Turns off keyboard suggestion chips that some
+                  // Android keyboards show above the number pad —
+                  // these were getting tapped or auto-inserted,
+                  // appending onto what was already typed instead
+                  // of replacing it, corrupting the amount entered.
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
                   style: GoogleFonts.syne(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
