@@ -29,6 +29,7 @@ class TransactionService {
       'note': note,
       'createdAt': FieldValue.serverTimestamp(),
     });
+
     await _updateStreak();
   }
 
@@ -222,6 +223,7 @@ class TransactionService {
         balance -= (data['amount'] as num).toDouble();
       }
     }
+
     return balance;
   }
 
@@ -282,5 +284,44 @@ class TransactionService {
     }
 
     return categoryMap;
+  }
+
+  // Breaks the generic "savings" category down by which specific Jar
+  // each deposit actually went to, instead of one combined total.
+  // Every Jar deposit is logged with a title of "Saved to <Jar Name>",
+  // so the Jar name is extracted directly from that title. Any
+  // savings-category transaction that doesn't match that pattern
+  // (shouldn't normally happen) is grouped under "Other savings"
+  // rather than silently dropped.
+  Future<Map<String, double>> getJarBreakdown(int year, int month) async {
+    final start = DateTime(year, month, 1);
+    final end = DateTime(year, month + 1, 0, 23, 59, 59);
+
+    final snapshot = await _db
+        .collection('users')
+        .doc(_uid)
+        .collection('transactions')
+        .where('type', isEqualTo: 'expense')
+        .where('category', isEqualTo: 'savings')
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .get();
+
+    final Map<String, double> jarMap = {};
+    const prefix = 'Saved to ';
+
+    for (final doc in snapshot.docs) {
+      final data = doc.data();
+      final title = data['title'] as String? ?? '';
+      final amount = (data['amount'] as num).toDouble();
+
+      final jarName = title.startsWith(prefix)
+          ? title.substring(prefix.length)
+          : 'Other savings';
+
+      jarMap[jarName] = (jarMap[jarName] ?? 0) + amount;
+    }
+
+    return jarMap;
   }
 }

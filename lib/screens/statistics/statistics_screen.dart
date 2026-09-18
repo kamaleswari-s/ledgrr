@@ -23,6 +23,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   double _totalIncome = 0;
   double _totalExpense = 0;
   Map<String, double> _categorySpending = {};
+  Map<String, double> _jarBreakdown = {};
   List<Map<String, dynamic>> _weeklyData = [];
   List<Map<String, dynamic>> _monthlyData = [];
   int _totalTransactionCount = 0;
@@ -51,6 +52,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       );
       final categorySpending =
           await _transactionService.getCategorySpending(
+        _now.year, _now.month,
+      );
+      final jarBreakdown = await _transactionService.getJarBreakdown(
         _now.year, _now.month,
       );
 
@@ -92,6 +96,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
           _totalIncome = summary['income'] ?? 0;
           _totalExpense = summary['expense'] ?? 0;
           _categorySpending = categorySpending;
+          _jarBreakdown = jarBreakdown;
           _weeklyData = weeklyData;
           _monthlyData = monthlyData;
           _totalTransactionCount = count;
@@ -1128,6 +1133,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             final color =
                 _chartColors[e.key % _chartColors.length];
             final pct = e.value.value / total * 100;
+            final isSavingsCategory = e.value.key == 'savings';
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -1179,6 +1185,55 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                         minHeight: 4,
                       ),
                     ),
+                    // Per-jar breakdown — only shown under the
+                    // "savings" category, since that's the only one
+                    // that combines multiple distinct destinations
+                    // (each Jar) into one category total.
+                    if (isSavingsCategory &&
+                        _jarBreakdown.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Divider(height: 1, color: palette.border),
+                      const SizedBox(height: 10),
+                      ...(_jarBreakdown.entries.toList()
+                            ..sort((a, b) =>
+                                b.value.compareTo(a.value)))
+                          .map((jarEntry) {
+                        final jarPct = e.value.value > 0
+                            ? jarEntry.value / e.value.value * 100
+                            : 0.0;
+                        return Padding(
+                          padding:
+                              const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 4),
+                              Icon(Icons.arrow_right_rounded,
+                                  size: 16,
+                                  color: palette.inkMuted),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(jarEntry.key,
+                                    style: GoogleFonts.syne(
+                                        fontSize: 12,
+                                        color: palette.inkMuted)),
+                              ),
+                              Text(
+                                  _formatAmount(jarEntry.value),
+                                  style: GoogleFonts.syne(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: palette.ink)),
+                              const SizedBox(width: 6),
+                              Text(
+                                  '${jarPct.toStringAsFixed(0)}%',
+                                  style: GoogleFonts.syne(
+                                      fontSize: 10,
+                                      color: palette.inkMuted)),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
                   ],
                 ),
               ),
