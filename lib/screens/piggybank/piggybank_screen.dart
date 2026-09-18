@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -1057,6 +1058,11 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                 child: TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
                   autofocus: true,
                   style: GoogleFonts.syne(
                       fontSize: 28,
@@ -1282,6 +1288,11 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                 child: TextField(
                   controller: amountController,
                   keyboardType: TextInputType.number,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
                   autofocus: true,
                   style: GoogleFonts.syne(
                       fontSize: 28,
@@ -1547,6 +1558,11 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            enableSuggestions: keyboardType != TextInputType.number,
+            autocorrect: keyboardType != TextInputType.number,
+            inputFormatters: keyboardType == TextInputType.number
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
+                : null,
             style: GoogleFonts.syne(
                 fontSize: 15, color: palette.ink),
             decoration: InputDecoration(

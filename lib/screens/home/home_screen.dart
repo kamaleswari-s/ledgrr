@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -560,6 +561,11 @@ class _HomeScreenState extends State<HomeScreen>
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            enableSuggestions: keyboardType != TextInputType.number,
+            autocorrect: keyboardType != TextInputType.number,
+            inputFormatters: keyboardType == TextInputType.number
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
+                : null,
             style: GoogleFonts.syne(fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
               hintText: hint,
@@ -2213,6 +2219,11 @@ class _AddTransactionSheetState
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            enableSuggestions: keyboardType != TextInputType.number,
+            autocorrect: keyboardType != TextInputType.number,
+            inputFormatters: keyboardType == TextInputType.number
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
+                : null,
             style: GoogleFonts.syne(
                 fontSize: 15, color: palette.ink),
             decoration: InputDecoration(
