@@ -166,10 +166,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                 border: Border.all(
                                     color: palette.border),
                               ),
-                              child: CustomPaint(
-                                painter: _JarPainter(
-                                    color: palette.accent),
-                              ),
+                                                                child: Icon(Icons.savings_outlined, color: palette.accent, size: 32),
                             ),
                             const SizedBox(height: 20),
                             Text('No jars yet',
@@ -301,10 +298,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                     borderRadius:
                                         BorderRadius.circular(18),
                                   ),
-                                  child: CustomPaint(
-                                    painter: _JarPainter(
-                                        color: palette.accent),
-                                  ),
+                                                                    child: Icon(Icons.savings_outlined, color: palette.accent, size: 32),
                                 ),
                               ],
                             ),
@@ -366,10 +360,7 @@ class _PiggyBankScreenState extends State<PiggyBankScreen> {
                                             BorderRadius.circular(
                                                 12),
                                       ),
-                                      child: CustomPaint(
-                                        painter: _JarPainter(
-                                            color: palette.accent),
-                                      ),
+                                                                    child: Icon(Icons.savings_outlined, color: palette.accent, size: 40),
                                     ),
                                     const SizedBox(width: 14),
                                     Expanded(

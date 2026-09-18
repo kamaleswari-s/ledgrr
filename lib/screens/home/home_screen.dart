@@ -1288,10 +1288,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   Expanded(
                                     child: _FeatureGridCard(
                                       palette: palette,
-                                      icon: CustomPaint(
-                                        painter: _JarHomePainter(
-                                            color: palette.accent),
-                                      ),
+                                      icon: Icon(Icons.savings_outlined,color: palette.accent, size: 22),
                                       title: 'Savings Jars',
                                       subtitle: 'Deposit, withdraw',
                                       onTap: () =>

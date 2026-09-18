@@ -593,6 +593,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             inputFormatters: isNumeric
                 ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))]
                 : null,
+            autofillHints: isNumeric ? const [] : null,
             style: GoogleFonts.syne(
               fontSize: 15,
               color: palette.ink,

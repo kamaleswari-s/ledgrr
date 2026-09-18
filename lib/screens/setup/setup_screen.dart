@@ -492,6 +492,7 @@ class _AmountField extends StatelessWidget {
                     FilteringTextInputFormatter.allow(
                         RegExp(r'^\d*\.?\d{0,2}')),
                   ],
+                  autofillHints: const [],
                   style: GoogleFonts.syne(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
