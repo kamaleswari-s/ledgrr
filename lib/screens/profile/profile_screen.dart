@@ -31,6 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   bool _isExporting = false;
+  bool _isDeleting = false;
   String _selectedTheme = 'Deep Mint';
   String? _email;
 
@@ -219,6 +220,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
         MaterialPageRoute(builder: (_) => const GetStartedScreen()),
         (route) => false,
       );
+    }
+  }
+
+  Future<void> _confirmDeleteAccount(
+      BuildContext context, LedgrrPalette palette) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: palette.card,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete your account?',
+            style: GoogleFonts.syne(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: palette.ink)),
+        content: Text(
+          'This permanently deletes your account and every transaction, jar, due, and lesson record. This cannot be undone.',
+          style: GoogleFonts.syne(
+              fontSize: 13, color: palette.inkMuted, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel',
+                style:
+                    GoogleFonts.syne(fontSize: 13, color: palette.inkMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete permanently',
+                style: GoogleFonts.syne(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFE53935))),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isDeleting = true);
+    try {
+      await _authService.deleteAccount();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const GetStartedScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Could not delete account. You may need to sign in again first, then retry.',
+                style: GoogleFonts.syne(fontSize: 13, color: Colors.white)),
+            backgroundColor: const Color(0xFFE53935),
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     }
   }
 
@@ -530,7 +597,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(16),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
-                        onTap: _signOut,
+                        onTap: _isDeleting ? null : _signOut,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -542,6 +609,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     color: const Color(0xFFE53935))),
                           ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: _isDeleting
+                          ? null
+                          : () => _confirmDeleteAccount(context, palette),
+                      child: Center(
+                        child: _isDeleting
+                            ? SizedBox(
+                                width: 16, height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: palette.inkMuted))
+                            : Text('Delete my account',
+                                style: GoogleFonts.syne(
+                                    fontSize: 12,
+                                    color: palette.inkMuted,
+                                    decoration: TextDecoration.underline)),
                       ),
                     ),
                   ],

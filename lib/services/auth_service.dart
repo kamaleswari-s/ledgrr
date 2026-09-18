@@ -6,15 +6,12 @@ class AuthService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   User? get currentUser => _auth.currentUser;
-
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-    Future<UserCredential?> signUp({
+  Future<UserCredential?> signUp({
     required String name,
     required String email,
-    required String phone,
     required String password,
-    required bool hasDebitCard,
   }) async {
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
@@ -25,8 +22,6 @@ class AuthService {
       await _db.collection('users').doc(credential.user!.uid).set({
         'name': name,
         'email': email,
-        'phone': phone,
-        'hasDebitCard': hasDebitCard,
         'createdAt': FieldValue.serverTimestamp(),
         'currency': '₹',
         'monthlyBudget': 0,
@@ -55,6 +50,44 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
+  }
+
+  // Deletes the user's Firestore data first, then their auth account.
+  // Irreversible — the calling screen must confirm with the user
+  // before ever calling this.
+  Future<void> deleteAccount() async {
+    final uid = currentUser?.uid;
+    if (uid == null) return;
+
+    final db = FirebaseFirestore.instance;
+    final userDoc = db.collection('users').doc(uid);
+
+    // Delete known subcollections first, since Firestore doesn't
+    // cascade-delete a document's subcollections automatically.
+    final subcollections = [
+      'transactions',
+      'piggybanks',
+      'dues',
+      'events',
+      'learn',
+    ];
+    for (final sub in subcollections) {
+      final snapshot = await userDoc.collection(sub).get();
+      for (final doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    }
+
+    await userDoc.delete();
+    await currentUser?.delete();
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthError(e);
+    }
   }
 
   Future<Map<String, dynamic>?> getUserData() async {
@@ -91,36 +124,29 @@ class AuthService {
         label: '',
       );
     }
-
     int score = 0;
     final tips = <String>[];
-
     if (password.length >= 8) {
       score++;
     } else {
       tips.add('Use at least 8 characters');
     }
-
     if (password.contains(RegExp(r'[A-Z]'))) {
       score++;
     } else {
       tips.add('Add an uppercase letter');
     }
-
     if (password.contains(RegExp(r'[0-9]'))) {
       score++;
     } else {
       tips.add('Add a number');
     }
-
     if (password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
       score++;
     } else {
       tips.add('Add a special character like ! or @');
     }
-
     if (password.length >= 12) score++;
-
     if (score <= 1) {
       return PasswordStrength(
         level: PasswordLevel.weak,
@@ -178,7 +204,6 @@ class PasswordStrength {
   final int maxScore;
   final List<String> tips;
   final String label;
-
   const PasswordStrength({
     required this.level,
     required this.score,

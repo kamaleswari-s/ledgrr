@@ -18,13 +18,11 @@ class _AuthScreenState extends State<AuthScreen> {
   final _authService = AuthService();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
-  bool? _hasDebitCard;
   String? _errorMessage;
   PasswordStrength _passwordStrength = const PasswordStrength(
     level: PasswordLevel.empty,
@@ -52,7 +50,6 @@ class _AuthScreenState extends State<AuthScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
-    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -63,6 +60,34 @@ class _AuthScreenState extends State<AuthScreen> {
       _isSignUp = !_isSignUp;
       _errorMessage = null;
     });
+  }
+
+  Future<void> _sendPasswordReset() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() =>
+          _errorMessage = 'Enter your email above first, then tap "Forgot password?"');
+      return;
+    }
+    setState(() => _errorMessage = null);
+    try {
+      await _authService.sendPasswordResetEmail(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Password reset link sent to $email. Check your inbox.',
+                style: GoogleFonts.syne(fontSize: 13, color: Colors.white)),
+            backgroundColor: LedgrrColors.mint.accent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) setState(() => _errorMessage = e.toString());
+    }
   }
 
   Future<void> _submit() async {
@@ -81,15 +106,10 @@ class _AuthScreenState extends State<AuthScreen> {
         if (_passwordStrength.level == PasswordLevel.weak) {
           throw 'Your password is too weak. Make it stronger.';
         }
-        if (_hasDebitCard == null) {
-          throw 'Please answer whether you have a debit card.';
-        }
         await _authService.signUp(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          phone: _phoneController.text.trim(),
           password: _passwordController.text,
-          hasDebitCard: _hasDebitCard!,
         );
         // New user always goes to setup
         if (mounted) {
@@ -247,52 +267,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   palette: palette,
                   keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 16),
-              if (_isSignUp) ...[
-                _buildLabel('Phone number', palette),
-                const SizedBox(height: 8),
-                _buildField(
-                    controller: _phoneController,
-                    hint: '+91 00000 00000',
-                    palette: palette,
-                    keyboardType: TextInputType.phone),
-                const SizedBox(height: 5),
-                Text('Used for UPI sync and account security only.',
-                    style: GoogleFonts.syne(
-                        fontSize: 11, color: palette.inkMuted)),
-                const SizedBox(height: 16),
-              ],
-              if (_isSignUp) ...[
-                _buildLabel('Do you have a debit card?', palette),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _DebitCardOption(
-                        label: 'Yes',
-                        isSelected: _hasDebitCard == true,
-                        onTap: () => setState(() => _hasDebitCard = true),
-                        palette: palette,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _DebitCardOption(
-                        label: 'No',
-                        isSelected: _hasDebitCard == false,
-                        onTap: () => setState(() => _hasDebitCard = false),
-                        palette: palette,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'This helps us plan future payment features. We never see your card number.',
-                  style: GoogleFonts.syne(
-                      fontSize: 11, color: palette.inkMuted),
-                ),
-                const SizedBox(height: 16),
-              ],
               _buildLabel('Password', palette),
               const SizedBox(height: 8),
               _buildPasswordField(
@@ -362,11 +336,14 @@ class _AuthScreenState extends State<AuthScreen> {
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Text('Forgot password?',
-                      style: GoogleFonts.syne(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: palette.accent)),
+                  child: GestureDetector(
+                    onTap: _sendPasswordReset,
+                    child: Text('Forgot password?',
+                        style: GoogleFonts.syne(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: palette.accent)),
+                  ),
                 ),
               ],
               const SizedBox(height: 32),
@@ -601,46 +578,6 @@ class _PasswordStrengthMeter extends StatelessWidget {
               )),
         ],
       ],
-    );
-  }
-}
-
-class _DebitCardOption extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final LedgrrPalette palette;
-
-  const _DebitCardOption({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.palette,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? palette.accent : palette.bg2,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isSelected ? palette.accent : palette.border),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.syne(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? palette.accentFg : palette.ink),
-          ),
-        ),
-      ),
     );
   }
 }
