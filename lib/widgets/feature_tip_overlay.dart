@@ -15,8 +15,8 @@ class FeatureTip {
   });
 }
 
-// Shows a sequence of bottom tip cards, one at a time, dimming the rest
-// of the screen slightly. Never shows again once completed or skipped,
+// Shows a sequence of centered tip cards, one at a time, dimming the
+// rest of the screen. Never shows again once completed or skipped,
 // tracked via a SharedPreferences flag unique to this tour.
 class FeatureTipOverlay extends StatefulWidget {
   final List<FeatureTip> tips;
@@ -66,19 +66,17 @@ class _FeatureTipOverlayState extends State<FeatureTipOverlay> {
     return Positioned.fill(
       child: Material(
         color: Colors.black.withOpacity(0.45),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 20, right: 20, bottom: 90,
-              child: _TipCard(
-                tip: tip,
-                index: _index,
-                total: widget.tips.length,
-                onNext: _next,
-                onSkip: _finish,
-              ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _TipCard(
+              tip: tip,
+              index: _index,
+              total: widget.tips.length,
+              onNext: _next,
+              onSkip: _finish,
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -116,6 +114,20 @@ class _TipCard extends StatelessWidget {
         return CustomPaint(painter: _TipDuesPainter(color: color));
       case 'ask':
         return CustomPaint(painter: _TipRRPainter(color: color));
+      case 'jars':
+        return Icon(Icons.savings_outlined, color: color, size: 20);
+      case 'calendar':
+        return Icon(Icons.calendar_month_rounded, color: color, size: 20);
+      case 'spendlist':
+        return Icon(Icons.checklist_rounded, color: color, size: 20);
+      case 'statistics':
+        return Icon(Icons.bar_chart_rounded, color: color, size: 20);
+      case 'learn':
+        return Icon(Icons.school_rounded, color: color, size: 20);
+      case 'memory':
+        return Icon(Icons.auto_stories_rounded, color: color, size: 20);
+      case 'profile':
+        return Icon(Icons.person_outline_rounded, color: color, size: 20);
       default:
         return Icon(Icons.info_outline_rounded, color: color, size: 20);
     }

@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen>
   int _statsRefreshKey = 0;
   bool _showTipOverlay = false;
 
-  static const List<FeatureTip> _homeFeatureTips = [
+    static const List<FeatureTip> _homeFeatureTips = [
     FeatureTip(
       icon: 'add',
       title: 'Add a transaction',
@@ -74,14 +74,49 @@ class _HomeScreenState extends State<HomeScreen>
       description: 'Finds forgotten subscriptions and recurring charges you might have missed.',
     ),
     FeatureTip(
+      icon: 'memory',
+      title: 'Money Memory',
+      description: 'A daily journal LEDGRR writes for you, showing your financial story day by day.',
+    ),
+    FeatureTip(
+      icon: 'jars',
+      title: 'Savings Jars',
+      description: 'Set aside money for specific goals, tracked separately from your everyday spending.',
+    ),
+    FeatureTip(
       icon: 'dues',
       title: 'Dues Tracker',
       description: 'Track money owed to you and money you owe, all in one place.',
     ),
     FeatureTip(
+      icon: 'calendar',
+      title: 'Calendar',
+      description: 'See upcoming events and how much you\'ve saved toward each one.',
+    ),
+    FeatureTip(
+      icon: 'spendlist',
+      title: 'Spend List',
+      description: 'A running checklist of things you\'re planning to buy.',
+    ),
+    FeatureTip(
+      icon: 'statistics',
+      title: 'Statistics',
+      description: 'Real charts showing your spending patterns and your detected spender identity.',
+    ),
+    FeatureTip(
+      icon: 'learn',
+      title: 'Learn Finance',
+      description: 'Bite-sized lessons on money, personalized to your own spending habits.',
+    ),
+    FeatureTip(
       icon: 'ask',
       title: 'Ask Your Money',
       description: 'Type any question about your spending and get an honest, real answer.',
+    ),
+    FeatureTip(
+      icon: 'profile',
+      title: 'Profile',
+      description: 'Update your income, budget, and theme anytime.',
     ),
   ];
 
